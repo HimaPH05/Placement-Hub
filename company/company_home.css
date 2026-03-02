@@ -1,0 +1,177 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  background: #f4f6f9;
+  color: #333;
+}
+
+/* TOPBAR */
+.topbar {
+  background: #0d47a1;
+  color: white;
+  padding: 12px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.topbar-right {
+  position: relative;
+}
+
+.top-profile-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.top-profile-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 45px;
+  background: white;
+  color: #333;
+  padding: 15px;
+  width: 240px;
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+/* NAVBAR */
+.navbar {
+  display: flex;
+  gap: 30px;
+  padding: 15px 40px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.navbar a {
+  text-decoration: none;
+  color: #444;
+  font-weight: 600;
+}
+
+.navbar .active {
+  color: #0d47a1;
+}
+
+/* CONTAINER */
+.container {
+  padding: 40px 60px;
+}
+
+/* HERO */
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 60px;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  margin-bottom: 60px;
+}
+
+.hero-text h1 {
+  font-size: 38px;
+  color: #0d47a1;
+  margin-bottom: 15px;
+}
+
+.hero-text p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.hero-img {
+  width: 240px;
+}
+
+.btn {
+  background: #0d47a1;
+  color: white;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* SECTION TITLE */
+.section-title {
+  text-align: center;
+  font-size: 28px;
+  color: #0d47a1;
+  margin-bottom: 30px;
+}
+
+/* SECTION TITLE */
+.section-title {
+  text-align: center;
+  font-size: 30px;
+  color: #0d47a1;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* WRAPPER TO CENTER BOX */
+.officer-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 80px;
+}
+
+/* MAIN CARD */
+.officer-card {
+  background: #f1f3f6;
+  width: 700px;
+  padding: 30px 40px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  gap: 35px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+/* IMAGE BOX */
+.officer-img-box {
+  background: #e0e7f1;
+  padding: 15px;
+  border-radius: 50%;
+}
+
+/* SMALL IMAGE */
+.officer-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+}
+
+/* DETAILS */
+.officer-details h3 {
+  font-size: 22px;
+  color: #0d47a1;
+  margin-bottom: 5px;
+}
+
+.designation {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.officer-details p {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 6px;
+}
