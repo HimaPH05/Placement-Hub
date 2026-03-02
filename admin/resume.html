@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Resume Management</title>
+  <link rel="stylesheet" href="astyle.css">
+  <script defer src="script.js"></script>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<header class="navbar">
+  <div class="logo">Placement Hub Admin</div>
+
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="company.html">Company</a>
+    <a href="resume.html" class="active">Resumes</a>
+    <a href="profile.html">Admin Profile</a>
+  </nav>
+</header>
+
+
+
+<!-- ================= MAIN ================= -->
+
+<div class="container">
+
+  <div class="page-head">
+    <h2>Resume Management</h2>
+
+    <input
+      type="text"
+      id="searchResume"
+      class="search"
+      placeholder="🔍 Search student..."
+      onkeyup="searchResume()"
+    >
+  </div>
+
+  <!-- Resume cards -->
+  <div id="resumeList" class="resume-grid"></div>
+
+</div>
+
+</body>
+</html>
