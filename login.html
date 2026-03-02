@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Placement Hub Login</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+  <div class="container">
+    <form id="loginForm" class="card">
+      <h2>Placement Hub</h2>
+      <h3>Login</h3>
+
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter username" required>
+
+      <label for="password">Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Enter password" required>
+        <span id="togglePassword">👁️</span>
+      </div>
+
+      <select id="role" name="role" required>
+        <option value="">Select Role</option>
+        <option value="student">Student</option>
+        <option value="company">Company</option>
+        <option value="admin">Admin</option>
+      </select>
+
+      <button type="submit">Login</button>
+
+      <p id="message" class="error"></p>
+      <p id="logoutMessage" style="color:green; font-weight:bold;"></p>
+
+      <div class="signup-section">
+        <p>Don't have an account?</p>
+        <a href="student-signup.html">Sign up as Student</a>
+        <span>|</span>
+        <a href="company-signup.html">Sign up as Company</a>
+      </div>
+    </form>
+  </div>
+
+  <script src="login.js"></script>
+
+  <!-- Logout Success Message Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const params = new URLSearchParams(window.location.search);
+      const logoutMsg = document.getElementById("logoutMessage");
+
+      if (params.get("logout") === "success") {
+        logoutMsg.textContent = "Logged out successfully!";
+      }
+    });
+  </script>
+
+</body>
+</html>
