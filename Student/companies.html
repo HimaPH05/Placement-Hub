@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Companies | Placement Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="app.js"></script>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <h2 class="logo">Placement Hub</h2>
+
+  <div class="links">
+    <a href="home.php">Home</a>
+    <a href="companies.html" class="active">Companies</a>
+    <a href="wishlist.html">Wishlist</a>
+    <a href="feedback.html">Feedback</a>
+    <a href="resumes.html">Resumes</a>
+  </div>
+</nav>
+
+
+<!-- PAGE -->
+<div class="container">
+
+  <div class="page-head">
+    <h1>Explore Companies 🏢</h1>
+
+    <input
+      id="searchCompany"
+      class="search"
+      type="text"
+      placeholder="🔍 Search company..."
+      onkeyup="searchCompany()"
+    >
+  </div>
+
+  <!-- IMPORTANT: this id MUST exist -->
+  <div id="companyList" class="company-grid"></div>
+
+
+</div>
+
+</body>
+</html>
