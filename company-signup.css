@@ -1,0 +1,147 @@
+* {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(120deg, #2563eb, #14b8a6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Page Title */
+.page-title {
+  color: #ffffff;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* Card */
+.card {
+  background: #ffffff;
+  width: 420px;
+  max-width: 100%;
+  padding: 30px;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.card h2 {
+  margin: 0;
+  text-align: center;
+  color: #111;
+}
+
+.card h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #555;
+}
+
+/* Labels & Inputs */
+label {
+  display: block;
+  margin-top: 14px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  outline: none;
+}
+
+input:focus,
+select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+
+/* Password */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper span {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Button */
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #1e4ed8;
+}
+
+/* Error */
+.error {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Switch text */
+.switch {
+  margin-top: 15px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.switch a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.switch a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile */
+@media (max-height: 700px) {
+  body {
+    align-items: flex-start;
+  }
+
+  .card {
+    margin-top: 20px;
+  }
+}
