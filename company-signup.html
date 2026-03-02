@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Placement Hub | Company Signup</title>
+  <link rel="stylesheet" href="company-signup.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <!-- Page Title -->
+    
+
+    <!-- Signup Card -->
+    <form id="companySignupForm" class="card" action="">
+        <h2>Placement Hub</h2>
+      <h3>Create Company Account</h3>
+
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Create username" required>
+
+      <label for="password">Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Create password" required>
+        <span id="togglePassword">👁️</span>
+      </div>
+
+      <label for="companyName">Company Name</label>
+      <input type="text" id="companyName" placeholder="Enter company name" required>
+
+      <label for="email">Company Email</label>
+      <input type="email" id="email" placeholder="Enter official email" required>
+
+      <label for="phone">Contact Number</label>
+      <input type="tel" id="phone" placeholder="Enter contact number" required>
+
+      <label for="location">Company Location</label>
+      <input type="text" id="location" placeholder="Enter company location" required>
+
+      <label for="industry">Industry Type</label>
+      <select id="industry" required>
+        <option value="" disabled selected>Select Industry</option>
+        <option>Information Technology</option>
+        <option>Software Development</option>
+        <option>Artificial Intelligence</option>
+        <option>Data Science & Analytics</option>
+        <option>Finance & Banking</option>
+        <option>FinTech</option>
+        <option>Healthcare</option>
+        <option>Pharmaceutical</option>
+        <option>Manufacturing</option>
+        <option>Automobile</option>
+        <option>Electronics</option>
+        <option>Telecommunications</option>
+        <option>Education</option>
+        <option>E-Commerce</option>
+        <option>Retail</option>
+        <option>Logistics & Supply Chain</option>
+        <option>Media & Entertainment</option>
+        <option>Marketing & Advertising</option>
+        <option>Consulting</option>
+        <option>Energy & Utilities</option>
+        <option>Government / Public Sector</option>
+        <option>Other</option>
+      </select>
+
+      <label for="website">Company Website</label>
+      <input type="url" id="website" placeholder="https://example.com">
+
+      <button type="submit">Create Account</button>
+
+      <p class="switch">
+        Already have an account?
+        <a href="login.html">Login</a>
+      </p>
+
+      <p id="error" class="error"></p>
+    </form>
+  </div>
+
+  <script src="company-signup.js"></script>
+</body>
+</html>
