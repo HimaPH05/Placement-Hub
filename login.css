@@ -1,103 +1,173 @@
-* {
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
 }
 
-body {
-  margin: 0;
-  height: 100vh;
-  background: linear-gradient(120deg, #2563eb, #14b8a6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* BODY BACKGROUND */
+
+body{
+min-height:100vh;
+background:linear-gradient(120deg,#2563eb,#14b8a6);
+display:flex;
+flex-direction:column;
+align-items:center;
 }
 
-.container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
+/* HEADER */
+
+.college-header{
+text-align:center;
+padding:30px 20px;
+
+
+
+
 }
 
-.card {
-  background: #fff;
-  width: 350px;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+/* LOGO */
+
+.college-logo{
+width:70px;
+margin-bottom:10px;
 }
 
-.card h2 {
-  margin: 0;
-  text-align: center;
+/* COLLEGE NAME */
+
+.college-name{
+font-size:22px;
+font-weight:600;
+margin-bottom:5px;
 }
 
-.card h3 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #555;
+/* TEXT */
+
+.college-text{
+font-size:14px;
+color:black;
 }
 
-label {
-  display: block;
-  margin-top: 15px;
-  font-weight: 600;
+.college-text-small{
+font-size:13px;
+color:black;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 14px;
+/* LOGIN CONTAINER */
+
+.container{
+flex:1;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
 }
 
-.password-wrapper {
-  position: relative;
+/* LOGIN CARD */
+
+.card{
+background:white;
+width:350px;
+padding:30px;
+border-radius:12px;
+box-shadow:0 10px 25px rgba(0,0,0,0.25);
 }
 
-.password-wrapper span {
-  position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
+/* TITLES */
+
+.card h2{
+text-align:center;
+margin-bottom:5px;
 }
 
-button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 12px;
-  border: none;
-  background: #2563eb;
-  color: white;
-  font-size: 16px;
-  border-radius: 6px;
-  cursor: pointer;
+.card h3{
+text-align:center;
+margin-bottom:20px;
+color:#555;
 }
 
-button:hover {
-  background: #1e4ed8;
+/* LABEL */
+
+label{
+display:block;
+margin-top:15px;
+font-weight:600;
 }
 
-.error {
-  color: red;
-  margin-top: 10px;
-  text-align: center;
+/* INPUT */
+
+input{
+width:100%;
+padding:10px;
+margin-top:6px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
-.signup-section {
-  margin-top: 15px;
-  text-align: center;
-  font-size: 14px;
+/* SELECT */
+
+select{
+width:100%;
+padding:10px;
+margin-top:15px;
+border-radius:6px;
+border:1px solid #ccc;
 }
 
-.signup-section a {
-  color: #2563eb;
-  text-decoration: none;
-  font-weight: 500;
+/* PASSWORD */
+
+.password-wrapper{
+position:relative;
 }
 
-.signup-section a:hover {
-  text-decoration: underline;
+.password-wrapper span{
+position:absolute;
+right:10px;
+top:50%;
+transform:translateY(-50%);
+cursor:pointer;
+}
+
+/* BUTTON */
+
+button{
+width:100%;
+margin-top:20px;
+padding:12px;
+border:none;
+background:#2563eb;
+color:white;
+font-size:16px;
+border-radius:6px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e4ed8;
+}
+
+/* ERROR */
+
+.error{
+color:red;
+text-align:center;
+margin-top:10px;
+}
+
+/* SIGNUP */
+
+.signup-section{
+margin-top:15px;
+text-align:center;
+font-size:14px;
+}
+
+.signup-section a{
+color:#2563eb;
+text-decoration:none;
+}
+
+.signup-section a:hover{
+text-decoration:underline;
 }
