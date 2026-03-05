@@ -171,3 +171,19 @@ text-decoration:none;
 .signup-section a:hover{
 text-decoration:underline;
 }
+
+.change-password-section{
+margin-top:12px;
+text-align:right;
+font-size:14px;
+}
+
+.change-password-section a{
+color:red;
+text-decoration:none;
+}
+
+.change-password-section a:hover{
+color:#b91c1c;
+text-decoration:underline;
+}

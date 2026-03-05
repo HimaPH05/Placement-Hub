@@ -6,6 +6,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const role = document.getElementById("role");
     const message = document.getElementById("message");
     const togglePassword = document.getElementById("togglePassword");
+    const changePasswordSection = document.getElementById("changePasswordSection");
+    const changePasswordLink = document.getElementById("changePasswordLink");
+    const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+
+    function updatePasswordOptions() {
+        if (role.value === "student") {
+            changePasswordSection.style.display = "block";
+            changePasswordLink.href = "student-password.php?mode=change";
+            forgotPasswordLink.href = "student-password.php?mode=forgot";
+        } else if (role.value === "company") {
+            changePasswordSection.style.display = "block";
+            changePasswordLink.href = "company-password.php?mode=change";
+            forgotPasswordLink.href = "company-password.php?mode=forgot";
+        } else {
+            changePasswordSection.style.display = "none";
+            changePasswordLink.href = "#";
+            forgotPasswordLink.href = "#";
+        }
+    }
+
+    role.addEventListener("change", updatePasswordOptions);
+    updatePasswordOptions();
 
     /* Show / Hide password */
     togglePassword.addEventListener("click", function () {
