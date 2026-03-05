@@ -394,6 +394,7 @@ body{
 }
 
 .form-card input,
+.form-card select,
 .form-card textarea{
   padding:10px 12px;
   border-radius:8px;
@@ -407,6 +408,7 @@ body{
 }
 
 .form-card input:focus,
+.form-card select:focus,
 .form-card textarea:focus{
   outline:none;
   border-color:#0d47a1;
@@ -519,4 +521,18 @@ body{
   position:relative;
   display:flex;
   align-items:center;
+}
+.action-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.apply-btn-student:disabled{
+  background:#9e9e9e;
+  cursor:not-allowed;
+}
+
+.apply-btn-student:disabled:hover{
+  background:#9e9e9e;
 }
