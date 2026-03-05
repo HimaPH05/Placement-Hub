@@ -7,7 +7,11 @@ if ($conn->connect_error) {
     exit;
 }
 
-$data = json_decode(file_get_contents("php://input"), true);
+$rawInput = file_get_contents("php://input");
+$data = json_decode($rawInput, true);
+if (!is_array($data) || empty($data)) {
+    $data = $_POST;
+}
 
 $username    = $data["username"] ?? "";
 $password    = $data["password"] ?? "";
