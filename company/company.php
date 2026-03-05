@@ -132,7 +132,7 @@ $jobs = $stmt->get_result();
 
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <h3>Open Positions</h3>
-    <h1> positions<h1>
+    
     <button class="btn" onclick="openModal()">+ Add Job</button>
   </div>
 
