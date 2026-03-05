@@ -321,6 +321,7 @@ body{
 }
 
 .modal-content input,
+.modal-content select,
 .modal-content textarea{
   width:100%;
   border:1px solid #ccdaf4;
@@ -337,6 +338,7 @@ body{
 }
 
 .modal-content input:focus,
+.modal-content select:focus,
 .modal-content textarea:focus{
   outline:none;
   border-color:#7ea7ff;
@@ -489,6 +491,17 @@ body{
   border-radius:12px;
   font-size:15px;
   padding:11px 13px;
+}
+
+.edit-company-modal select{
+  width:100%;
+  min-height:50px;
+  background:#fff;
+  border:1px solid #bfd4fa;
+  border-radius:12px;
+  font-size:15px;
+  padding:11px 13px;
+  color:#1d2f4d;
 }
 
 .edit-company-modal .modal-actions{

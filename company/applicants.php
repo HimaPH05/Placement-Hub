@@ -7,9 +7,26 @@ header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 
-$_SESSION['company_id'] = 1;   // TEMPORARY FOR TESTING
+if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
+    header("Location: ../login.html");
+    exit();
+}
 
-$company_id = $_SESSION['company_id'];
+if (!isset($_SESSION["company_id"]) && isset($_SESSION["username"])) {
+    $stmt = $conn->prepare("SELECT id FROM companies WHERE username=?");
+    $stmt->bind_param("s", $_SESSION["username"]);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    if ($row) {
+        $_SESSION["company_id"] = (int)$row["id"];
+    }
+}
+
+if (!isset($_SESSION["company_id"])) {
+    die("Unauthorized Access");
+}
+
+$company_id = (int)$_SESSION['company_id'];
 
 /* =========================
    UPDATE STATUS

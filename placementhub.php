@@ -67,6 +67,9 @@ if (!password_verify($password, $db_password)) {
 $_SESSION["user_id"]  = $id;
 $_SESSION["username"] = $db_username;
 $_SESSION["role"]     = $role;
+if ($role === "company") {
+    $_SESSION["company_id"] = $id;
+}
 
 echo json_encode([
     "message" => "Login successful",

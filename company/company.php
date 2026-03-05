@@ -1,20 +1,36 @@
 <?php
+session_start();
 include("../db.php"); // correct path
 include_once("../database_setup.php"); // ensure required tables (including jobs) exist
 
-/* TEMP SESSION (REMOVE AFTER LOGIN SYSTEM READY) */
-if(!isset($_SESSION['company_id'])){
-    $_SESSION['company_id'] = 1;
+if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
+    header("Location: ../login.html");
+    exit();
 }
 
-$company_id = $_SESSION['company_id'];
+if (!isset($_SESSION["company_id"]) && isset($_SESSION["username"])) {
+    $stmt = $conn->prepare("SELECT id FROM companies WHERE username=?");
+    $stmt->bind_param("s", $_SESSION["username"]);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    if ($row) {
+        $_SESSION["company_id"] = (int)$row["id"];
+    }
+}
+
+if (!isset($_SESSION["company_id"])) {
+    die("Unauthorized Access");
+}
+
+$company_id = (int)$_SESSION["company_id"];
 
 /* =========================
    UPDATE COMPANY DETAILS
 ========================= */
 if(isset($_POST['update_company'])){
     $name = $_POST['companyName'] ?? '';
-    $desc = $_POST['description'] ?? '';
+    $industryValue = trim($_POST['industry'] ?? ($_POST['description'] ?? ''));
+    $desc = $industryValue;
     $emp  = isset($_POST['employees']) ? (int)$_POST['employees'] : 0;
     $loc  = isset($_POST['locations']) && $_POST['locations'] !== '' ? (int)$_POST['locations'] : null;
     $locationText = $_POST['location'] ?? '';
@@ -26,6 +42,7 @@ if(isset($_POST['update_company'])){
 
     $optionalColumns = [
       "description" => ["s", $desc],
+      "industry"    => ["s", $industryValue],
       "employees"   => ["i", $emp],
       "location"    => ["s", $locationText]
     ];
@@ -110,6 +127,30 @@ $companyDescription = $company['description'] ?? ($company['industry'] ?? '');
 $companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
 $companyLocations = isset($company['locations']) ? (int)$company['locations'] : (!empty($company['location']) ? 1 : 0);
 $companyLocationText = $company['location'] ?? '';
+$industryOptions = [
+  "Information Technology",
+  "Software Development",
+  "Artificial Intelligence",
+  "Data Science & Analytics",
+  "Finance & Banking",
+  "FinTech",
+  "Healthcare",
+  "Pharmaceutical",
+  "Manufacturing",
+  "Automobile",
+  "Electronics",
+  "Telecommunications",
+  "Education",
+  "E-Commerce",
+  "Retail",
+  "Logistics & Supply Chain",
+  "Media & Entertainment",
+  "Marketing & Advertising",
+  "Consulting",
+  "Energy & Utilities",
+  "Government / Public Sector",
+  "Other"
+];
 
 /* FETCH JOBS */
 $stmt = $conn->prepare("SELECT * FROM jobs WHERE company_id=? ORDER BY created_at DESC");
@@ -228,8 +269,15 @@ $jobs = $stmt->get_result();
       </div>
 
       <div class="field">
-        <label for="company_description">Description / Industry</label>
-        <input id="company_description" name="description" value="<?php echo htmlspecialchars($companyDescription); ?>">
+        <label for="industry">Industry Type</label>
+        <select id="industry" name="industry" required>
+          <option value="" disabled <?php echo $companyDescription === '' ? 'selected' : ''; ?>>Select Industry</option>
+          <?php foreach($industryOptions as $opt): ?>
+            <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo $companyDescription === $opt ? 'selected' : ''; ?>>
+              <?php echo htmlspecialchars($opt); ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
       </div>
 
       <div class="field">
