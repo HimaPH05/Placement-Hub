@@ -32,8 +32,22 @@ if(isset($_POST['update_company'])){
     $industryValue = trim($_POST['industry'] ?? ($_POST['description'] ?? ''));
     $desc = $industryValue;
     $emp  = isset($_POST['employees']) ? (int)$_POST['employees'] : 0;
+    $locationItemsRaw = $_POST['location_items'] ?? [];
+    if(!is_array($locationItemsRaw)){
+      $locationItemsRaw = [];
+    }
+    $locationItems = [];
+    foreach($locationItemsRaw as $item){
+      $item = trim((string)$item);
+      if($item !== ''){
+        $locationItems[] = $item;
+      }
+    }
+    $locationText = implode(', ', $locationItems);
     $loc  = isset($_POST['locations']) && $_POST['locations'] !== '' ? (int)$_POST['locations'] : null;
-    $locationText = $_POST['location'] ?? '';
+    if($loc === null && count($locationItems) > 0){
+      $loc = count($locationItems);
+    }
 
     // Keep update compatible with different companies-table schemas.
     $setParts = ["companyName=?"];
@@ -127,6 +141,10 @@ $companyDescription = $company['description'] ?? ($company['industry'] ?? '');
 $companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
 $companyLocations = isset($company['locations']) ? (int)$company['locations'] : (!empty($company['location']) ? 1 : 0);
 $companyLocationText = $company['location'] ?? '';
+$companyLocationList = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string)$companyLocationText))));
+if(empty($companyLocationList)){
+  $companyLocationList = [''];
+}
 $industryOptions = [
   "Information Technology",
   "Software Development",
@@ -281,8 +299,20 @@ $jobs = $stmt->get_result();
       </div>
 
       <div class="field">
-        <label for="company_location">Location</label>
-        <input id="company_location" name="location" value="<?php echo htmlspecialchars($companyLocationText); ?>">
+        <label>Locations</label>
+        <div class="locations-builder" id="locationsBuilder">
+          <?php foreach($companyLocationList as $idx => $locName): ?>
+            <div class="location-item">
+              <span class="location-index"><?php echo $idx + 1; ?>.</span>
+              <input name="location_items[]" value="<?php echo htmlspecialchars($locName); ?>" placeholder="Enter location name">
+              <button type="button" class="remove-location-btn" onclick="removeLocationRow(this)">Remove</button>
+            </div>
+          <?php endforeach; ?>
+        </div>
+        <button type="button" class="add-location-btn" onclick="addLocationRow()">+ Add Another Location</button>
+        <div class="location-row">
+          <input id="company_locations_count" name="locations" type="number" min="1" placeholder="No. of Locations" value="<?php echo $companyLocations > 0 ? $companyLocations : ''; ?>" readonly>
+        </div>
       </div>
 
       <div class="field">
@@ -382,6 +412,66 @@ function openCompanyModal(){
 function closeCompanyModal(){
   document.getElementById("companyModal").style.display="none";
 }
+
+function updateLocationIndices(){
+  const rows = document.querySelectorAll("#locationsBuilder .location-item");
+  rows.forEach((row, index) => {
+    const marker = row.querySelector(".location-index");
+    if(marker) marker.textContent = (index + 1) + ".";
+  });
+  const countInput = document.getElementById("company_locations_count");
+  if(countInput){
+    countInput.value = rows.length ? rows.length : "";
+  }
+}
+
+function addLocationRow(value = ""){
+  const wrapper = document.getElementById("locationsBuilder");
+  if(!wrapper) return;
+
+  const row = document.createElement("div");
+  row.className = "location-item";
+  row.innerHTML = `
+    <span class="location-index"></span>
+    <input name="location_items[]" placeholder="Enter location name">
+    <button type="button" class="remove-location-btn">Remove</button>
+  `;
+  const input = row.querySelector("input");
+  if(input) input.value = value;
+  const removeBtn = row.querySelector(".remove-location-btn");
+  if(removeBtn){
+    removeBtn.addEventListener("click", function(){
+      removeLocationRow(removeBtn);
+    });
+  }
+  wrapper.appendChild(row);
+  updateLocationIndices();
+}
+
+function removeLocationRow(btn){
+  const wrapper = document.getElementById("locationsBuilder");
+  if(!wrapper || !btn) return;
+  const rows = wrapper.querySelectorAll(".location-item");
+  if(rows.length <= 1){
+    const onlyInput = rows[0] ? rows[0].querySelector("input") : null;
+    if(onlyInput) onlyInput.value = "";
+    updateLocationIndices();
+    return;
+  }
+  const row = btn.closest(".location-item");
+  if(row) row.remove();
+  updateLocationIndices();
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  const existingRemoveButtons = document.querySelectorAll(".remove-location-btn");
+  existingRemoveButtons.forEach((button) => {
+    button.addEventListener("click", function(){
+      removeLocationRow(button);
+    });
+  });
+  updateLocationIndices();
+});
 </script>
 
 </body>
