@@ -145,6 +145,9 @@ $companyLocationList = array_values(array_filter(array_map('trim', preg_split('/
 if(empty($companyLocationList)){
   $companyLocationList = [''];
 }
+if (count($companyLocationList) > $companyLocations) {
+  $companyLocations = count($companyLocationList);
+}
 $industryOptions = [
   "Information Technology",
   "Software Development",
