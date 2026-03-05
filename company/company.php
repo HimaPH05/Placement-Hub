@@ -16,7 +16,8 @@ if(isset($_POST['update_company'])){
     $name = $_POST['companyName'] ?? '';
     $desc = $_POST['description'] ?? '';
     $emp  = isset($_POST['employees']) ? (int)$_POST['employees'] : 0;
-    $loc  = isset($_POST['locations']) ? (int)$_POST['locations'] : 0;
+    $loc  = isset($_POST['locations']) && $_POST['locations'] !== '' ? (int)$_POST['locations'] : null;
+    $locationText = $_POST['location'] ?? '';
 
     // Keep update compatible with different companies-table schemas.
     $setParts = ["companyName=?"];
@@ -26,8 +27,11 @@ if(isset($_POST['update_company'])){
     $optionalColumns = [
       "description" => ["s", $desc],
       "employees"   => ["i", $emp],
-      "locations"   => ["i", $loc]
+      "location"    => ["s", $locationText]
     ];
+    if($loc !== null){
+      $optionalColumns["locations"] = ["i", $loc];
+    }
 
     foreach($optionalColumns as $column => $meta){
       $colCheck = $conn->query("SHOW COLUMNS FROM companies LIKE '{$column}'");
@@ -105,6 +109,7 @@ $companyName = $company['companyName'] ?? 'Company';
 $companyDescription = $company['description'] ?? ($company['industry'] ?? '');
 $companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
 $companyLocations = isset($company['locations']) ? (int)$company['locations'] : (!empty($company['location']) ? 1 : 0);
+$companyLocationText = $company['location'] ?? '';
 
 /* FETCH JOBS */
 $stmt = $conn->prepare("SELECT * FROM jobs WHERE company_id=? ORDER BY created_at DESC");
@@ -144,6 +149,9 @@ $jobs = $stmt->get_result();
   <div class="company-info">
     <h2><?php echo htmlspecialchars($companyName); ?></h2>
     <p><?php echo htmlspecialchars($companyDescription); ?></p>
+    <?php if(!empty($companyLocationText)): ?>
+      <p><strong>Location:</strong> <?php echo htmlspecialchars($companyLocationText); ?></p>
+    <?php endif; ?>
 
     <div class="company-stats">
       <span>👥 <?php echo $companyEmployees; ?> Employees</span>
@@ -160,7 +168,7 @@ $jobs = $stmt->get_result();
 <!-- ================= OPEN POSITIONS ================= -->
 <section class="card">
 
-  <div style="display:flex; justify-content:space-between; align-items:center;">
+  <div class="section-head">
     <h3>Open Positions</h3>
     
     <button class="btn" onclick="openModal()">+ Add Job</button>
@@ -175,14 +183,13 @@ $jobs = $stmt->get_result();
         $jobMinCgpa = array_key_exists('min_cgpa', $job) && $job['min_cgpa'] !== null ? (float)$job['min_cgpa'] : null;
       ?>
       <div class="job">
-        <div>
+        <div class="job-main">
           <h4><?php echo htmlspecialchars($job['job_title']); ?></h4>
-          <p><?php echo $job['openings']; ?> openings | 
-             <?php echo htmlspecialchars($jobLocation); ?></p>
-          <p>Min CGPA: <?php echo htmlspecialchars($jobMinCgpa !== null ? (string)$jobMinCgpa : 'No minimum'); ?></p>
+          <p class="job-line"><?php echo $job['openings']; ?> openings | <?php echo htmlspecialchars($jobLocation); ?></p>
+          <p class="job-requirement">Min CGPA Requirement: <?php echo htmlspecialchars($jobMinCgpa !== null ? (string)$jobMinCgpa : 'No minimum'); ?></p>
         </div>
 
-        <div>
+        <div class="job-actions">
           <button class="edit-btn"
             onclick="openEditModal(
               <?php echo $job['id']; ?>,
@@ -200,7 +207,7 @@ $jobs = $stmt->get_result();
       </div>
     <?php endwhile; ?>
   <?php else: ?>
-    <p>No jobs added yet.</p>
+    <p class="empty-state">No jobs added yet. Click "+ Add Job" to post your first role.</p>
   <?php endif; ?>
 
   </div>
@@ -211,13 +218,29 @@ $jobs = $stmt->get_result();
 
 <!-- ================= EDIT COMPANY MODAL ================= -->
 <div class="modal" id="companyModal">
-  <div class="modal-content">
+  <div class="modal-content edit-company-modal">
     <h3>Edit Company Profile</h3>
+    <p class="modal-subtitle">Update your organization details to keep your company page professional.</p>
     <form method="POST">
-      <input name="companyName" value="<?php echo htmlspecialchars($companyName); ?>" required>
-      <input name="description" value="<?php echo htmlspecialchars($companyDescription); ?>">
-      <input name="employees" type="number" value="<?php echo $companyEmployees; ?>">
-      <input name="locations" type="number" value="<?php echo $companyLocations; ?>">
+      <div class="field">
+        <label for="company_name">Company Name</label>
+        <input id="company_name" name="companyName" value="<?php echo htmlspecialchars($companyName); ?>" required>
+      </div>
+
+      <div class="field">
+        <label for="company_description">Description / Industry</label>
+        <input id="company_description" name="description" value="<?php echo htmlspecialchars($companyDescription); ?>">
+      </div>
+
+      <div class="field">
+        <label for="company_location">Location</label>
+        <input id="company_location" name="location" value="<?php echo htmlspecialchars($companyLocationText); ?>">
+      </div>
+
+      <div class="field">
+        <label for="company_employees">Number of Employees</label>
+        <input id="company_employees" name="employees" type="number" min="0" value="<?php echo $companyEmployees; ?>">
+      </div>
 
       <div class="modal-actions">
         <button type="submit" name="update_company" class="apply-btn">Save</button>
@@ -230,14 +253,29 @@ $jobs = $stmt->get_result();
 
 <!-- ================= ADD JOB MODAL ================= -->
 <div class="modal" id="addModal">
-  <div class="modal-content">
+  <div class="modal-content add-job-modal">
     <h3>Add Job</h3>
+    <p class="modal-subtitle">Post a role with clear eligibility and location details.</p>
     <form method="POST">
-      <input name="title" placeholder="Job Title" required>
-      <input name="openings" type="number" placeholder="Openings" required>
-      <input name="min_cgpa" type="number" step="0.01" min="0" max="10" placeholder="Minimum CGPA (e.g. 7.00)" required>
-      <input name="location" placeholder="Location">
-      <textarea name="desc" placeholder="Description"></textarea>
+      <label for="job_title">Job Title</label>
+      <input id="job_title" name="title" required>
+
+      <div class="form-grid">
+        <div>
+          <label for="job_openings">Openings</label>
+          <input id="job_openings" name="openings" type="number" required>
+        </div>
+        <div>
+          <label for="job_min_cgpa">Minimum CGPA</label>
+          <input id="job_min_cgpa" name="min_cgpa" type="number" step="0.01" min="0" max="10" required>
+        </div>
+      </div>
+
+      <label for="job_location">Location</label>
+      <input id="job_location" name="location">
+
+      <label for="job_desc">Description</label>
+      <textarea id="job_desc" name="desc"></textarea>
 
       <div class="modal-actions">
         <button type="submit" name="add_job" class="apply-btn">Add</button>

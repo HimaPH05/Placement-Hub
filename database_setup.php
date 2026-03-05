@@ -36,6 +36,12 @@ $conn->query("CREATE TABLE IF NOT EXISTS hr_contacts (
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 )");
 
+/* JOBS TABLE MIGRATION: add min_cgpa if missing */
+$minCgpaCol = $conn->query("SHOW COLUMNS FROM jobs LIKE 'min_cgpa'");
+if ($minCgpaCol && $minCgpaCol->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN min_cgpa DECIMAL(4,2) NULL AFTER openings");
+}
+
 /* APPLICATIONS TABLE */
 $conn->query("CREATE TABLE IF NOT EXISTS applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
