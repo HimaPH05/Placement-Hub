@@ -1,5 +1,6 @@
 <?php
 include("../db.php"); // correct path
+include_once("../database_setup.php"); // ensure required tables (including jobs) exist
 
 /* TEMP SESSION (REMOVE AFTER LOGIN SYSTEM READY) */
 if(!isset($_SESSION['company_id'])){
