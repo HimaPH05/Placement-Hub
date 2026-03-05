@@ -2,6 +2,10 @@
 session_start();
 include("../db.php");   // Required for database connection
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
+
 $_SESSION['company_id'] = 1;   // TEMPORARY FOR TESTING
 
 $company_id = $_SESSION['company_id'];
