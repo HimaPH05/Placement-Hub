@@ -13,15 +13,41 @@ $company_id = $_SESSION['company_id'];
    UPDATE COMPANY DETAILS
 ========================= */
 if(isset($_POST['update_company'])){
-    $name = $_POST['companyName'];
-    $desc = $_POST['description'];
-    $emp  = $_POST['employees'];
-    $loc  = $_POST['locations'];
+    $name = $_POST['companyName'] ?? '';
+    $desc = $_POST['description'] ?? '';
+    $emp  = isset($_POST['employees']) ? (int)$_POST['employees'] : 0;
+    $loc  = isset($_POST['locations']) ? (int)$_POST['locations'] : 0;
 
-    $stmt = $conn->prepare("UPDATE companies 
-        SET companyName=?, description=?, employees=?, locations=? 
-        WHERE id=?");
-    $stmt->bind_param("ssiii", $name, $desc, $emp, $loc, $company_id);
+    // Keep update compatible with different companies-table schemas.
+    $setParts = ["companyName=?"];
+    $types = "s";
+    $params = [$name];
+
+    $optionalColumns = [
+      "description" => ["s", $desc],
+      "employees"   => ["i", $emp],
+      "locations"   => ["i", $loc]
+    ];
+
+    foreach($optionalColumns as $column => $meta){
+      $colCheck = $conn->query("SHOW COLUMNS FROM companies LIKE '{$column}'");
+      if($colCheck && $colCheck->num_rows > 0){
+        $setParts[] = "{$column}=?";
+        $types .= $meta[0];
+        $params[] = $meta[1];
+      }
+    }
+
+    $types .= "i";
+    $params[] = $company_id;
+    $sql = "UPDATE companies SET " . implode(", ", $setParts) . " WHERE id=?";
+
+    $stmt = $conn->prepare($sql);
+    $bind = [$types];
+    foreach($params as $k => $v){
+      $bind[] = &$params[$k];
+    }
+    call_user_func_array([$stmt, "bind_param"], $bind);
     $stmt->execute();
 }
 
@@ -29,11 +55,11 @@ if(isset($_POST['update_company'])){
    ADD JOB
 ========================= */
 if(isset($_POST['add_job'])){
-    $title = $_POST['title'];
-    $desc = $_POST['desc'];
-    $openings = $_POST['openings'];
-    $min_cgpa = $_POST['min_cgpa'];
-    $location = $_POST['location'];
+    $title = $_POST['title'] ?? '';
+    $desc = $_POST['desc'] ?? '';
+    $openings = isset($_POST['openings']) ? (int)$_POST['openings'] : 0;
+    $min_cgpa = isset($_POST['min_cgpa']) ? (float)$_POST['min_cgpa'] : 0;
+    $location = $_POST['location'] ?? '';
 
     $stmt = $conn->prepare("INSERT INTO jobs 
         (company_id, job_title, job_description, openings, min_cgpa, location)
@@ -46,12 +72,12 @@ if(isset($_POST['add_job'])){
    EDIT JOB
 ========================= */
 if(isset($_POST['edit_job'])){
-    $job_id = $_POST['job_id'];
-    $title = $_POST['title'];
-    $desc = $_POST['desc'];
-    $openings = $_POST['openings'];
-    $min_cgpa = $_POST['min_cgpa'];
-    $location = $_POST['location'];
+    $job_id = isset($_POST['job_id']) ? (int)$_POST['job_id'] : 0;
+    $title = $_POST['title'] ?? '';
+    $desc = $_POST['desc'] ?? '';
+    $openings = isset($_POST['openings']) ? (int)$_POST['openings'] : 0;
+    $min_cgpa = isset($_POST['min_cgpa']) ? (float)$_POST['min_cgpa'] : 0;
+    $location = $_POST['location'] ?? '';
 
     $stmt = $conn->prepare("UPDATE jobs 
         SET job_title=?, job_description=?, openings=?, min_cgpa=?, location=? 
@@ -74,7 +100,11 @@ if(isset($_GET['delete'])){
 $stmt = $conn->prepare("SELECT * FROM companies WHERE id=?");
 $stmt->bind_param("i", $company_id);
 $stmt->execute();
-$company = $stmt->get_result()->fetch_assoc();
+$company = $stmt->get_result()->fetch_assoc() ?: [];
+$companyName = $company['companyName'] ?? 'Company';
+$companyDescription = $company['description'] ?? ($company['industry'] ?? '');
+$companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
+$companyLocations = isset($company['locations']) ? (int)$company['locations'] : (!empty($company['location']) ? 1 : 0);
 
 /* FETCH JOBS */
 $stmt = $conn->prepare("SELECT * FROM jobs WHERE company_id=? ORDER BY created_at DESC");
@@ -112,12 +142,12 @@ $jobs = $stmt->get_result();
   <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="company-logo">
 
   <div class="company-info">
-    <h2><?php echo htmlspecialchars($company['companyName']); ?></h2>
-    <p><?php echo htmlspecialchars($company['description']); ?></p>
+    <h2><?php echo htmlspecialchars($companyName); ?></h2>
+    <p><?php echo htmlspecialchars($companyDescription); ?></p>
 
     <div class="company-stats">
-      <span>👥 <?php echo $company['employees']; ?> Employees</span>
-      <span>📍 <?php echo $company['locations']; ?> Locations</span>
+      <span>👥 <?php echo $companyEmployees; ?> Employees</span>
+      <span>📍 <?php echo $companyLocations; ?> Locations</span>
       <span>💼 <?php echo $jobs->num_rows; ?> Open Roles</span>
     </div>
   </div>
@@ -140,12 +170,16 @@ $jobs = $stmt->get_result();
 
   <?php if($jobs->num_rows > 0): ?>
     <?php while($job = $jobs->fetch_assoc()): ?>
+      <?php
+        $jobLocation = $job['location'] ?? '';
+        $jobMinCgpa = array_key_exists('min_cgpa', $job) && $job['min_cgpa'] !== null ? (float)$job['min_cgpa'] : null;
+      ?>
       <div class="job">
         <div>
           <h4><?php echo htmlspecialchars($job['job_title']); ?></h4>
           <p><?php echo $job['openings']; ?> openings | 
-             <?php echo htmlspecialchars($job['location']); ?></p>
-          <p>Min CGPA: <?php echo htmlspecialchars($job['min_cgpa'] !== null ? $job['min_cgpa'] : 'No minimum'); ?></p>
+             <?php echo htmlspecialchars($jobLocation); ?></p>
+          <p>Min CGPA: <?php echo htmlspecialchars($jobMinCgpa !== null ? (string)$jobMinCgpa : 'No minimum'); ?></p>
         </div>
 
         <div>
@@ -155,8 +189,8 @@ $jobs = $stmt->get_result();
               '<?php echo addslashes($job['job_title']); ?>',
               '<?php echo addslashes($job['job_description']); ?>',
               <?php echo $job['openings']; ?>,
-              <?php echo $job['min_cgpa'] !== null ? (float)$job['min_cgpa'] : 0; ?>,
-              '<?php echo addslashes($job['location']); ?>'
+              <?php echo $jobMinCgpa !== null ? $jobMinCgpa : 0; ?>,
+              '<?php echo addslashes($jobLocation); ?>'
             )">Edit</button>
 
           <a href="company.php?delete=<?php echo $job['id']; ?>"
@@ -180,10 +214,10 @@ $jobs = $stmt->get_result();
   <div class="modal-content">
     <h3>Edit Company Profile</h3>
     <form method="POST">
-      <input name="companyName" value="<?php echo $company['companyName']; ?>" required>
-      <input name="description" value="<?php echo $company['description']; ?>">
-      <input name="employees" type="number" value="<?php echo $company['employees']; ?>">
-      <input name="locations" type="number" value="<?php echo $company['locations']; ?>">
+      <input name="companyName" value="<?php echo htmlspecialchars($companyName); ?>" required>
+      <input name="description" value="<?php echo htmlspecialchars($companyDescription); ?>">
+      <input name="employees" type="number" value="<?php echo $companyEmployees; ?>">
+      <input name="locations" type="number" value="<?php echo $companyLocations; ?>">
 
       <div class="modal-actions">
         <button type="submit" name="update_company" class="apply-btn">Save</button>
