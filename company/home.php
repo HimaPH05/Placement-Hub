@@ -6,6 +6,10 @@ if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
     exit();
 }
 
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
+
 $companyUsername = $_SESSION["username"];
 
 $conn = new mysqli("localhost", "root", "", "detailsdb");
@@ -83,7 +87,7 @@ $conn->close();
         <div class="hero-text">
             <h1>Welcome, <?php echo htmlspecialchars($companyName); ?> 👋</h1>
             <p>Your gateway to hiring top students quickly and efficiently.</p>
-            <button class="btn">Explore</button>
+            <button class="btn" onclick="window.location.href='company.php'">Explore</button>
         </div>
 
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png" class="hero-img">

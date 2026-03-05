@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -8,8 +8,6 @@
 </head>
 
 <body>
-
-<!-- ================= NAVBAR ================= -->
 
 <nav class="navbar">
   <h2 class="logo">Placement Hub</h2>
@@ -23,48 +21,34 @@
   </div>
 </nav>
 
-
-
-<!-- ================= FORM ================= -->
-
 <div class="container">
-
   <div class="form-wrapper">
+    <h1>Submit Your Resume</h1>
+    <p class="sub-text">Fill in your details to showcase your profile to recruiters.</p>
 
-    <h1>📄 Submit Your Resume</h1>
-    <p class="sub-text">
-      Fill in your details to showcase your profile to recruiters.
-    </p>
-
-    <form onsubmit="submitResume(event)" class="form-card">
-
+    <form id="resumeForm" onsubmit="submitResume(event)" class="form-card" enctype="multipart/form-data">
       <input type="text" id="name" placeholder="Full Name" required>
-
       <input type="text" id="branch" placeholder="Branch (eg: CSE)" required>
-
       <input type="text" id="gpa" placeholder="GPA" required>
-
       <textarea id="about" placeholder="Short Profile"></textarea>
-
       <input type="text" id="skills" placeholder="Skills (comma separated)">
 
-      <!-- 🔥 NEW: Resume Upload -->
+      <div class="file-upload">
+        <label for="visibility">Resume Visibility</label>
+        <select id="visibility" required>
+          <option value="private">Private (only me)</option>
+          <option value="public">Public (all student accounts)</option>
+        </select>
+      </div>
+
       <div class="file-upload">
         <label for="resumeFile">Upload Resume (PDF / DOC)</label>
-        <input
-          type="file"
-          id="resumeFile"
-          accept=".pdf,.doc,.docx"
-          required
-        >
+        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" required>
       </div>
 
       <button class="btn">Submit Resume</button>
-
     </form>
-
   </div>
-
 </div>
 
 </body>

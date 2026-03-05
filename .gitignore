@@ -1,0 +1,4 @@
+uploads/resumes/*
+uploads/scorecards/*
+!uploads/resumes/.gitkeep
+!uploads/scorecards/.gitkeep
