@@ -16,7 +16,7 @@ if ($conn->connect_error) {
 }
 
 $student_id = (int)$_SESSION["user_id"];
-$stmt = $conn->prepare("SELECT id, student_id, name, branch, gpa, about, skills, file_name, file_path, visibility FROM student_resumes WHERE visibility='public' OR student_id=? ORDER BY created_at DESC");
+$stmt = $conn->prepare("SELECT id, student_id, name, branch, gpa, about, skills, file_name, visibility FROM student_resumes WHERE visibility='public' OR student_id=? ORDER BY created_at DESC");
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -28,15 +28,17 @@ while ($row = $result->fetch_assoc()) {
         $skills = array_map("trim", explode(",", $row["skills"]));
     }
 
+    $resumeId = (int)$row["id"];
     $resumes[] = [
-        "id" => (int)$row["id"],
+        "id" => $resumeId,
         "name" => $row["name"],
         "branch" => $row["branch"],
         "gpa" => $row["gpa"],
         "about" => $row["about"],
         "skills" => $skills,
         "file_name" => $row["file_name"],
-        "file_url" => "../" . $row["file_path"],
+        "file_url" => "../view_resume.php?id=" . $resumeId,
+        "download_url" => "../view_resume.php?id=" . $resumeId . "&dl=1",
         "visibility" => $row["visibility"],
         "is_owner" => ((int)$row["student_id"] === $student_id)
     ];

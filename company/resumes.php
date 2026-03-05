@@ -14,7 +14,7 @@ $search = "";
 if (isset($_GET["search"])) {
     $search = trim($_GET["search"]);
     $stmt = $conn->prepare("
-        SELECT id, student_id, name, branch, gpa, about, skills, file_name, file_path, created_at
+        SELECT id, student_id, name, branch, gpa, about, skills, file_name, created_at
         FROM student_resumes
         WHERE visibility = 'public'
         AND (name LIKE ? OR branch LIKE ? OR skills LIKE ?)
@@ -24,7 +24,7 @@ if (isset($_GET["search"])) {
     $stmt->bind_param("sss", $search_param, $search_param, $search_param);
 } else {
     $stmt = $conn->prepare("
-        SELECT id, student_id, name, branch, gpa, about, skills, file_name, file_path, created_at
+        SELECT id, student_id, name, branch, gpa, about, skills, file_name, created_at
         FROM student_resumes
         WHERE visibility = 'public'
         ORDER BY created_at DESC
@@ -89,12 +89,8 @@ $result = $stmt->get_result();
       <?php endif; ?>
 
       <div class="resume-actions">
-        <?php if (!empty($resume["file_path"])): ?>
-          <a href="../<?php echo htmlspecialchars($resume["file_path"]); ?>" target="_blank" class="action-btn view">View</a>
-          <a href="../<?php echo htmlspecialchars($resume["file_path"]); ?>" download class="action-btn">Download</a>
-        <?php else: ?>
-          <span>No resume uploaded</span>
-        <?php endif; ?>
+        <a href="../view_resume.php?id=<?php echo (int)$resume["id"]; ?>" target="_blank" class="action-btn view">View</a>
+        <a href="../view_resume.php?id=<?php echo (int)$resume["id"]; ?>&dl=1" class="action-btn">Download</a>
       </div>
     </div>
 

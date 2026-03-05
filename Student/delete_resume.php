@@ -25,30 +25,13 @@ if ($resume_id <= 0) {
     exit;
 }
 
-$find = $conn->prepare("SELECT file_path FROM student_resumes WHERE id=? AND student_id=?");
-$find->bind_param("ii", $resume_id, $student_id);
-$find->execute();
-$result = $find->get_result();
-
-if ($result->num_rows === 0) {
-    http_response_code(404);
-    echo json_encode(["success" => false, "message" => "Resume not found"]);
-    exit;
-}
-
-$row = $result->fetch_assoc();
-$filePath = __DIR__ . "/../" . $row["file_path"];
-
 $del = $conn->prepare("DELETE FROM student_resumes WHERE id=? AND student_id=?");
 $del->bind_param("ii", $resume_id, $student_id);
 
-if ($del->execute()) {
-    if (is_file($filePath)) {
-        unlink($filePath);
-    }
+if ($del->execute() && $del->affected_rows > 0) {
     echo json_encode(["success" => true, "message" => "Resume removed successfully"]);
 } else {
-    http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Unable to remove resume"]);
+    http_response_code(404);
+    echo json_encode(["success" => false, "message" => "Resume not found"]);
 }
 ?>

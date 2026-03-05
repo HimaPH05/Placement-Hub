@@ -49,23 +49,19 @@ if (!in_array($ext, $allowed, true)) {
     exit;
 }
 
-$uploadDir = __DIR__ . "/../uploads/resumes";
-if (!is_dir($uploadDir)) {
-    mkdir($uploadDir, 0777, true);
-}
-
-$storedName = "resume_" . $student_id . "_" . time() . "_" . bin2hex(random_bytes(4)) . "." . $ext;
-$fullPath = $uploadDir . "/" . $storedName;
-$relativePath = "uploads/resumes/" . $storedName;
-
-if (!move_uploaded_file($file["tmp_name"], $fullPath)) {
+$fileData = file_get_contents($file["tmp_name"]);
+if ($fileData === false) {
     http_response_code(500);
-    echo json_encode(["success" => false, "message" => "Failed to save file"]);
+    echo json_encode(["success" => false, "message" => "Unable to read uploaded file"]);
     exit;
 }
 
-$stmt = $conn->prepare("INSERT INTO student_resumes (student_id, name, branch, gpa, about, skills, file_name, file_path, visibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-$stmt->bind_param("issssssss", $student_id, $name, $branch, $gpa, $about, $skills, $file["name"], $relativePath, $visibility);
+$mimeType = $file["type"] ?? "application/octet-stream";
+$blob = null;
+
+$stmt = $conn->prepare("INSERT INTO student_resumes (student_id, name, branch, gpa, about, skills, file_name, mime_type, file_data, visibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$stmt->bind_param("isssssssbs", $student_id, $name, $branch, $gpa, $about, $skills, $file["name"], $mimeType, $blob, $visibility);
+$stmt->send_long_data(8, $fileData);
 
 if ($stmt->execute()) {
     echo json_encode(["success" => true, "message" => "Resume submitted successfully"]);
