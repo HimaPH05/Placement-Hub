@@ -87,7 +87,7 @@ $jobs = $stmt->get_result();
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Company - Placement Hub</title>
+  <title>Compny - Placement Hub</title>
   <link rel="stylesheet" href="company_com.css">
 </head>
 
