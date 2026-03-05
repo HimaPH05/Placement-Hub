@@ -17,12 +17,27 @@ if ($conn->connect_error) {
 
 $student_id = (int)$_SESSION["user_id"];
 $error = "";
+$hasScorecardColumn = false;
+
+$colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
+if ($colCheck && $colCheck->num_rows > 0) {
+    $hasScorecardColumn = true;
+}
 
 /* FETCH CURRENT DATA */
-$stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
+if ($hasScorecardColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
+} else {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa FROM students WHERE id=?");
+}
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
-$stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
+if ($hasScorecardColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
+} else {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa);
+    $ktu_scorecard_path = "";
+}
 $stmt->fetch();
 $stmt->close();
 
@@ -35,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $newScorecardPath = $ktu_scorecard_path;
 
-    if (isset($_FILES["ktu_scorecard"]) && $_FILES["ktu_scorecard"]["error"] !== UPLOAD_ERR_NO_FILE) {
+    if ($hasScorecardColumn && isset($_FILES["ktu_scorecard"]) && $_FILES["ktu_scorecard"]["error"] !== UPLOAD_ERR_NO_FILE) {
         if ($_FILES["ktu_scorecard"]["error"] !== UPLOAD_ERR_OK) {
             $error = "Failed to upload scorecard file.";
         } else {
@@ -65,8 +80,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if ($error === "") {
-        $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
-        $stmt->bind_param("sssdsi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $student_id);
+        if ($hasScorecardColumn) {
+            $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
+            $stmt->bind_param("sssdsi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $student_id);
+        } else {
+            $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=? WHERE id=?");
+            $stmt->bind_param("sssdi", $fullname, $email, $regno, $cgpa, $student_id);
+        }
         $stmt->execute();
         $stmt->close();
 
@@ -197,14 +217,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <input type="number" step="0.01" min="0" max="10" name="cgpa" value="<?php echo htmlspecialchars($cgpa); ?>" required>
     </div>
 
-    <div class="form-group">
-      <label>KTU Scorecard (PDF/JPG/PNG)</label>
-      <input type="file" name="ktu_scorecard" accept=".pdf,.jpg,.jpeg,.png">
-      <div class="hint">Upload latest KTU scorecard to become eligible for applications.</div>
-      <?php if (!empty($ktu_scorecard_path)): ?>
-        <div class="hint">Current: <a href="../<?php echo htmlspecialchars($ktu_scorecard_path); ?>" target="_blank">View uploaded scorecard</a></div>
-      <?php endif; ?>
-    </div>
+    <?php if ($hasScorecardColumn): ?>
+      <div class="form-group">
+        <label>KTU Scorecard (PDF/JPG/PNG)</label>
+        <input type="file" name="ktu_scorecard" accept=".pdf,.jpg,.jpeg,.png">
+        <div class="hint">Upload latest KTU scorecard to become eligible for applications.</div>
+        <?php if (!empty($ktu_scorecard_path)): ?>
+          <div class="hint">Current: <a href="../<?php echo htmlspecialchars($ktu_scorecard_path); ?>" target="_blank">View uploaded scorecard</a></div>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
 
     <button type="submit" class="btn">Update Profile</button>
   </form>

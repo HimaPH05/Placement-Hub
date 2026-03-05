@@ -18,7 +18,17 @@ if ($conn->connect_error) {
 
 $student_id = $_SESSION["user_id"];
 
-$stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+$hasScorecardColumn = false;
+$colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
+if ($colCheck && $colCheck->num_rows > 0) {
+    $hasScorecardColumn = true;
+}
+
+if ($hasScorecardColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+} else {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa FROM students WHERE id = ?");
+}
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
 $stmt->store_result();
@@ -27,7 +37,12 @@ if ($stmt->num_rows == 0) {
     die("Student not found");
 }
 
-$stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
+if ($hasScorecardColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
+} else {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa);
+    $ktu_scorecard_path = "";
+}
 $stmt->fetch();
 
 $student = [
@@ -72,14 +87,16 @@ $student = [
   <p>Email: <?php echo htmlspecialchars($student["email"]); ?></p>
   <p>Reg No: <?php echo htmlspecialchars($student["regno"]); ?></p>
   <p>CGPA: <?php echo htmlspecialchars($student["cgpa"]); ?></p>
-  <p>
-    KTU Scorecard:
-    <?php if (!empty($student["ktu_scorecard_path"])): ?>
-      <a href="../<?php echo htmlspecialchars($student["ktu_scorecard_path"]); ?>" target="_blank">View</a>
-    <?php else: ?>
-      Not uploaded
-    <?php endif; ?>
-  </p>
+  <?php if ($hasScorecardColumn): ?>
+    <p>
+      KTU Scorecard:
+      <?php if (!empty($student["ktu_scorecard_path"])): ?>
+        <a href="../<?php echo htmlspecialchars($student["ktu_scorecard_path"]); ?>" target="_blank">View</a>
+      <?php else: ?>
+        Not uploaded
+      <?php endif; ?>
+    </p>
+  <?php endif; ?>
   <hr>
 
   <a href="edit_profile.php">Edit Profile</a><br><br>
