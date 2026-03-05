@@ -87,7 +87,7 @@ $jobs = $stmt->get_result();
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Compny - Placement Hub</title>
+  <title>Company - Placement Hub</title>
   <link rel="stylesheet" href="company_com.css">
 </head>
 
@@ -132,6 +132,7 @@ $jobs = $stmt->get_result();
 
   <div style="display:flex; justify-content:space-between; align-items:center;">
     <h3>Open Positions</h3>
+    <h1> positions<h1>
     <button class="btn" onclick="openModal()">+ Add Job</button>
   </div>
 
