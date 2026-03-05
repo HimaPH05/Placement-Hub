@@ -1,30 +1,36 @@
-<?php
+﻿<?php
 session_start();
 include("../db.php");
 
-if(!isset($_SESSION['company_id'])){
+if (
+    (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company")
+    && !isset($_SESSION["company_id"])
+) {
     die("Unauthorized Access");
 }
 
 $search = "";
 
-if(isset($_GET['search'])){
-    $search = $_GET['search'];
+if (isset($_GET["search"])) {
+    $search = trim($_GET["search"]);
     $stmt = $conn->prepare("
-    SELECT * FROM students 
-    WHERE fullname LIKE ?
-    AND resume_file IS NOT NULL
-    AND resume_file != ''
-");
-    $search_param = "%".$search."%";
-    $stmt->bind_param("s", $search_param);
+        SELECT id, student_id, name, branch, gpa, about, skills, file_name, file_path, created_at
+        FROM student_resumes
+        WHERE visibility = 'public'
+        AND (name LIKE ? OR branch LIKE ? OR skills LIKE ?)
+        ORDER BY created_at DESC
+    ");
+    $search_param = "%" . $search . "%";
+    $stmt->bind_param("sss", $search_param, $search_param, $search_param);
 } else {
     $stmt = $conn->prepare("
-    SELECT * FROM students 
-    WHERE resume_file IS NOT NULL 
-    AND resume_file != ''
-");
+        SELECT id, student_id, name, branch, gpa, about, skills, file_name, file_path, created_at
+        FROM student_resumes
+        WHERE visibility = 'public'
+        ORDER BY created_at DESC
+    ");
 }
+
 $stmt->execute();
 $result = $stmt->get_result();
 ?>
@@ -51,44 +57,50 @@ $result = $stmt->get_result();
 
 <div class="container">
 
-<!-- ================= SEARCH ================= -->
 <div class="search-box">
   <form method="GET">
     <input
       type="text"
       name="search"
-      placeholder="🔍 Search student name..."
+      placeholder="Search by name, branch, skill..."
       value="<?php echo htmlspecialchars($search); ?>"
     >
   </form>
 </div>
 
-<!-- ================= RESUME GRID ================= -->
 <div class="resume-grid">
 
-<?php if($result->num_rows > 0): ?>
-  <?php while($student = $result->fetch_assoc()): ?>
-    
+<?php if ($result->num_rows > 0): ?>
+  <?php while ($resume = $result->fetch_assoc()): ?>
+
     <div class="resume-card">
       <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="resume-avatar">
 
-      <h4><?php echo htmlspecialchars($student['fullname']); ?></h4>
-<p>Register No: <?php echo htmlspecialchars($student['regno']); ?></p>
-      <p>CGPA: <?php echo $student['cgpa']; ?></p>
+      <h4><?php echo htmlspecialchars($resume["name"]); ?></h4>
+      <p>Branch: <?php echo htmlspecialchars($resume["branch"]); ?></p>
+      <p>GPA: <?php echo htmlspecialchars($resume["gpa"]); ?></p>
+
+      <?php if (!empty($resume["skills"])): ?>
+        <p>Skills: <?php echo htmlspecialchars($resume["skills"]); ?></p>
+      <?php endif; ?>
+
+      <?php if (!empty($resume["about"])): ?>
+        <p><?php echo htmlspecialchars($resume["about"]); ?></p>
+      <?php endif; ?>
 
       <div class="resume-actions">
-    <?php if(!empty($student['resume_file'])): ?>
-        <a href="../<?php echo $student['resume_file']; ?>" target="_blank" class="action-btn view">View</a>
-        <a href="../<?php echo $student['resume_file']; ?>" download class="action-btn">Download</a>
-    <?php else: ?>
-        <span>No Resume Uploaded</span>
-    <?php endif; ?>
-</div>
+        <?php if (!empty($resume["file_path"])): ?>
+          <a href="../<?php echo htmlspecialchars($resume["file_path"]); ?>" target="_blank" class="action-btn view">View</a>
+          <a href="../<?php echo htmlspecialchars($resume["file_path"]); ?>" download class="action-btn">Download</a>
+        <?php else: ?>
+          <span>No resume uploaded</span>
+        <?php endif; ?>
+      </div>
     </div>
 
   <?php endwhile; ?>
 <?php else: ?>
-  <p>No students found.</p>
+  <p>No public resumes found.</p>
 <?php endif; ?>
 
 </div>

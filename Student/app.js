@@ -49,6 +49,9 @@ function renderCompanies(data = companies) {
   data.forEach((c) => {
     const website = c.website ? `<span><b>Website:</b> ${c.website}</span>` : "";
     const hasJob = Number.isInteger(c.latest_job_id) && c.latest_job_id > 0;
+    const minCgpaText = c.latest_job_min_cgpa !== null && c.latest_job_min_cgpa !== undefined
+      ? String(c.latest_job_min_cgpa)
+      : "No minimum";
     const applyLabel = hasJob
       ? `Apply (${c.latest_job_title || "Open Role"})`
       : "No Open Role";
@@ -62,6 +65,7 @@ function renderCompanies(data = companies) {
           <div class="meta">
             <span><b>Industry:</b> ${escapeHtml(c.industry || "N/A")}</span>
             <span><b>Location:</b> ${escapeHtml(c.location || "N/A")}</span>
+            <span><b>Min CGPA:</b> ${escapeHtml(minCgpaText)}</span>
             ${website}
           </div>
 

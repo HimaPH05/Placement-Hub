@@ -26,14 +26,43 @@ if ($company_id <= 0 || $job_id <= 0) {
     exit;
 }
 
-$jobStmt = $conn->prepare("SELECT id FROM jobs WHERE id = ? AND company_id = ?");
+$jobStmt = $conn->prepare("SELECT id, min_cgpa FROM jobs WHERE id = ? AND company_id = ?");
 $jobStmt->bind_param("ii", $job_id, $company_id);
 $jobStmt->execute();
-$jobStmt->store_result();
+$jobResult = $jobStmt->get_result();
 
-if ($jobStmt->num_rows === 0) {
+if ($jobResult->num_rows === 0) {
     http_response_code(404);
     echo json_encode(["message" => "Selected job is not available"]);
+    exit;
+}
+$job = $jobResult->fetch_assoc();
+$min_cgpa = $job["min_cgpa"] !== null ? (float)$job["min_cgpa"] : null;
+
+$studentStmt = $conn->prepare("SELECT cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+$studentStmt->bind_param("i", $student_id);
+$studentStmt->execute();
+$studentResult = $studentStmt->get_result();
+
+if ($studentResult->num_rows === 0) {
+    http_response_code(404);
+    echo json_encode(["message" => "Student profile not found"]);
+    exit;
+}
+
+$student = $studentResult->fetch_assoc();
+$student_cgpa = (float)$student["cgpa"];
+$scorecard_path = trim((string)($student["ktu_scorecard_path"] ?? ""));
+
+if ($scorecard_path === "") {
+    http_response_code(400);
+    echo json_encode(["message" => "Upload your KTU scorecard in Edit Profile before applying"]);
+    exit;
+}
+
+if ($min_cgpa !== null && $student_cgpa < $min_cgpa) {
+    http_response_code(400);
+    echo json_encode(["message" => "Not eligible: minimum CGPA required is " . $min_cgpa]);
     exit;
 }
 

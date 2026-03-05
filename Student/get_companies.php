@@ -24,7 +24,8 @@ $sql = "
         COALESCE(c.location, 'N/A') AS location,
         COALESCE(c.website, '') AS website,
         j.id AS latest_job_id,
-        j.job_title AS latest_job_title
+        j.job_title AS latest_job_title,
+        j.min_cgpa AS latest_job_min_cgpa
     FROM companies c
     LEFT JOIN jobs j ON j.id = (
         SELECT j2.id

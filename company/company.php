@@ -32,12 +32,13 @@ if(isset($_POST['add_job'])){
     $title = $_POST['title'];
     $desc = $_POST['desc'];
     $openings = $_POST['openings'];
+    $min_cgpa = $_POST['min_cgpa'];
     $location = $_POST['location'];
 
     $stmt = $conn->prepare("INSERT INTO jobs 
-        (company_id, job_title, job_description, openings, location)
-        VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("issis", $company_id, $title, $desc, $openings, $location);
+        (company_id, job_title, job_description, openings, min_cgpa, location)
+        VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("issids", $company_id, $title, $desc, $openings, $min_cgpa, $location);
     $stmt->execute();
 }
 
@@ -49,12 +50,13 @@ if(isset($_POST['edit_job'])){
     $title = $_POST['title'];
     $desc = $_POST['desc'];
     $openings = $_POST['openings'];
+    $min_cgpa = $_POST['min_cgpa'];
     $location = $_POST['location'];
 
     $stmt = $conn->prepare("UPDATE jobs 
-        SET job_title=?, job_description=?, openings=?, location=? 
+        SET job_title=?, job_description=?, openings=?, min_cgpa=?, location=? 
         WHERE id=? AND company_id=?");
-    $stmt->bind_param("ssisii", $title, $desc, $openings, $location, $job_id, $company_id);
+    $stmt->bind_param("ssidsii", $title, $desc, $openings, $min_cgpa, $location, $job_id, $company_id);
     $stmt->execute();
 }
 
@@ -142,6 +144,7 @@ $jobs = $stmt->get_result();
           <h4><?php echo htmlspecialchars($job['job_title']); ?></h4>
           <p><?php echo $job['openings']; ?> openings | 
              <?php echo htmlspecialchars($job['location']); ?></p>
+          <p>Min CGPA: <?php echo htmlspecialchars($job['min_cgpa'] !== null ? $job['min_cgpa'] : 'No minimum'); ?></p>
         </div>
 
         <div>
@@ -151,6 +154,7 @@ $jobs = $stmt->get_result();
               '<?php echo addslashes($job['job_title']); ?>',
               '<?php echo addslashes($job['job_description']); ?>',
               <?php echo $job['openings']; ?>,
+              <?php echo $job['min_cgpa'] !== null ? (float)$job['min_cgpa'] : 0; ?>,
               '<?php echo addslashes($job['location']); ?>'
             )">Edit</button>
 
@@ -196,6 +200,7 @@ $jobs = $stmt->get_result();
     <form method="POST">
       <input name="title" placeholder="Job Title" required>
       <input name="openings" type="number" placeholder="Openings" required>
+      <input name="min_cgpa" type="number" step="0.01" min="0" max="10" placeholder="Minimum CGPA (e.g. 7.00)" required>
       <input name="location" placeholder="Location">
       <textarea name="desc" placeholder="Description"></textarea>
 
@@ -216,6 +221,7 @@ $jobs = $stmt->get_result();
       <input type="hidden" name="job_id" id="edit_id">
       <input name="title" id="edit_title" required>
       <input name="openings" id="edit_openings" type="number" required>
+      <input name="min_cgpa" id="edit_min_cgpa" type="number" step="0.01" min="0" max="10" required>
       <input name="location" id="edit_location">
       <textarea name="desc" id="edit_desc"></textarea>
 
@@ -236,12 +242,13 @@ function closeModal(){
   document.getElementById("addModal").style.display="none";
 }
 
-function openEditModal(id,title,desc,openings,location){
+function openEditModal(id,title,desc,openings,minCgpa,location){
   document.getElementById("editModal").style.display="flex";
   document.getElementById("edit_id").value=id;
   document.getElementById("edit_title").value=title;
   document.getElementById("edit_desc").value=desc;
   document.getElementById("edit_openings").value=openings;
+  document.getElementById("edit_min_cgpa").value=minCgpa;
   document.getElementById("edit_location").value=location;
 }
 function closeEditModal(){
