@@ -1,6 +1,7 @@
 ﻿<?php
 session_start();
 include("../db.php");
+include_once("../database_setup.php");
 
 if (
     (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company")

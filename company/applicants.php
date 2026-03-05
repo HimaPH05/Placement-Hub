@@ -1,6 +1,7 @@
 <?php
 session_start();
 include("../db.php");   // Required for database connection
+include_once("../database_setup.php"); // Ensure required tables exist
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
