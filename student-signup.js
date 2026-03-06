@@ -33,7 +33,7 @@ form.addEventListener("submit", async (e) => {
 
     if (result.message === "Student account created") {
       alert("Account created successfully!");
-      window.location.href = "login.html";
+      window.location.href = "login.php";
     } else {
       error.textContent = result.message;
     }

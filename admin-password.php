@@ -178,7 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <div class="msg <?php echo $messageClass; ?>"><?php echo htmlspecialchars($message); ?></div>
     <?php endif; ?>
 
-    <a class="back" href="login.html">Back to Login</a>
+    <a class="back" href="login.php">Back to Login</a>
   </form>
 
   <script>

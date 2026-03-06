@@ -6,9 +6,9 @@ function get_admin_credential_path(): string {
 
 function get_default_admin_credentials(): array {
     return [
-        "username" => "Admin@geck",
+        "username" => "admin",
         "email" => "admin@geck.com",
-        "password_hash" => password_hash("admin@123", PASSWORD_DEFAULT)
+        "password_hash" => password_hash("admin@geck", PASSWORD_DEFAULT)
     ];
 }
 
