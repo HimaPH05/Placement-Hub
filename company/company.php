@@ -132,6 +132,7 @@ if(isset($_GET['delete'])){
 }
 
 /* FETCH COMPANY DETAILS */
+<<<<<<< HEAD
 $stmt = $conn->prepare("SELECT * FROM companies WHERE id=?");
 $stmt->bind_param("i", $company_id);
 $stmt->execute();
@@ -214,6 +215,50 @@ $industryOptions = [
 
 /* FETCH JOBS */
 $stmt = $conn->prepare("SELECT * FROM jobs WHERE company_id=? ORDER BY created_at DESC");
+=======
+$stmt = $conn->prepare("SELECT * FROM companies WHERE id=?");
+$stmt->bind_param("i", $company_id);
+$stmt->execute();
+$company = $stmt->get_result()->fetch_assoc() ?: [];
+$companyName = $company['companyName'] ?? 'Company';
+$companyDescription = $company['description'] ?? ($company['industry'] ?? '');
+$companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
+$companyLocationText = $company['location'] ?? '';
+$companyLocationListRaw = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string)$companyLocationText))));
+$storedLocationsCount = isset($company['locations']) ? (int)$company['locations'] : 0;
+$companyLocations = count($companyLocationListRaw) > 0 ? count($companyLocationListRaw) : $storedLocationsCount;
+$companyLocationList = $companyLocationListRaw;
+if (empty($companyLocationList)) {
+  $companyLocationList = [''];
+}
+$industryOptions = [
+  "Information Technology",
+  "Software Development",
+  "Artificial Intelligence",
+  "Data Science & Analytics",
+  "Finance & Banking",
+  "FinTech",
+  "Healthcare",
+  "Pharmaceutical",
+  "Manufacturing",
+  "Automobile",
+  "Electronics",
+  "Telecommunications",
+  "Education",
+  "E-Commerce",
+  "Retail",
+  "Logistics & Supply Chain",
+  "Media & Entertainment",
+  "Marketing & Advertising",
+  "Consulting",
+  "Energy & Utilities",
+  "Government / Public Sector",
+  "Other"
+];
+
+/* FETCH JOBS */
+$stmt = $conn->prepare("SELECT * FROM jobs WHERE company_id=? ORDER BY created_at DESC");
+>>>>>>> b8afecebbdb1fabe6f4a5c6e9506f654ba4f082f
 $stmt->bind_param("i", $company_id);
 $stmt->execute();
 $jobs = $stmt->get_result();
