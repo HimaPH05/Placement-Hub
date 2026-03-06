@@ -319,8 +319,34 @@ function removeResume(resumeId) {
 ================================================= */
 
 function submitFeedback() {
+  const input = document.getElementById("fb");
   const msg = document.getElementById("msg");
-  if (msg) msg.innerText = "Feedback submitted successfully!";
+  if (!input || !msg) return;
+
+  const feedback = input.value.trim();
+  if (!feedback) {
+    msg.innerText = "Please enter feedback before submitting.";
+    return;
+  }
+
+  fetch("submit_feedback.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ feedback })
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      msg.innerText = result.message || "Unable to submit feedback.";
+      if (result.success) {
+        input.value = "";
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      msg.innerText = "Server not reachable.";
+    });
 }
 
 /* =================================================

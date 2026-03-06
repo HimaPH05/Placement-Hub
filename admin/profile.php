@@ -18,6 +18,7 @@ require_once __DIR__ . "/auth-check.php";
     <a href="index.php">Home</a>
     <a href="company.php">Company</a>
     <a href="resume.php">Resumes</a>
+    <a href="feedback.php">Feedback</a>
     <a href="profile.php" class="active">Admin Profile</a>
     <a href="../logout.php" class="logout" id="logoutBtn">Logout</a>
   </nav>
