@@ -52,9 +52,6 @@ function renderCompanies(data = companies) {
     const minCgpaText = c.latest_job_min_cgpa !== null && c.latest_job_min_cgpa !== undefined
       ? String(c.latest_job_min_cgpa)
       : "No minimum";
-    const applyLabel = hasJob
-      ? `Apply (${c.latest_job_title || "Open Role"})`
-      : "No Open Role";
 
     companyBox.innerHTML += `
       <div class="company-card">
@@ -74,8 +71,7 @@ function renderCompanies(data = companies) {
             <button
               class="btn secondary apply-btn-student"
               onclick="applyToCompany(${c.id}, ${hasJob ? c.latest_job_id : 0})"
-              ${hasJob ? "" : "disabled"}
-            >${escapeHtml(applyLabel)}</button>
+            >Apply</button>
           </div>
         </div>
       </div>
@@ -172,7 +168,7 @@ function removeWish(i) {
 
 async function applyToCompany(companyId, jobId) {
   if (!jobId) {
-    alert("This company has no active role to apply right now.");
+    alert("Applications are currently unavailable for this company.");
     return;
   }
 
