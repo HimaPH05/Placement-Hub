@@ -11,22 +11,42 @@ document.addEventListener("DOMContentLoaded", function () {
     const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
     function updatePasswordOptions() {
-        if (role.value === "student") {
-            changePasswordSection.style.display = "block";
-            changePasswordLink.href = "student-password.php?mode=change";
-            forgotPasswordLink.href = "student-password.php?mode=forgot";
-        } else if (role.value === "company") {
-            changePasswordSection.style.display = "block";
-            changePasswordLink.href = "company-password.php?mode=change";
-            forgotPasswordLink.href = "company-password.php?mode=forgot";
+        const rolePages = {
+            student: "student-password.php",
+            company: "company-password.php",
+            admin: "admin-password.php"
+        };
+
+        const selectedRole = role.value;
+        const page = rolePages[selectedRole];
+
+        changePasswordSection.style.display = "block";
+
+        if (page) {
+            changePasswordLink.href = `${page}?mode=change`;
+            forgotPasswordLink.href = `${page}?mode=forgot`;
         } else {
-            changePasswordSection.style.display = "none";
             changePasswordLink.href = "#";
             forgotPasswordLink.href = "#";
         }
     }
 
-    role.addEventListener("change", updatePasswordOptions);
+    function requireRoleForPasswordLink(e) {
+        if (!role.value) {
+            e.preventDefault();
+            message.textContent = "Please select role first to continue.";
+            message.style.color = "red";
+        }
+    }
+
+    role.addEventListener("change", function () {
+        message.textContent = "";
+        updatePasswordOptions();
+    });
+
+    changePasswordLink.addEventListener("click", requireRoleForPasswordLink);
+    forgotPasswordLink.addEventListener("click", requireRoleForPasswordLink);
+
     updatePasswordOptions();
 
     /* Show / Hide password */
@@ -42,13 +62,43 @@ document.addEventListener("DOMContentLoaded", function () {
         const pass = password.value.trim();
         const selectedRole = role.value;
 
+        if (!selectedRole) {
+            message.textContent = "Please select role.";
+            message.style.color = "red";
+            return;
+        }
+
         /* ======================
            ADMIN LOGIN
         ====================== */
 
-        if (user === "Admin@geck" && pass === "admin@123") {
-            window.location.href = "admin/index.html";
-            return; // STOP here
+        if (selectedRole === "admin") {
+            fetch("admin-auth.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({
+                    username: user,
+                    password: pass,
+                    role: selectedRole
+                })
+            })
+            .then(res => res.text())
+            .then(text => {
+                const result = JSON.parse(text);
+                if (result.message === "Login successful") {
+                    window.location.href = "admin/index.html";
+                } else {
+                    message.textContent = result.message;
+                    message.style.color = "red";
+                }
+            })
+            .catch(() => {
+                message.textContent = "Server error";
+                message.style.color = "red";
+            });
+
+            return;
         }
 
         /* ======================
