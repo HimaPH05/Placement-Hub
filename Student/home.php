@@ -24,10 +24,24 @@ if ($colCheck && $colCheck->num_rows > 0) {
     $hasScorecardColumn = true;
 }
 
+$hasEmailColumn = false;
+$emailColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
+if ($emailColCheck && $emailColCheck->num_rows > 0) {
+    $hasEmailColumn = true;
+}
+
 if ($hasScorecardColumn) {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+    }
 } else {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa FROM students WHERE id = ?");
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa FROM students WHERE id = ?");
+    }
 }
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -84,7 +98,9 @@ $student = [
 
   <div id="profileDropdown" class="profile-dropdown">
   <p><strong><?php echo htmlspecialchars($student["fullname"]); ?></strong></p>
-  <p>Email: <?php echo htmlspecialchars($student["email"]); ?></p>
+  <?php if ($hasEmailColumn): ?>
+    <p>Email: <?php echo htmlspecialchars($student["email"]); ?></p>
+  <?php endif; ?>
   <p>Reg No: <?php echo htmlspecialchars($student["regno"]); ?></p>
   <p>CGPA: <?php echo htmlspecialchars($student["cgpa"]); ?></p>
   <?php if ($hasScorecardColumn): ?>

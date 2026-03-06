@@ -18,17 +18,30 @@ if ($conn->connect_error) {
 $student_id = (int)$_SESSION["user_id"];
 $error = "";
 $hasScorecardColumn = false;
+$hasEmailColumn = false;
 
 $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($colCheck && $colCheck->num_rows > 0) {
     $hasScorecardColumn = true;
 }
+$emailColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
+if ($emailColCheck && $emailColCheck->num_rows > 0) {
+    $hasEmailColumn = true;
+}
 
 /* FETCH CURRENT DATA */
 if ($hasScorecardColumn) {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
+    }
 } else {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa FROM students WHERE id=?");
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa FROM students WHERE id=?");
+    }
 }
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
@@ -81,11 +94,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($error === "") {
         if ($hasScorecardColumn) {
-            $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
-            $stmt->bind_param("sssdsi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $student_id);
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
+                $stmt->bind_param("sssdsi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
+                $stmt->bind_param("ssdsi", $fullname, $regno, $cgpa, $newScorecardPath, $student_id);
+            }
         } else {
-            $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=? WHERE id=?");
-            $stmt->bind_param("sssdi", $fullname, $email, $regno, $cgpa, $student_id);
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=? WHERE id=?");
+                $stmt->bind_param("sssdi", $fullname, $email, $regno, $cgpa, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=? WHERE id=?");
+                $stmt->bind_param("ssdi", $fullname, $regno, $cgpa, $student_id);
+            }
         }
         $stmt->execute();
         $stmt->close();
@@ -202,10 +225,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <input type="text" name="fullname" value="<?php echo htmlspecialchars($fullname); ?>" required>
     </div>
 
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
-    </div>
+    <?php if ($hasEmailColumn): ?>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
+      </div>
+    <?php endif; ?>
 
     <div class="form-group">
       <label>Register Number</label>

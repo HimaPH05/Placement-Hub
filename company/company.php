@@ -139,14 +139,13 @@ $company = $stmt->get_result()->fetch_assoc() ?: [];
 $companyName = $company['companyName'] ?? 'Company';
 $companyDescription = $company['description'] ?? ($company['industry'] ?? '');
 $companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
-$companyLocations = isset($company['locations']) ? (int)$company['locations'] : (!empty($company['location']) ? 1 : 0);
 $companyLocationText = $company['location'] ?? '';
-$companyLocationList = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string)$companyLocationText))));
-if(empty($companyLocationList)){
+$companyLocationListRaw = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string)$companyLocationText))));
+$storedLocationsCount = isset($company['locations']) ? (int)$company['locations'] : 0;
+$companyLocations = count($companyLocationListRaw) > 0 ? count($companyLocationListRaw) : $storedLocationsCount;
+$companyLocationList = $companyLocationListRaw;
+if (empty($companyLocationList)) {
   $companyLocationList = [''];
-}
-if (count($companyLocationList) > $companyLocations) {
-  $companyLocations = count($companyLocationList);
 }
 $industryOptions = [
   "Information Technology",
