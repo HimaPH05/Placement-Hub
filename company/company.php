@@ -135,7 +135,6 @@ if(isset($_GET['delete'])){
 $stmt = $conn->prepare("SELECT * FROM companies WHERE id=?");
 $stmt->bind_param("i", $company_id);
 $stmt->execute();
-<<<<<<< Updated upstream
 $company = $stmt->get_result()->fetch_assoc() ?: [];
 $companyName = $company['companyName'] ?? 'Company';
 $companyDescription = $company['description'] ?? ($company['industry'] ?? '');
@@ -172,45 +171,6 @@ $industryOptions = [
   "Government / Public Sector",
   "Other"
 ];
-=======
-$company = $stmt->get_result()->fetch_assoc() ?: [];
-$companyName = $company['companyName'] ?? 'Company';
-$companyDescription = $company['description'] ?? ($company['industry'] ?? '');
-$companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
-$companyLocations = isset($company['locations']) ? (int)$company['locations'] : (!empty($company['location']) ? 1 : 0);
-$companyLocationText = $company['location'] ?? '';
-$companyLocationList = array_values(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string)$companyLocationText))));
-if(empty($companyLocationList)){
-  $companyLocationList = [''];
-}
-if (count($companyLocationList) > $companyLocations) {
-  $companyLocations = count($companyLocationList);
-}
-$industryOptions = [
-  "Information Technology",
-  "Software Development",
-  "Artificial Intelligence",
-  "Data Science & Analytics",
-  "Finance & Banking",
-  "FinTech",
-  "Healthcare",
-  "Pharmaceutical",
-  "Manufacturing",
-  "Automobile",
-  "Electronics",
-  "Telecommunications",
-  "Education",
-  "E-Commerce",
-  "Retail",
-  "Logistics & Supply Chain",
-  "Media & Entertainment",
-  "Marketing & Advertising",
-  "Consulting",
-  "Energy & Utilities",
-  "Government / Public Sector",
-  "Other"
-];
->>>>>>> Stashed changes
 
 /* FETCH JOBS */
 $stmt = $conn->prepare("SELECT * FROM jobs WHERE company_id=? ORDER BY created_at DESC");
