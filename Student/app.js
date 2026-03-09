@@ -305,11 +305,6 @@ function submitResume(e) {
   const visibility = document.getElementById("visibility").value;
   const fileInput = document.getElementById("resumeFile");
 
-  if (!fileInput || !fileInput.files.length) {
-    alert("Please upload your resume file");
-    return;
-  }
-
   const formData = new FormData();
   formData.append("name", name);
   formData.append("branch", branch);
@@ -317,7 +312,9 @@ function submitResume(e) {
   formData.append("about", about);
   formData.append("skills", skillsInput);
   formData.append("visibility", visibility);
-  formData.append("resumeFile", fileInput.files[0]);
+  if (fileInput && fileInput.files.length) {
+    formData.append("resumeFile", fileInput.files[0]);
+  }
 
   fetch("submit_resume.php", {
     method: "POST",
@@ -327,7 +324,7 @@ function submitResume(e) {
     .then((result) => {
       alert(result.message || "Unable to submit resume.");
       if (result.success) {
-        e.target.reset();
+        window.location.href = "resumes.html";
       }
     })
     .catch((err) => {
@@ -350,6 +347,7 @@ function renderResumes() {
     .then((res) => res.json())
     .then((result) => {
       const resumes = Array.isArray(result.resumes) ? result.resumes : [];
+      updateResumeCta(Boolean(result.has_own_resume));
       if (!resumes.length) {
         resumeBox.innerHTML = "<p>No resumes found.</p>";
         return;
@@ -375,12 +373,11 @@ function renderResumes() {
         }
         const nextVisibility = r.visibility === "public" ? "private" : "public";
         const toggleLabel = r.visibility === "public" ? "Make Private" : "Make Public";
-        const removeBtn = r.is_owner
-          ? `<button class="remove-btn" onclick="removeResume(${r.id})">Remove</button>`
-          : "";
         const toggleBtn = r.is_owner
           ? `<button class="btn" onclick="toggleResumeVisibility(${r.id}, '${nextVisibility}')">${escapeHtml(toggleLabel)}</button>`
           : "";
+        const editBtn = r.is_owner
+          ? `<a href="submit-resume.html" class="btn">Edit Resume</a>`
         const verificationHtml = isPublic
           ? `<p><b>Verification:</b> <span class="status ${verificationClass}">${escapeHtml(verificationLabel)}</span></p>`
           : "";
@@ -398,7 +395,7 @@ function renderResumes() {
             <div style="margin-top:10px;">
               <a href="${escapeHtml(r.file_url)}" target="_blank" class="view-btn">View Resume</a>
               ${toggleBtn}
-              ${removeBtn}
+              ${editBtn}
             </div>
           </div>
         `;
@@ -452,6 +449,50 @@ function toggleResumeVisibility(resumeId, visibility) {
     .catch((err) => {
       console.error(err);
       alert("Server not reachable.");
+    });
+}
+
+function updateResumeCta(hasOwnResume) {
+  const cta = document.getElementById("resumeCta");
+  if (!cta) return;
+
+  cta.textContent = hasOwnResume ? "Edit Resume" : "+ Submit Resume";
+  cta.href = "submit-resume.html";
+}
+
+function loadResumeForEdit() {
+  const form = document.getElementById("resumeForm");
+  if (!form) return;
+
+  fetch("get_resumes.php")
+    .then((res) => res.json())
+    .then((result) => {
+      const resumes = Array.isArray(result.resumes) ? result.resumes : [];
+      const own = resumes.find((r) => r.is_owner);
+      if (!own) return;
+
+      const nameEl = document.getElementById("name");
+      const branchEl = document.getElementById("branch");
+      const gpaEl = document.getElementById("gpa");
+      const aboutEl = document.getElementById("about");
+      const skillsEl = document.getElementById("skills");
+      const visibilityEl = document.getElementById("visibility");
+      const fileLabelEl = document.getElementById("resumeFileLabel");
+      const submitBtn = form.querySelector("button[type='submit'], .btn");
+      const fileInput = document.getElementById("resumeFile");
+
+      if (nameEl) nameEl.value = own.name || "";
+      if (branchEl) branchEl.value = own.branch || "";
+      if (gpaEl) gpaEl.value = own.gpa || "";
+      if (aboutEl) aboutEl.value = own.about || "";
+      if (skillsEl) skillsEl.value = Array.isArray(own.skills) ? own.skills.join(", ") : "";
+      if (visibilityEl) visibilityEl.value = own.visibility || "private";
+      if (fileLabelEl) fileLabelEl.innerText = "Upload New Resume (optional)";
+      if (fileInput) fileInput.required = false;
+      if (submitBtn) submitBtn.textContent = "Update Resume";
+    })
+    .catch((err) => {
+      console.error(err);
     });
 }
 
@@ -513,4 +554,5 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCompanies();
   renderWishlist();
   renderResumes();
+  loadResumeForEdit();
 });

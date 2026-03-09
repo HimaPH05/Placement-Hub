@@ -51,13 +51,18 @@ $stmt = $conn->prepare("
         {$rejectSelect}
         s.username AS owner_username
     FROM student_resumes sr
+    INNER JOIN (
+        SELECT student_id, MAX(id) AS latest_id
+        FROM student_resumes
+        GROUP BY student_id
+    ) latest ON latest.latest_id = sr.id
     LEFT JOIN students s ON s.id = sr.student_id
     WHERE sr.visibility='public'
        OR sr.student_id=?
        OR (s.username IS NOT NULL AND s.username=?)
-    ORDER BY sr.created_at DESC
+    ORDER BY sr.student_id = ? DESC, sr.created_at DESC
 ");
-$stmt->bind_param("is", $student_id, $username);
+$stmt->bind_param("isi", $student_id, $username, $student_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -92,5 +97,16 @@ while ($row = $result->fetch_assoc()) {
     ];
 }
 
-echo json_encode(["resumes" => $resumes]);
+$hasOwnResume = false;
+foreach ($resumes as $resume) {
+    if (!empty($resume["is_owner"])) {
+        $hasOwnResume = true;
+        break;
+    }
+}
+
+echo json_encode([
+    "resumes" => $resumes,
+    "has_own_resume" => $hasOwnResume
+]);
 ?>
