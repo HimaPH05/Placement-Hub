@@ -29,9 +29,14 @@ if (!isset($_SESSION["company_id"])) {
 $company_id = (int)$_SESSION['company_id'];
 
 $hasScorecardColumn = false;
+$hasEmailColumn = false;
 $scorecardCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($scorecardCheck && $scorecardCheck->num_rows > 0) {
     $hasScorecardColumn = true;
+}
+$emailCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
+if ($emailCheck && $emailCheck->num_rows > 0) {
+    $hasEmailColumn = true;
 }
 
 /* =========================
@@ -60,13 +65,14 @@ if(isset($_GET['action']) && isset($_GET['id'])){
    FETCH APPLICATIONS
 ========================= */
 $scorecardSelect = $hasScorecardColumn ? "students.ktu_scorecard_path," : "'' AS ktu_scorecard_path,";
+$emailSelect = $hasEmailColumn ? "students.email," : "'' AS email,";
 
 $query = "
 SELECT
     applications.*,
     students.fullname,
     students.username,
-    students.email,
+    {$emailSelect}
     students.regno,
     students.dob,
     students.cgpa,
