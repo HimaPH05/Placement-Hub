@@ -15,6 +15,12 @@ function get_default_admin_credentials(): array {
             "role_title" => "Placement Coordinator",
             "department" => "Placement Cell",
             "phone" => "+91 9876543210"
+        ],
+        "team_members" => [
+            ["name" => "Dr. John Smith", "role" => "Head Coordinator"],
+            ["name" => "Sarah Johnson", "role" => "Assistant Coordinator"],
+            ["name" => "Emily Davis", "role" => "Industry Liaison"],
+            ["name" => "David Wilson", "role" => "Student Relations"]
         ]
     ];
 }
@@ -51,6 +57,28 @@ function get_admin_credentials(): array {
         $decoded["profile"] = array_merge($defaults["profile"], $decoded["profile"]);
     }
 
+    $defaultTeam = get_default_admin_credentials()["team_members"];
+    if (!isset($decoded["team_members"]) || !is_array($decoded["team_members"])) {
+        $decoded["team_members"] = $defaultTeam;
+    } else {
+        $normalizedTeam = [];
+        foreach ($decoded["team_members"] as $member) {
+            if (!is_array($member)) {
+                continue;
+            }
+            $memberName = trim((string)($member["name"] ?? ""));
+            $memberRole = trim((string)($member["role"] ?? ""));
+            if ($memberName === "" && $memberRole === "") {
+                continue;
+            }
+            $normalizedTeam[] = [
+                "name" => $memberName,
+                "role" => $memberRole
+            ];
+        }
+        $decoded["team_members"] = count($normalizedTeam) > 0 ? $normalizedTeam : $defaultTeam;
+    }
+
     return $decoded;
 }
 
@@ -72,5 +100,49 @@ function save_admin_profile(array $profile): bool {
     $defaults = get_default_admin_credentials()["profile"];
     $creds["profile"] = array_merge($defaults, $profile);
     $creds["email"] = $creds["profile"]["email"];
+    return save_admin_credentials($creds);
+}
+
+function get_admin_team_members(): array {
+    $creds = get_admin_credentials();
+    $defaultTeam = get_default_admin_credentials()["team_members"];
+    $members = is_array($creds["team_members"] ?? null) ? $creds["team_members"] : [];
+
+    $normalized = [];
+    foreach ($members as $member) {
+        if (!is_array($member)) {
+            continue;
+        }
+        $name = trim((string)($member["name"] ?? ""));
+        $role = trim((string)($member["role"] ?? ""));
+        if ($name === "" && $role === "") {
+            continue;
+        }
+        $normalized[] = ["name" => $name, "role" => $role];
+    }
+
+    return count($normalized) > 0 ? $normalized : $defaultTeam;
+}
+
+function save_admin_team_members(array $members): bool {
+    $creds = get_admin_credentials();
+    $normalized = [];
+    foreach ($members as $member) {
+        if (!is_array($member)) {
+            continue;
+        }
+        $name = trim((string)($member["name"] ?? ""));
+        $role = trim((string)($member["role"] ?? ""));
+        if ($name === "" && $role === "") {
+            continue;
+        }
+        $normalized[] = ["name" => $name, "role" => $role];
+    }
+
+    if (count($normalized) === 0) {
+        return false;
+    }
+
+    $creds["team_members"] = $normalized;
     return save_admin_credentials($creds);
 }

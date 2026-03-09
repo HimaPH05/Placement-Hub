@@ -2,8 +2,10 @@
 require_once __DIR__ . "/auth-check.php";
 require_once __DIR__ . "/../admin-credentials.php";
 
-$message = "";
-$messageClass = "";
+$profileMessage = "";
+$profileMessageClass = "";
+$teamMessage = "";
+$teamMessageClass = "";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
   $name = trim($_POST["name"] ?? "");
@@ -13,11 +15,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
   $phone = trim($_POST["phone"] ?? "");
 
   if ($name === "" || $email === "") {
-    $message = "Name and email are required.";
-    $messageClass = "error";
+    $profileMessage = "Name and email are required.";
+    $profileMessageClass = "error";
   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $message = "Enter a valid email address.";
-    $messageClass = "error";
+    $profileMessage = "Enter a valid email address.";
+    $profileMessageClass = "error";
   } else {
     $saved = save_admin_profile([
       "name" => $name,
@@ -28,16 +30,51 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
     ]);
 
     if ($saved) {
-      $message = "Profile updated successfully.";
-      $messageClass = "success";
+      $profileMessage = "Profile updated successfully.";
+      $profileMessageClass = "success";
     } else {
-      $message = "Unable to update profile.";
-      $messageClass = "error";
+      $profileMessage = "Unable to update profile.";
+      $profileMessageClass = "error";
+    }
+  }
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_team"])) {
+  $names = $_POST["team_name"] ?? [];
+  $roles = $_POST["team_role"] ?? [];
+  $members = [];
+
+  if (is_array($names) && is_array($roles)) {
+    $count = max(count($names), count($roles));
+    for ($i = 0; $i < $count; $i++) {
+      $memberName = trim((string)($names[$i] ?? ""));
+      $memberRole = trim((string)($roles[$i] ?? ""));
+      if ($memberName === "" && $memberRole === "") {
+        continue;
+      }
+      $members[] = [
+        "name" => $memberName,
+        "role" => $memberRole
+      ];
+    }
+  }
+
+  if (count($members) === 0) {
+    $teamMessage = "Add at least one team member.";
+    $teamMessageClass = "error";
+  } else {
+    if (save_admin_team_members($members)) {
+      $teamMessage = "Placement team updated successfully.";
+      $teamMessageClass = "success";
+    } else {
+      $teamMessage = "Unable to update placement team.";
+      $teamMessageClass = "error";
     }
   }
 }
 
 $profile = get_admin_profile();
+$teamMembers = get_admin_team_members();
 ?>
 <!DOCTYPE html>
 <html>
@@ -102,8 +139,8 @@ $profile = get_admin_profile();
         <button type="submit" class="primary">Save Profile</button>
         <a href="../admin-password.php?mode=change" class="cancel">Change Password</a>
       </div>
-      <?php if ($message !== ""): ?>
-        <p class="profile-msg <?php echo $messageClass; ?>"><?php echo htmlspecialchars($message); ?></p>
+      <?php if ($profileMessage !== ""): ?>
+        <p class="profile-msg <?php echo $profileMessageClass; ?>"><?php echo htmlspecialchars($profileMessage); ?></p>
       <?php endif; ?>
     </form>
   </div>
@@ -111,25 +148,42 @@ $profile = get_admin_profile();
   <h3 class="section-title">Placement Team Members</h3>
 
   <div class="team-grid">
-    <div class="team-card">
-      <h4>Dr. John Smith</h4>
-      <p>Head Coordinator</p>
-    </div>
+    <?php foreach ($teamMembers as $member): ?>
+      <div class="team-card">
+        <h4><?php echo htmlspecialchars($member["name"] ?? ""); ?></h4>
+        <p><?php echo htmlspecialchars($member["role"] ?? ""); ?></p>
+      </div>
+    <?php endforeach; ?>
+  </div>
 
-    <div class="team-card">
-      <h4>Sarah Johnson</h4>
-      <p>Assistant Coordinator</p>
-    </div>
+  <div class="info-card profile-edit-card">
+    <h3>Edit Placement Team Members</h3>
+    <form method="POST" class="profile-form">
+      <input type="hidden" name="update_team" value="1">
 
-    <div class="team-card">
-      <h4>Emily Davis</h4>
-      <p>Industry Liaison</p>
-    </div>
+      <?php for ($i = 0; $i < 6; $i++): ?>
+        <div class="team-member-group">
+          <label for="team_name_<?php echo $i; ?>">Member <?php echo $i + 1; ?> Name</label>
+          <input
+            id="team_name_<?php echo $i; ?>"
+            name="team_name[]"
+            value="<?php echo htmlspecialchars($teamMembers[$i]["name"] ?? ""); ?>"
+            placeholder="Team member name">
 
-    <div class="team-card">
-      <h4>David Wilson</h4>
-      <p>Student Relations</p>
-    </div>
+          <label for="team_role_<?php echo $i; ?>">Member <?php echo $i + 1; ?> Role</label>
+          <input
+            id="team_role_<?php echo $i; ?>"
+            name="team_role[]"
+            value="<?php echo htmlspecialchars($teamMembers[$i]["role"] ?? ""); ?>"
+            placeholder="Team member role">
+        </div>
+      <?php endfor; ?>
+
+      <button type="submit" class="primary">Save Team Members</button>
+      <?php if ($teamMessage !== ""): ?>
+        <p class="profile-msg <?php echo $teamMessageClass; ?>"><?php echo htmlspecialchars($teamMessage); ?></p>
+      <?php endif; ?>
+    </form>
   </div>
 
 </div>
