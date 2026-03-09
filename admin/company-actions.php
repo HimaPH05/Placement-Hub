@@ -53,6 +53,72 @@ if (!is_array($payload)) {
     $payload = $_POST;
 }
 
+$action = strtolower(trim((string)($payload["action"] ?? "add")));
+
+if ($action === "delete") {
+    $companyId = (int)($payload["id"] ?? 0);
+    if ($companyId <= 0) {
+        http_response_code(400);
+        echo json_encode(["success" => false, "message" => "Invalid company selected"]);
+        exit();
+    }
+
+    $tableExists = function ($name) use ($conn) {
+        $safe = $conn->real_escape_string($name);
+        $check = $conn->query("SHOW TABLES LIKE '{$safe}'");
+        return $check && $check->num_rows > 0;
+    };
+
+    $conn->begin_transaction();
+    try {
+        $cleanupTables = [
+            ["table" => "applications", "column" => "company_id"],
+            ["table" => "jobs", "column" => "company_id"],
+            ["table" => "hr_contacts", "column" => "company_id"],
+            ["table" => "company_profiles", "column" => "company_id"]
+        ];
+
+        foreach ($cleanupTables as $cfg) {
+            if (!$tableExists($cfg["table"])) {
+                continue;
+            }
+            $del = $conn->prepare("DELETE FROM {$cfg['table']} WHERE {$cfg['column']} = ?");
+            if (!$del) {
+                throw new Exception("Failed to prepare cleanup query");
+            }
+            $del->bind_param("i", $companyId);
+            if (!$del->execute()) {
+                throw new Exception("Failed to cleanup company data");
+            }
+        }
+
+        $companyDelete = $conn->prepare("DELETE FROM companies WHERE id = ? LIMIT 1");
+        if (!$companyDelete) {
+            throw new Exception("Failed to prepare delete query");
+        }
+        $companyDelete->bind_param("i", $companyId);
+        if (!$companyDelete->execute()) {
+            throw new Exception("Failed to delete company");
+        }
+
+        if ($companyDelete->affected_rows === 0) {
+            $conn->rollback();
+            http_response_code(404);
+            echo json_encode(["success" => false, "message" => "Company not found"]);
+            exit();
+        }
+
+        $conn->commit();
+        echo json_encode(["success" => true, "message" => "Company deleted completely"]);
+        exit();
+    } catch (Throwable $e) {
+        $conn->rollback();
+        http_response_code(500);
+        echo json_encode(["success" => false, "message" => "Unable to delete company"]);
+        exit();
+    }
+}
+
 $companyName = trim($payload["name"] ?? "");
 $email = trim($payload["email"] ?? "");
 $location = trim($payload["location"] ?? "");

@@ -1,189 +1,163 @@
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, sans-serif;
-}
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-/* BODY BACKGROUND */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Manrope','Segoe UI',Tahoma,sans-serif;
+}
 
 body{
-min-height:100vh;
-background:linear-gradient(120deg,#2563eb,#14b8a6);
-display:flex;
-flex-direction:column;
-align-items:center;
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 10% 0%, #d6e7ff 0%, rgba(214,231,255,0) 45%),
+    radial-gradient(circle at 90% 10%, #d7f5ef 0%, rgba(215,245,239,0) 34%),
+    linear-gradient(160deg,#f2f6ff 0%,#eaf5ff 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
 }
-
-/* HEADER */
 
 .college-header{
-text-align:center;
-padding:30px 20px;
-
-
-
-
+  text-align:center;
+  padding:28px 20px 16px;
+  color:#16335f;
 }
-
-/* LOGO */
 
 .college-logo{
-width:70px;
-margin-bottom:10px;
+  width:72px;
+  margin-bottom:10px;
 }
-
-/* COLLEGE NAME */
 
 .college-name{
-font-size:22px;
-font-weight:600;
-margin-bottom:5px;
+  font-size:24px;
+  font-weight:800;
+  margin-bottom:6px;
 }
 
-/* TEXT */
-
-.college-text{
-font-size:14px;
-color:black;
-}
-
+.college-text,
 .college-text-small{
-font-size:13px;
-color:black;
+  color:#35527e;
+  font-size:14px;
 }
-
-/* LOGIN CONTAINER */
 
 .container{
-flex:1;
-width:100%;
-display:flex;
-justify-content:center;
-align-items:center;
-padding:20px;
+  flex:1;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:22px;
 }
-
-/* LOGIN CARD */
 
 .card{
-background:white;
-width:350px;
-padding:30px;
-border-radius:12px;
-box-shadow:0 10px 25px rgba(0,0,0,0.25);
+  width:420px;
+  max-width:100%;
+  background:#fff;
+  border:1px solid rgba(23,84,194,.12);
+  border-radius:20px;
+  padding:30px;
+  box-shadow:0 18px 38px rgba(17,46,107,.18);
 }
 
-/* TITLES */
-
 .card h2{
-text-align:center;
-margin-bottom:5px;
+  text-align:center;
+  color:#0b3f9d;
+  margin-bottom:2px;
 }
 
 .card h3{
-text-align:center;
-margin-bottom:20px;
-color:#555;
+  text-align:center;
+  color:#5d6f8f;
+  margin-bottom:16px;
 }
-
-/* LABEL */
 
 label{
-display:block;
-margin-top:15px;
-font-weight:600;
+  display:block;
+  margin-top:12px;
+  font-size:14px;
+  font-weight:700;
+  color:#234574;
 }
 
-/* INPUT */
-
-input{
-width:100%;
-padding:10px;
-margin-top:6px;
-border-radius:6px;
-border:1px solid #ccc;
+input,select{
+  width:100%;
+  border:1px solid #ccdaf4;
+  background:#f8fbff;
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:14px;
+  margin-top:6px;
 }
 
-/* SELECT */
-
-select{
-width:100%;
-padding:10px;
-margin-top:15px;
-border-radius:6px;
-border:1px solid #ccc;
+input:focus,select:focus{
+  outline:none;
+  border-color:#7ea7ff;
+  box-shadow:0 0 0 3px rgba(43,123,255,.15);
+  background:#fff;
 }
-
-/* PASSWORD */
 
 .password-wrapper{
-position:relative;
+  position:relative;
 }
 
 .password-wrapper span{
-position:absolute;
-right:10px;
-top:50%;
-transform:translateY(-50%);
-cursor:pointer;
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  cursor:pointer;
 }
 
-/* BUTTON */
-
 button{
-width:100%;
-margin-top:20px;
-padding:12px;
-border:none;
-background:#2563eb;
-color:white;
-font-size:16px;
-border-radius:6px;
-cursor:pointer;
+  width:100%;
+  margin-top:18px;
+  border:none;
+  border-radius:12px;
+  font-weight:700;
+  cursor:pointer;
+  padding:11px 14px;
+  font-size:15px;
+  color:#fff;
+  background:linear-gradient(130deg,#0e4ccf,#2b7bff);
+  box-shadow:0 10px 20px rgba(14,76,207,.24);
+  transition:.22s ease;
 }
 
 button:hover{
-background:#1e4ed8;
+  transform:translateY(-1px);
+  filter:brightness(1.06);
 }
-
-/* ERROR */
 
 .error{
-color:red;
-text-align:center;
-margin-top:10px;
+  color:#b71c1c;
+  text-align:center;
+  margin-top:10px;
+  font-weight:600;
 }
-
-/* SIGNUP */
 
 .signup-section{
-margin-top:15px;
-text-align:center;
-font-size:14px;
+  margin-top:14px;
+  text-align:center;
+  color:#4a5f84;
+  font-size:14px;
 }
 
-.signup-section a{
-color:#2563eb;
-text-decoration:none;
+.signup-section a,
+.change-password-section a{
+  color:#0f4fd0;
+  text-decoration:none;
+  font-weight:700;
 }
 
-.signup-section a:hover{
-text-decoration:underline;
+.signup-section a:hover,
+.change-password-section a:hover{
+  text-decoration:underline;
 }
 
 .change-password-section{
-margin-top:12px;
-text-align:right;
-font-size:14px;
-}
-
-.change-password-section a{
-color:red;
-text-decoration:none;
-}
-
-.change-password-section a:hover{
-color:#b91c1c;
-text-decoration:underline;
+  margin-top:12px;
+  text-align:right;
+  font-size:14px;
+  color:#5d6f8f;
 }

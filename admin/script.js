@@ -22,6 +22,20 @@ function closeModal() {
   modal.style.display = "none";
 }
 
+function showCompanyCredentials(companyName, username, password) {
+  const box = document.getElementById("companyCredMsg");
+  if (!box) return;
+
+  box.innerHTML =
+    "<b>Company added successfully.</b> " +
+    "Share these login credentials with " +
+    escapeHtml(companyName || "the company") +
+    ":<br>" +
+    "<b>Username:</b> " + escapeHtml(username || "-") + "<br>" +
+    "<b>Temporary Password:</b> " + escapeHtml(password || "-");
+  box.style.display = "block";
+}
+
 async function loadAdminCompanies() {
   const list = document.getElementById("companyList");
   if (!list) return;
@@ -62,6 +76,9 @@ function renderAdminCompanies(data = adminCompanies) {
           <p><b>Email:</b> ${escapeHtml(item.email || "N/A")}</p>
           <p><b>Location:</b> ${escapeHtml(item.location || "N/A")}</p>
           <p><b>Industry:</b> ${escapeHtml(item.industry || "N/A")}</p>
+          <div class="actions">
+            <button class="delete" onclick="deleteAdminCompany(${Number(item.id)}, '${escapeHtml(item.name)}')">Remove Company</button>
+          </div>
         </div>
       `;
     })
@@ -108,12 +125,45 @@ async function addCompany() {
         "\nTemporary password: " +
         (creds.password || "-")
     );
+    showCompanyCredentials(payload.name, creds.username, creds.password);
 
     nameEl.value = "";
     emailEl.value = "";
     locationEl.value = "";
     industryEl.value = "";
     closeModal();
+    loadAdminCompanies();
+    loadDashboardStats();
+  } catch (err) {
+    console.error(err);
+    alert("Server not reachable.");
+  }
+}
+
+async function deleteAdminCompany(companyId, companyName) {
+  if (!Number.isInteger(companyId) || companyId <= 0) return;
+
+  const ok = confirm(
+    `Delete "${companyName}" completely?\nThis will remove the company account and related records.`
+  );
+  if (!ok) return;
+
+  try {
+    const res = await fetch("company-actions.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "delete",
+        id: companyId
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      alert(data.message || "Unable to delete company.");
+      return;
+    }
+
     loadAdminCompanies();
     loadDashboardStats();
   } catch (err) {

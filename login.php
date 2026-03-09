@@ -22,8 +22,9 @@ if (isset($_SESSION["role"])) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Placement Hub Login</title>
-<link rel="stylesheet" href="login.css?v=2">
+<link rel="stylesheet" href="login.css?v=3">
 </head>
 
 <body>
@@ -64,6 +65,7 @@ Under Section 2(f) of UGC Act 1956 (Approved by AICTE & Affiliated to APJ Abdul 
 <span id="togglePassword">&#128065;</span>
 </div>
 
+<label for="role">Role</label>
 <select id="role" name="role" required>
 <option value="">Select Role</option>
 <option value="student">Student</option>

@@ -30,6 +30,8 @@ require_once __DIR__ . "/auth-check.php";
     <button class="primary" onclick="openModal()">+ Add Company</button>
   </div>
 
+  <div id="companyCredMsg" class="company-cred-msg" style="display:none;"></div>
+
   <div id="companyList" class="company-grid"></div>
 </div>
 

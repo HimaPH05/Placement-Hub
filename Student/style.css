@@ -1,631 +1,139 @@
-/* =================================
-   GLOBAL
-================================= */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: Arial, Helvetica, sans-serif;
+:root{
+  --bg-1:#f2f6ff;
+  --bg-2:#eaf5ff;
+  --ink:#13233b;
+  --muted:#5e6c84;
+  --primary:#0e4ccf;
+  --primary-2:#2b7bff;
+  --danger:#d6344a;
+  --card:#ffffff;
+  --line:#d7e3ff;
+  --shadow:0 14px 36px rgba(17,46,107,.14);
 }
+
+*{margin:0;padding:0;box-sizing:border-box}
 
 body{
-  background:#f4f6f9;
-}
-
-
-/* =================================
-   NAVBAR
-================================= */
-
-.navbar{
-  background:#0d47a1;
-  color:white;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 40px;
-}
-
-.logo{
-  font-weight:bold;
-}
-
-.links{
-  display:flex;
-  gap:25px;
-}
-
-.links a{
-  color:white;
-  text-decoration:none;
-  opacity:0.85;
-}
-
-.links a:hover,
-.links .active{
-  opacity:1;
-  font-weight:bold;
-}
-
-
-/* =================================
-   CONTAINER
-================================= */
-
-.container{
-  padding:50px 60px;
-}
-
-
-/* =================================
-   HERO
-================================= */
-
-.hero{
-  background:white;
-  text-align:center;
-  padding:70px 20px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  margin-bottom:40px;
-}
-
-.hero h1{
-  font-size:40px;
-  color:#0d47a1;
-  margin-bottom:10px;
-}
-
-.hero p{
-  color:#555;
-  margin-bottom:25px;
-  font-size:16px;
-}
-
-
-/* Buttons */
-
-.hero-buttons{
-  display:flex;
-  justify-content:center;
-  gap:15px;
-}
-
-.btn{
-  background:#0d47a1;
-  color:white;
-  padding:10px 18px;
-  border-radius:6px;
-  text-decoration:none;
-  font-size:14px;
-}
-
-.btn:hover{
-  background:#1565c0;
-}
-
-.secondary{
-  background:#555;
-}
-
-.secondary:hover{
-  background:#333;
-}
-
-
-/* =================================
-   FEATURES
-================================= */
-
-.features{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap:20px;
-}
-
-.feature-card{
-  background:white;
-  padding:25px;
-  border-radius:10px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
-  text-align:center;
-  transition:0.2s;
-}
-
-.feature-card:hover{
-  transform:translateY(-5px);
-}
-
-.feature-card h3{
-  color:#0d47a1;
-  margin-bottom:8px;
-}
-
-.feature-card p{
-  font-size:14px;
-  color:#666;
-}
-/* =================================
-   PAGE HEAD
-================================= */
-
-.page-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
-}
-
-.search{
-  padding:8px 12px;
-  border-radius:6px;
-  border:1px solid #ddd;
-}
-
-
-/* Company Grid */
-.company-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap:22px;
-}
-
-/* Card */
-.company-card{
-  background:white;
-  padding:22px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  transition:0.2s;
-}
-
-.company-card:hover{
-  transform:translateY(-5px);
-}
-
-.logo-box{
-  font-size:32px;
-  margin-bottom:10px;
-}
-
-.company-card h2{
-  color:#0d47a1;
-  font-size:18px;
-  margin-bottom:6px;
-}
-
-.desc{
-  font-size:14px;
-  color:#555;
-  margin-bottom:10px;
-}
-
-.meta{
-  font-size:13px;
-  display:grid;
-  gap:4px;
-  color:#666;
-  margin-bottom:12px;
-}
-/* ================= Placement Officer (CENTERED) ================= */
-
-.officer-section{
-  margin-top:50px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;   /* 🔥 THIS centers everything */
-}
-
-/* Center the heading */
-.section-title{
-  color:#0d47a1;
-  margin-bottom:20px;
-  text-align:center;
-}
-
-/* Center card with controlled width */
-.officer-card{
-  background:white;
-  padding:25px 30px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  display:flex;
-  align-items:center;
-  gap:25px;
-
-  width:100%;
-  max-width:700px;      /* 🔥 keeps it nicely centered */
-}
-
-/* Avatar */
-.officer-avatar{
-  width:90px;
-  height:90px;
-  border-radius:50%;
-}
-
-/* Text */
-.officer-info h3{
-  margin-bottom:4px;
-  color:#0d47a1;
-}
-
-.role{
-  font-size:14px;
-  color:#666;
-  margin-bottom:10px;
-}
-
-.officer-info p{
-  font-size:14px;
-  margin-bottom:4px;
-  color:#444;
-}
-/* ================= WISHLIST ================= */
-
-.empty-text{
-  text-align:center;
-  color:#666;
-  margin-top:40px;
-}
-
-/* Reuse company cards */
-.remove-btn{
-  background:#c62828;
-  color:white;
-  border:none;
-  padding:6px 10px;
-  border-radius:5px;
-  font-size:12px;
-  cursor:pointer;
-  margin-top:10px;
-}
-
-.remove-btn:hover{
-  opacity:0.9;
-}
-/* ================= FEEDBACK PAGE ================= */
-
-.feedback-wrapper{
-  max-width:600px;
-  margin:60px auto;
-  background:white;
-  padding:30px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  text-align:center;
-}
-
-.feedback-wrapper h1{
-  color:#0d47a1;
-  margin-bottom:6px;
-}
-
-.sub-text{
-  font-size:14px;
-  color:#666;
-  margin-bottom:20px;
-}
-
-.feedback-wrapper textarea{
-  width:100%;
-  padding:12px;
-  border-radius:8px;
-  border:1px solid #ddd;
-  resize:none;
-  margin-bottom:15px;
-  font-size:14px;
-}
-
-.feedback-wrapper textarea:focus{
-  outline:none;
-  border-color:#0d47a1;
-}
-
-.success-msg{
-  margin-top:12px;
-  color:#2e7d32;
-  font-size:14px;
-}
-/* ================= RESUMES PAGE ================= */
-
-.resume-grid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap:20px;
-}
-
-.resume-card{
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.08);
-  transition:0.2s;
-}
-
-.resume-card:hover{
-  transform:translateY(-4px);
-}
-
-.resume-card h3{
-  color:#0d47a1;
-  margin-bottom:4px;
-}
-
-.resume-card p{
-  font-size:14px;
-  color:#555;
-  margin-bottom:8px;
-}
-
-.badge{
-  display:inline-block;
-  background:#e3f2fd;
-  color:#0d47a1;
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:12px;
-  margin-right:5px;
-  margin-top:4px;
-}
-/* ================= SUBMIT RESUME ================= */
-
-.form-wrapper{
-  max-width:500px;
-  margin:60px auto;
-  background:white;
-  padding:30px;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  text-align:center;
-}
-
-.form-wrapper h1{
-  color:#0d47a1;
-  margin-bottom:6px;
-}
-
-.form-card{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  margin-top:20px;
-}
-
-.form-card input,
-.form-card select,
-.form-card textarea{
-  padding:10px 12px;
-  border-radius:8px;
-  border:1px solid #ddd;
-  font-size:14px;
-}
-
-.form-card textarea{
-  resize:none;
-  min-height:80px;
-}
-
-.form-card input:focus,
-.form-card select:focus,
-.form-card textarea:focus{
-  outline:none;
-  border-color:#0d47a1;
-}
-/* ================= FILE UPLOAD ================= */
-
-.file-upload{
-  text-align:left;
-}
-
-.file-upload label{
-  display:block;
-  font-size:14px;
-  color:#555;
-  margin-bottom:6px;
-}
-
-.file-upload input[type="file"]{
-  width:100%;
-  padding:8px;
-  border:1px solid #ddd;
-  border-radius:8px;
-  background:#fafafa;
-  font-size:14px;
-  cursor:pointer;
-}
-/* ================= VIEW RESUME BUTTON ================= */
-
-.view-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-
-  background:#0d47a1;      /* Placement Hub blue */
-  color:white;
-  border:none;
-  padding:7px 12px;
-  border-radius:6px;
-  font-size:13px;
-  text-decoration:none;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.view-btn:hover{
-  background:#1565c0;
-  transform:translateY(-1px);
-}
-
-/* =================================
-   PROFILE ICON (TOP RIGHT)
-================================= */
-
-
-
-/* Small circular profile image */
-.profile-icon{
-  width:35px;
-  height:35px;
-  border-radius:50%;
-  cursor:pointer;
-  border:2px solid white;
-  object-fit:cover;
-  transition:0.2s;
-}
-
-.profile-icon:hover{
-  transform:scale(1.05);
-}
-
-/* Dropdown box */
-.profile-dropdown{
-  display:none;
-  position:absolute;
-  right:0;
-  top:55px;
-  background:white;
-  padding:15px;
-  width:220px;
-  border-radius:10px;
-  box-shadow:0 6px 18px rgba(0,0,0,0.15);
-  font-size:14px;
-  z-index:1000;
-}
-
-.profile-dropdown p{
-  margin:6px 0;
-  color:#444;
-}
-
-.profile-dropdown hr{
-  margin:10px 0;
-  border:none;
-  border-top:1px solid #eee;
-}
-
-.profile-dropdown a{
-  color:#c62828;
-  text-decoration:none;
-  font-weight:500;
-}
-
-.profile-dropdown a:hover{
-  opacity:0.8;
-}
-/* Fix profile size strictly */
-
-
-.profile-container{
-  position:relative;
-  display:flex;
-  align-items:center;
-}
-.action-row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-.apply-btn-student:disabled{
-  background:#9e9e9e;
-  cursor:not-allowed;
-}
-
-.apply-btn-student:disabled:hover{
-  background:#9e9e9e;
-}
-
-/* ================= MY APPLICATIONS ================= */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
-  gap:16px;
-  margin-bottom:22px;
-}
-
-.stat-card{
-  background:white;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  padding:16px 18px;
-}
-
-.stat-card h3{
-  color:#0d47a1;
-  font-size:28px;
-  margin-bottom:4px;
-}
-
-.stat-card p{
-  color:#666;
-  font-size:14px;
-}
-
-.pending-card{border-left:5px solid #f9a825;}
-.shortlisted-card{border-left:5px solid #2e7d32;}
-.rejected-card{border-left:5px solid #c62828;}
-
-.table-wrap{
-  background:white;
-  border-radius:12px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.08);
-  overflow-x:auto;
-}
-
-.app-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-.app-table thead{
-  background:#0d47a1;
-}
-
-.app-table th{
-  color:white;
-  text-align:left;
-  padding:12px 14px;
-  font-size:14px;
-}
-
-.app-table td{
-  padding:12px 14px;
-  border-bottom:1px solid #eee;
-  font-size:14px;
-  color:#333;
-}
-
-.app-table tbody tr:hover{
-  background:#f5f7fa;
-}
-
-.status-badge{
-  display:inline-block;
-  padding:5px 10px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:700;
-}
-
-.status-badge.pending{
-  background:#fff3cd;
-  color:#8a6d1d;
-}
-
-.status-badge.shortlisted{
-  background:#d4edda;
-  color:#155724;
-}
-
-.status-badge.rejected{
-  background:#f8d7da;
-  color:#721c24;
-}
-
-.empty-cell{
-  text-align:center;
-  color:#666;
+  font-family:'Manrope','Segoe UI',Tahoma,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 12% 0%, #d6e7ff 0%, rgba(214,231,255,0) 45%),
+    radial-gradient(circle at 95% 15%, #d7f5ef 0%, rgba(215,245,239,0) 32%),
+    linear-gradient(160deg,var(--bg-1) 0%,var(--bg-2) 100%);
+  min-height:100vh;
+}
+
+.topbar{background:linear-gradient(90deg,#092d87 0%,#0b4fb8 60%,#0f70ce 100%);color:#f4f8ff;text-align:right;padding:14px 30px;font-size:14px;font-weight:600;letter-spacing:.3px}
+.navbar{display:flex;gap:14px;padding:14px 28px;background:rgba(255,255,255,.84);backdrop-filter:blur(8px);border-bottom:1px solid rgba(13,76,207,.12);align-items:center}
+.logo{font-weight:800;color:#10305f}
+.links{display:flex;gap:10px;flex-wrap:wrap}
+.links a{text-decoration:none;color:#1a3357;font-weight:700;padding:8px 14px;border-radius:999px;transition:.25s ease}
+.links a:hover{color:var(--primary);background:#edf3ff}
+.links .active{color:#fff;background:linear-gradient(120deg,var(--primary),var(--primary-2));box-shadow:0 8px 18px rgba(14,76,207,.26)}
+
+.container{max-width:1120px;margin:0 auto;padding:34px 18px 46px}
+.hero,.feature-card,.company-card,.feedback-wrapper,.resume-card,.form-wrapper,.stat-card,.table-wrap{background:var(--card);border:1px solid rgba(23,84,194,.12);border-radius:20px;box-shadow:var(--shadow)}
+.hero{text-align:center;padding:56px 20px;margin-bottom:26px}
+.hero h1{color:#093a94;font-size:42px;line-height:1.08;margin-bottom:10px}
+.hero p{color:var(--muted);font-size:18px;margin-bottom:18px}
+.hero-buttons{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+
+.btn,.view-btn,.remove-btn{border:none;border-radius:12px;font-weight:700;cursor:pointer;padding:10px 15px;font-size:14px;transition:.22s ease;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn,.view-btn{color:#fff;background:linear-gradient(130deg,var(--primary),var(--primary-2));box-shadow:0 10px 20px rgba(14,76,207,.24)}
+.btn:hover,.view-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
+.secondary{background:linear-gradient(130deg,#6f7f98,#566781)}
+
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.feature-card{padding:25px;text-align:center}
+.feature-card h3{color:#0a3f9f;margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--muted)}
+
+.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px}
+.page-head h1{color:#0a3f9f;font-size:40px}
+.search{border:1px solid #ccdaf4;background:#f8fbff;border-radius:10px;padding:10px 12px;font-size:14px;min-width:260px}
+.search:focus{outline:none;border-color:#7ea7ff;box-shadow:0 0 0 3px rgba(43,123,255,.15);background:#fff}
+
+.company-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.company-card{padding:22px}
+.company-card h2{color:#0d47a1;font-size:24px;margin-bottom:8px}
+.desc{font-size:14px;color:var(--muted);margin-bottom:10px}
+.meta{font-size:13px;display:grid;gap:4px;color:#35527e;margin-bottom:12px}
+.action-row{display:flex;gap:10px;flex-wrap:wrap}
+.apply-btn-student:disabled,.apply-btn-student:disabled:hover{background:#9e9e9e;box-shadow:none;cursor:not-allowed;transform:none}
+
+.officer-section{margin-top:26px;display:flex;flex-direction:column;align-items:center}
+.section-title{color:#0a3f9f;margin-bottom:16px;text-align:center;font-size:34px}
+.officer-card{width:100%;max-width:700px;padding:24px;display:flex;align-items:center;gap:22px}
+.officer-avatar{width:96px;height:96px;border-radius:50%;box-shadow:0 8px 16px rgba(19,52,119,.18)}
+.officer-info h3{margin-bottom:4px;color:#0d47a1}
+.role{font-size:14px;color:#566781;margin-bottom:10px;font-weight:700}
+.officer-info p{font-size:14px;margin-bottom:4px;color:#35527e}
+
+.empty-text{text-align:center;color:#567094;margin-top:30px;background:#f7fbff;border:1px dashed #bfd6ff;border-radius:12px;padding:14px}
+.remove-btn{background:#d6344a;color:#fff;box-shadow:none}
+.feedback-wrapper,.form-wrapper{max-width:640px;margin:0 auto;padding:30px;text-align:center}
+.feedback-wrapper h1,.form-wrapper h1{color:#0a3f9f;margin-bottom:6px}
+.sub-text{font-size:14px;color:#5d6f8f;margin-bottom:16px}
+
+.feedback-wrapper textarea,.form-card input,.form-card select,.form-card textarea{width:100%;border:1px solid #ccdaf4;background:#f8fbff;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit}
+.feedback-wrapper textarea{resize:none;margin-bottom:15px}
+.form-card{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.form-group{display:flex;flex-direction:column;gap:6px;text-align:left}
+.form-group label{font-size:14px;color:#35527e;font-weight:700}
+.form-card textarea{resize:none;min-height:90px}
+.feedback-wrapper textarea:focus,.form-card input:focus,.form-card select:focus,.form-card textarea:focus{outline:none;border-color:#7ea7ff;box-shadow:0 0 0 3px rgba(43,123,255,.15);background:#fff}
+.success-msg{margin-top:12px;color:#2e7d32;font-size:14px}
+.error{margin:0 0 10px;background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2;border-radius:10px;padding:10px;font-size:14px}
+
+.resume-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.resume-card{padding:20px}
+.resume-card h3{color:#0d47a1;margin-bottom:4px}
+.resume-card p{font-size:14px;color:#35527e;margin-bottom:8px}
+.badge{display:inline-block;background:#e8f0ff;color:#0d47a1;padding:4px 8px;border-radius:999px;font-size:12px;margin-right:5px;margin-top:4px;border:1px solid #cfe0ff}
+
+.file-upload{text-align:left}
+.file-upload label{display:block;font-size:14px;color:#35527e;margin-bottom:6px;font-weight:700}
+.file-upload input[type="file"]{width:100%;padding:8px;border:1px solid #ccdaf4;border-radius:10px;background:#f8fbff;font-size:14px;cursor:pointer}
+
+.profile-container{position:relative;display:flex;align-items:center;margin-left:auto}
+.profile-icon{width:35px;height:35px;border-radius:50%;cursor:pointer;border:2px solid #fff;object-fit:cover;transition:.2s}
+.profile-icon:hover{transform:scale(1.05)}
+.profile-dropdown{display:none;position:absolute;right:0;top:52px;background:#fff;padding:14px;width:230px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.15);font-size:14px;z-index:1000;border:1px solid #d4e3ff}
+.profile-dropdown p{margin:6px 0;color:#35527e}
+.profile-dropdown hr{margin:10px 0;border:none;border-top:1px solid #e6ecfb}
+.profile-dropdown a{color:#0d47a1;text-decoration:none;font-weight:700}
+.profile-dropdown a:hover{opacity:.85}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
+.stat-card{padding:18px;text-align:center}
+.stat-card h3{color:#0b3f9d;font-size:34px}
+.stat-card p{color:#5a6f92;font-weight:700}
+.pending-card{border-left:6px solid #f2b631}
+.shortlisted-card{border-left:6px solid #31a465}
+.rejected-card{border-left:6px solid #d6344a}
+
+.table-wrap{padding:14px;overflow-x:auto}
+.app-table{width:100%;border-collapse:collapse;min-width:760px}
+.app-table thead{background:#0d47a1;color:#fff}
+.app-table th,.app-table td{padding:12px 14px;text-align:left;vertical-align:top}
+.app-table tbody tr{border-bottom:1px solid #e4ecfb}
+.app-table tbody tr:hover{background:#f8fbff}
+.empty-cell{text-align:center;color:#5e6c84}
+.status-badge{display:inline-block;padding:6px 12px;border-radius:999px;color:#fff;font-size:12px;font-weight:700}
+.status-badge.pending{background:#f2b631}
+.status-badge.shortlisted{background:#31a465}
+.status-badge.rejected{background:#d6344a}
+
+@media (max-width:700px){
+  .topbar{text-align:center;padding:12px 14px}
+  .navbar{padding:10px 12px}
+  .container{padding:18px 12px 28px}
+  .page-head{flex-direction:column;align-items:flex-start}
+  .page-head h1{font-size:32px}
+  .search{min-width:100%}
+  .hero h1{font-size:34px}
+  .hero-buttons{justify-content:flex-start}
+  .officer-card{flex-direction:column;text-align:center}
 }
