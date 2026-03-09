@@ -162,33 +162,39 @@ $teamMembers = get_admin_team_members();
 
   <div class="info-card profile-edit-card">
     <h3>Edit Placement Team Members</h3>
-    <form method="POST" class="profile-form">
+    <form method="POST" class="profile-form" id="teamForm">
       <input type="hidden" name="update_team" value="1">
 
-      <?php for ($i = 0; $i < 6; $i++): ?>
-        <div class="team-member-group">
-          <label for="team_name_<?php echo $i; ?>">Member <?php echo $i + 1; ?> Name</label>
-          <input
-            id="team_name_<?php echo $i; ?>"
-            name="team_name[]"
-            value="<?php echo htmlspecialchars($teamMembers[$i]["name"] ?? ""); ?>"
-            placeholder="Team member name">
+      <div id="teamMembersContainer">
+        <?php foreach ($teamMembers as $index => $member): ?>
+          <div class="team-member-group" data-team-member>
+            <div class="team-member-head">
+              <span class="team-member-title">Member <?php echo $index + 1; ?></span>
+              <button type="button" class="remove-member-btn" data-remove-member>Remove</button>
+            </div>
 
-          <label for="team_role_<?php echo $i; ?>">Member <?php echo $i + 1; ?> Role</label>
-          <input
-            id="team_role_<?php echo $i; ?>"
-            name="team_role[]"
-            value="<?php echo htmlspecialchars($teamMembers[$i]["role"] ?? ""); ?>"
-            placeholder="Team member role">
+            <label>Member Name</label>
+            <input
+              name="team_name[]"
+              value="<?php echo htmlspecialchars($member["name"] ?? ""); ?>"
+              placeholder="Team member name">
 
-          <label for="team_mobile_<?php echo $i; ?>">Member <?php echo $i + 1; ?> Mobile Number</label>
-          <input
-            id="team_mobile_<?php echo $i; ?>"
-            name="team_mobile[]"
-            value="<?php echo htmlspecialchars($teamMembers[$i]["mobile"] ?? ""); ?>"
-            placeholder="+91 9876543210">
-        </div>
-      <?php endfor; ?>
+            <label>Member Role</label>
+            <input
+              name="team_role[]"
+              value="<?php echo htmlspecialchars($member["role"] ?? ""); ?>"
+              placeholder="Team member role">
+
+            <label>Member Mobile Number</label>
+            <input
+              name="team_mobile[]"
+              value="<?php echo htmlspecialchars($member["mobile"] ?? ""); ?>"
+              placeholder="+91 9876543210">
+          </div>
+        <?php endforeach; ?>
+      </div>
+
+      <button type="button" class="cancel add-member-btn" id="addTeamMemberBtn">Add Member</button>
 
       <button type="submit" class="primary">Save Team Members</button>
       <?php if ($teamMessage !== ""): ?>

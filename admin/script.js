@@ -373,10 +373,71 @@ async function savePlacements() {
   }
 }
 
+function setupTeamMemberEditor() {
+  const form = document.getElementById("teamForm");
+  const container = document.getElementById("teamMembersContainer");
+  const addBtn = document.getElementById("addTeamMemberBtn");
+  if (!form || !container || !addBtn) return;
+
+  function updateMemberTitles() {
+    const members = container.querySelectorAll("[data-team-member]");
+    members.forEach((member, index) => {
+      const title = member.querySelector(".team-member-title");
+      if (title) {
+        title.textContent = `Member ${index + 1}`;
+      }
+    });
+  }
+
+  function createMemberRow() {
+    const wrapper = document.createElement("div");
+    wrapper.className = "team-member-group";
+    wrapper.setAttribute("data-team-member", "1");
+    wrapper.innerHTML = `
+      <div class="team-member-head">
+        <span class="team-member-title"></span>
+        <button type="button" class="remove-member-btn" data-remove-member>Remove</button>
+      </div>
+
+      <label>Member Name</label>
+      <input name="team_name[]" placeholder="Team member name">
+
+      <label>Member Role</label>
+      <input name="team_role[]" placeholder="Team member role">
+
+      <label>Member Mobile Number</label>
+      <input name="team_mobile[]" placeholder="+91 9876543210">
+    `;
+    return wrapper;
+  }
+
+  addBtn.addEventListener("click", () => {
+    container.appendChild(createMemberRow());
+    updateMemberTitles();
+  });
+
+  container.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    if (!target.hasAttribute("data-remove-member")) return;
+
+    const row = target.closest("[data-team-member]");
+    if (!row) return;
+    row.remove();
+    updateMemberTitles();
+  });
+
+  if (!container.querySelector("[data-team-member]")) {
+    container.appendChild(createMemberRow());
+  }
+  updateMemberTitles();
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboardStats();
   loadAdminCompanies();
   loadAdminResumes();
+  setupTeamMemberEditor();
 
   const savePlacementBtn = document.getElementById("savePlacementBtn");
   if (savePlacementBtn) {

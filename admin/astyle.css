@@ -119,6 +119,11 @@ body{
 .profile-msg.success{color:#2e7d32}
 .profile-msg.error{color:#c62828}
 .team-member-group{border:1px solid #d7e3ff;border-radius:12px;padding:10px 12px;margin:4px 0;background:#f8fbff}
+.team-member-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.team-member-title{font-size:13px;font-weight:800;color:#35527e}
+.remove-member-btn{border:none;background:#ffe9ee;color:#b4233f;padding:6px 10px;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px}
+.remove-member-btn:hover{filter:brightness(.97)}
+.add-member-btn{width:fit-content;margin-top:6px}
 
 .section-title{margin-bottom:15px;color:#0a3f9f}
 .feedback-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
