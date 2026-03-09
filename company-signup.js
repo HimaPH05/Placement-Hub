@@ -38,7 +38,7 @@ if (form) {
 
       if (result.message === "Company account created successfully") {
         alert("Account created successfully!");
-        window.location.href = "login.html";
+        window.location.href = "login.php";
       } else if (error) {
         error.textContent = result.message || "Signup failed";
       }

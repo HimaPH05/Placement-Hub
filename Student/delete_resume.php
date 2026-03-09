@@ -18,6 +18,7 @@ if ($conn->connect_error) {
 $data = json_decode(file_get_contents("php://input"), true);
 $resume_id = (int)($data["resume_id"] ?? 0);
 $student_id = (int)$_SESSION["user_id"];
+$username = trim($_SESSION["username"] ?? "");
 
 if ($resume_id <= 0) {
     http_response_code(400);
@@ -25,8 +26,17 @@ if ($resume_id <= 0) {
     exit;
 }
 
-$del = $conn->prepare("DELETE FROM student_resumes WHERE id=? AND student_id=?");
-$del->bind_param("ii", $resume_id, $student_id);
+$del = $conn->prepare("
+    DELETE sr
+    FROM student_resumes sr
+    LEFT JOIN students s ON s.id = sr.student_id
+    WHERE sr.id=?
+      AND (
+            sr.student_id=?
+         OR (s.username IS NOT NULL AND s.username=?)
+      )
+");
+$del->bind_param("iis", $resume_id, $student_id, $username);
 
 if ($del->execute() && $del->affected_rows > 0) {
     echo json_encode(["success" => true, "message" => "Resume removed successfully"]);

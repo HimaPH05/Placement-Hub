@@ -4,7 +4,7 @@ include("../db.php"); // correct path
 include_once("../database_setup.php"); // ensure required tables (including jobs) exist
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
-    header("Location: ../login.html");
+    header("Location: ../login.php");
     exit();
 }
 

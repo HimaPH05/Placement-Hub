@@ -8,7 +8,7 @@ header("Pragma: no-cache");
 header("Expires: Thu, 01 Jan 1970 00:00:00 GMT");
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
-    header("Location: ../login.html");
+    header("Location: ../login.php");
     exit();
 }
 

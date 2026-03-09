@@ -10,6 +10,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const changePasswordLink = document.getElementById("changePasswordLink");
     const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
+    function redirectIfAdminAlreadyLoggedIn() {
+        fetch("admin/session-check.php", {
+            method: "GET",
+            credentials: "include",
+            cache: "no-store"
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.authenticated === true) {
+                window.location.replace("admin/index.php");
+            }
+        })
+        .catch(() => {});
+    }
+
     function updatePasswordOptions() {
         const rolePages = {
             student: "student-password.php",
@@ -48,6 +63,10 @@ document.addEventListener("DOMContentLoaded", function () {
     forgotPasswordLink.addEventListener("click", requireRoleForPasswordLink);
 
     updatePasswordOptions();
+    redirectIfAdminAlreadyLoggedIn();
+    window.addEventListener("pageshow", function () {
+        redirectIfAdminAlreadyLoggedIn();
+    });
 
     /* Show / Hide password */
     togglePassword.addEventListener("click", function () {
@@ -87,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(text => {
                 const result = JSON.parse(text);
                 if (result.message === "Login successful") {
-                    window.location.href = "admin/index.html";
+                    window.location.replace("admin/index.php");
                 } else {
                     message.textContent = result.message;
                     message.style.color = "red";
@@ -123,9 +142,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (result.message === "Login successful") {
                 if (result.role === "student") {
-                    window.location.href = "Student/home.php";
+                    window.location.replace("Student/home.php");
                 } else if (result.role === "company") {
-                    window.location.href = "company/home.php";
+                    window.location.replace("company/home.php");
                 }
             } else {
                 message.textContent = result.message;
@@ -140,3 +159,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
 });
+
