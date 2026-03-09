@@ -207,11 +207,26 @@ function renderAdminResumes(data = adminResumes) {
   list.innerHTML = data
     .map((r) => {
       const isVerified = r.is_verified === true;
-      const statusClass = isVerified ? "verified" : "pending";
-      const statusText = isVerified ? "Verified" : "Pending Verification";
-      const verifyAction = isVerified
-        ? ""
-        : `<button type="button" class="verify" onclick="toggleResumeVerification(${Number(r.id)})">Verify</button>`;
+      const isRejected = r.is_rejected === true;
+
+      let statusClass = "pending";
+      let statusText = "Pending Verification";
+      if (isRejected) {
+        statusClass = "rejected";
+        statusText = "Rejected";
+      } else if (isVerified) {
+        statusClass = "verified";
+        statusText = "Verified";
+      }
+
+      const verifyAction =
+        !isVerified && !isRejected
+          ? `<button type="button" class="verify" onclick="reviewResume(${Number(r.id)}, 'verify')">Verify</button>`
+          : "";
+      const rejectAction =
+        !isRejected
+          ? `<button type="button" class="delete" onclick="reviewResume(${Number(r.id)}, 'reject')">Reject</button>`
+          : "";
 
       return `
         <div class="resume-card">
@@ -224,6 +239,7 @@ function renderAdminResumes(data = adminResumes) {
             <a href="${escapeHtml(r.file_url)}" target="_blank" class="primary">View</a>
             <a href="${escapeHtml(r.download_url)}" class="primary">Download</a>
             ${verifyAction}
+            ${rejectAction}
           </div>
         </div>
       `;
@@ -231,13 +247,14 @@ function renderAdminResumes(data = adminResumes) {
     .join("");
 }
 
-async function toggleResumeVerification(resumeId) {
+async function reviewResume(resumeId, action) {
   try {
     const res = await fetch("resume-actions.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        resume_id: Number(resumeId)
+        resume_id: Number(resumeId),
+        action
       })
     });
 
@@ -251,7 +268,11 @@ async function toggleResumeVerification(resumeId) {
       if (Number(resume.id) !== Number(resumeId)) {
         return resume;
       }
-      return { ...resume, is_verified: data.is_verified === true };
+      return {
+        ...resume,
+        is_verified: data.is_verified === true,
+        is_rejected: data.is_rejected === true
+      };
     });
 
     searchResume();

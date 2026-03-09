@@ -100,4 +100,14 @@ $resumeVerifiedAtCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'ver
 if ($resumeVerifiedAtCol && $resumeVerifiedAtCol->num_rows === 0) {
     $conn->query("ALTER TABLE student_resumes ADD COLUMN verified_at DATETIME NULL AFTER is_verified");
 }
+
+$resumeRejectedCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_rejected'");
+if ($resumeRejectedCol && $resumeRejectedCol->num_rows === 0) {
+    $conn->query("ALTER TABLE student_resumes ADD COLUMN is_rejected TINYINT(1) NOT NULL DEFAULT 0 AFTER is_verified");
+}
+
+$resumeRejectedAtCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'rejected_at'");
+if ($resumeRejectedAtCol && $resumeRejectedAtCol->num_rows === 0) {
+    $conn->query("ALTER TABLE student_resumes ADD COLUMN rejected_at DATETIME NULL AFTER verified_at");
+}
 ?>

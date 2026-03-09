@@ -23,6 +23,16 @@ if ($verifiedAtCol && $verifiedAtCol->num_rows === 0) {
     $conn->query("ALTER TABLE student_resumes ADD COLUMN verified_at DATETIME NULL AFTER is_verified");
 }
 
+$isRejectedCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_rejected'");
+if ($isRejectedCol && $isRejectedCol->num_rows === 0) {
+    $conn->query("ALTER TABLE student_resumes ADD COLUMN is_rejected TINYINT(1) NOT NULL DEFAULT 0 AFTER is_verified");
+}
+
+$rejectedAtCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'rejected_at'");
+if ($rejectedAtCol && $rejectedAtCol->num_rows === 0) {
+    $conn->query("ALTER TABLE student_resumes ADD COLUMN rejected_at DATETIME NULL AFTER verified_at");
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
     $sql = "
         SELECT
@@ -37,6 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             sr.created_at,
             COALESCE(sr.is_verified, 0) AS is_verified,
             sr.verified_at,
+            COALESCE(sr.is_rejected, 0) AS is_rejected,
+            sr.rejected_at,
             COALESCE(s.username, '') AS student_username
         FROM student_resumes sr
         LEFT JOIN students s ON s.id = sr.student_id
@@ -66,6 +78,8 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             "created_at" => $row["created_at"],
             "is_verified" => ((int)$row["is_verified"]) === 1,
             "verified_at" => $row["verified_at"],
+            "is_rejected" => ((int)$row["is_rejected"]) === 1,
+            "rejected_at" => $row["rejected_at"],
             "file_url" => "../view_resume.php?id=" . (int)$row["id"],
             "download_url" => "../view_resume.php?id=" . (int)$row["id"] . "&dl=1"
         ];
@@ -87,7 +101,21 @@ if (!is_array($payload)) {
 }
 
 $resumeId = (int)($payload["resume_id"] ?? 0);
-$isVerified = 1;
+$action = strtolower(trim((string)($payload["action"] ?? "verify")));
+$isVerified = 0;
+$isRejected = 0;
+
+if ($action === "verify") {
+    $isVerified = 1;
+    $isRejected = 0;
+} elseif ($action === "reject") {
+    $isVerified = 0;
+    $isRejected = 1;
+} else {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Invalid action"]);
+    exit();
+}
 
 if ($resumeId <= 0) {
     http_response_code(400);
@@ -97,7 +125,11 @@ if ($resumeId <= 0) {
 
 $update = $conn->prepare("
     UPDATE student_resumes
-    SET is_verified = ?, verified_at = IF(? = 1, NOW(), NULL)
+    SET
+        is_verified = ?,
+        verified_at = IF(? = 1, NOW(), NULL),
+        is_rejected = ?,
+        rejected_at = IF(? = 1, NOW(), NULL)
     WHERE id = ? AND visibility = 'public'
 ");
 
@@ -107,7 +139,7 @@ if (!$update) {
     exit();
 }
 
-$update->bind_param("iii", $isVerified, $isVerified, $resumeId);
+$update->bind_param("iiiii", $isVerified, $isVerified, $isRejected, $isRejected, $resumeId);
 $update->execute();
 
 if ($update->affected_rows === 0) {
@@ -125,9 +157,10 @@ if ($update->affected_rows === 0) {
 
 echo json_encode([
     "success" => true,
-    "message" => "Resume verified",
+    "message" => $action === "verify" ? "Resume verified" : "Resume rejected",
     "resume_id" => $resumeId,
-    "is_verified" => true
+    "is_verified" => ($isVerified === 1),
+    "is_rejected" => ($isRejected === 1)
 ]);
 exit();
 ?>
