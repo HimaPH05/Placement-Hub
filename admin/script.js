@@ -130,9 +130,18 @@ function searchResume() {
   if (!input || !list) return;
 
   const term = input.value.toLowerCase().trim();
-  const filtered = adminResumes.filter((r) =>
-    (r.name || "").toLowerCase().includes(term)
-  );
+  const filtered = adminResumes.filter((r) => {
+    const name = (r.name || "").toLowerCase();
+    const username = (r.student_username || "").toLowerCase();
+    const branch = (r.branch || "").toLowerCase();
+    const skills = (r.skills || "").toLowerCase();
+    return (
+      name.includes(term) ||
+      username.includes(term) ||
+      branch.includes(term) ||
+      skills.includes(term)
+    );
+  });
   renderAdminResumes(filtered);
 }
 
@@ -147,15 +156,62 @@ function renderAdminResumes(data = adminResumes) {
 
   list.innerHTML = data
     .map((r) => {
+      const isVerified = r.is_verified === true;
+      const statusClass = isVerified ? "verified" : "pending";
+      const statusText = isVerified ? "Verified" : "Pending Verification";
+      const verifyButtonClass = isVerified ? "mail" : "verify";
+      const verifyButtonText = isVerified ? "Unverify" : "Verify";
+      const verifyTarget = isVerified ? 0 : 1;
+
       return `
         <div class="resume-card">
           <h3>${escapeHtml(r.name)}</h3>
+          <p><b>Username:</b> ${escapeHtml(r.student_username || "N/A")}</p>
           <p>${escapeHtml(r.branch || "N/A")} | GPA ${escapeHtml(r.gpa || "N/A")}</p>
           <p>${escapeHtml(r.file_name || "Resume")}</p>
+          <span class="status ${statusClass}">${statusText}</span>
+          <div class="resume-actions">
+            <a href="${escapeHtml(r.file_url)}" target="_blank" class="primary">View</a>
+            <a href="${escapeHtml(r.download_url)}" class="primary">Download</a>
+            <button type="button" class="${verifyButtonClass}" onclick="toggleResumeVerification(${Number(
+        r.id
+      )}, ${verifyTarget})">${verifyButtonText}</button>
+          </div>
         </div>
       `;
     })
     .join("");
+}
+
+async function toggleResumeVerification(resumeId, isVerified) {
+  try {
+    const res = await fetch("resume-actions.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        resume_id: Number(resumeId),
+        is_verified: Number(isVerified)
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      alert(data.message || "Unable to update verification status.");
+      return;
+    }
+
+    adminResumes = adminResumes.map((resume) => {
+      if (Number(resume.id) !== Number(resumeId)) {
+        return resume;
+      }
+      return { ...resume, is_verified: data.is_verified === true };
+    });
+
+    searchResume();
+  } catch (err) {
+    console.error(err);
+    alert("Server not reachable.");
+  }
 }
 
 async function loadAdminResumes() {
@@ -165,8 +221,13 @@ async function loadAdminResumes() {
   list.innerHTML = "<p>Loading resumes...</p>";
 
   try {
-    const res = await fetch("../Student/get_resumes.php", { cache: "no-store" });
+    const res = await fetch("resume-actions.php", { cache: "no-store" });
     const data = await res.json();
+    if (!res.ok || !data.success) {
+      list.innerHTML = "<p>Unable to load resumes.</p>";
+      return;
+    }
+
     adminResumes = Array.isArray(data.resumes) ? data.resumes : [];
     renderAdminResumes();
   } catch (err) {

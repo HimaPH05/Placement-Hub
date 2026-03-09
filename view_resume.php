@@ -1,7 +1,7 @@
 ﻿<?php
 session_start();
 
-if (!isset($_SESSION["role"]) || !isset($_SESSION["user_id"])) {
+if (!isset($_SESSION["role"])) {
     http_response_code(401);
     echo "Unauthorized";
     exit;
@@ -36,12 +36,14 @@ if ($result->num_rows === 0) {
 
 $row = $result->fetch_assoc();
 $role = $_SESSION["role"];
-$user_id = (int)$_SESSION["user_id"];
+$user_id = isset($_SESSION["user_id"]) ? (int)$_SESSION["user_id"] : 0;
 $isOwner = ((int)$row["student_id"] === $user_id);
 $isPublic = ($row["visibility"] === "public");
 
 $allowed = false;
-if ($role === "company") {
+if ($role === "admin") {
+    $allowed = true;
+} elseif ($role === "company") {
     $allowed = $isPublic;
 } elseif ($role === "student") {
     $allowed = $isPublic || $isOwner;

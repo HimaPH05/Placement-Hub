@@ -89,4 +89,15 @@ $conn->query("CREATE TABLE IF NOT EXISTS student_resumes (
     INDEX idx_student_id (student_id),
     INDEX idx_visibility_created (visibility, created_at)
 )");
+
+/* STUDENT RESUME VERIFICATION COLUMNS */
+$resumeVerifiedCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
+if ($resumeVerifiedCol && $resumeVerifiedCol->num_rows === 0) {
+    $conn->query("ALTER TABLE student_resumes ADD COLUMN is_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER visibility");
+}
+
+$resumeVerifiedAtCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'verified_at'");
+if ($resumeVerifiedAtCol && $resumeVerifiedAtCol->num_rows === 0) {
+    $conn->query("ALTER TABLE student_resumes ADD COLUMN verified_at DATETIME NULL AFTER is_verified");
+}
 ?>
