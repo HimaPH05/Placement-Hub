@@ -359,8 +359,18 @@ function renderResumes() {
         const skills = Array.isArray(r.skills) ? r.skills : [];
         const visibilityLabel = r.visibility === "public" ? "Public" : "Private";
         const ownerLabel = r.is_owner ? "My Resume" : "Shared";
-        const verificationLabel = r.is_verified ? "Verified" : "Pending Verification";
-        const verificationClass = r.is_verified ? "verified" : "pending";
+        const isPublic = r.visibility === "public";
+        const isRejected = r.is_rejected === true;
+        const isVerified = r.is_verified === true;
+        let verificationLabel = "Pending Verification";
+        let verificationClass = "pending";
+        if (isRejected) {
+          verificationLabel = "Rejected";
+          verificationClass = "rejected";
+        } else if (isVerified) {
+          verificationLabel = "Verified";
+          verificationClass = "verified";
+        }
         const nextVisibility = r.visibility === "public" ? "private" : "public";
         const toggleLabel = r.visibility === "public" ? "Make Private" : "Make Public";
         const toggleBtn = r.is_owner
@@ -368,6 +378,8 @@ function renderResumes() {
           : "";
         const editBtn = r.is_owner
           ? `<a href="submit-resume.html" class="btn">Edit Resume</a>`
+        const verificationHtml = isPublic
+          ? `<p><b>Verification:</b> <span class="status ${verificationClass}">${escapeHtml(verificationLabel)}</span></p>`
           : "";
 
         resumeBox.innerHTML += `
@@ -375,7 +387,7 @@ function renderResumes() {
             <h3>${escapeHtml(r.name)}</h3>
             <p>${escapeHtml(r.branch)} | GPA ${escapeHtml(r.gpa)}</p>
             <p><b>Visibility:</b> ${escapeHtml(visibilityLabel)} (${escapeHtml(ownerLabel)})</p>
-            <p><b>Verification:</b> <span class="status ${verificationClass}">${escapeHtml(verificationLabel)}</span></p>
+            ${verificationHtml}
             <div>
               ${skills.map((s) => `<span class="badge">${escapeHtml(s)}</span>`).join("")}
             </div>

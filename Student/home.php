@@ -74,12 +74,25 @@ $resumeVerifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is
 if ($resumeVerifyColCheck && $resumeVerifyColCheck->num_rows > 0) {
     $hasResumeVerifyCol = true;
 }
+$hasResumeRejectCol = false;
+$resumeRejectColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_rejected'");
+if ($resumeRejectColCheck && $resumeRejectColCheck->num_rows > 0) {
+    $hasResumeRejectCol = true;
+}
 
 $latestResumeStatus = "Not Submitted";
 $latestResumeVisibility = "";
-if ($hasResumeVerifyCol) {
+$showResumeStatus = true;
+if ($hasResumeVerifyCol || $hasResumeRejectCol) {
+    $verifySelect = $hasResumeVerifyCol
+        ? "COALESCE(is_verified, 0) AS is_verified"
+        : "0 AS is_verified";
+    $rejectSelect = $hasResumeRejectCol
+        ? "COALESCE(is_rejected, 0) AS is_rejected"
+        : "0 AS is_rejected";
+
     $resumeStmt = $conn->prepare("
-        SELECT visibility, COALESCE(is_verified, 0) AS is_verified
+        SELECT visibility, {$verifySelect}, {$rejectSelect}
         FROM student_resumes
         WHERE student_id = ?
         ORDER BY created_at DESC, id DESC
@@ -92,7 +105,17 @@ if ($hasResumeVerifyCol) {
     if ($resumeRow) {
         $latestResumeVisibility = strtolower((string)($resumeRow["visibility"] ?? ""));
         $isVerified = ((int)($resumeRow["is_verified"] ?? 0)) === 1;
-        $latestResumeStatus = $isVerified ? "Verified" : "Pending Verification";
+        $isRejected = ((int)($resumeRow["is_rejected"] ?? 0)) === 1;
+
+        if ($latestResumeVisibility === "private") {
+            $showResumeStatus = false;
+        } elseif ($isRejected) {
+            $latestResumeStatus = "Rejected";
+        } elseif ($isVerified) {
+            $latestResumeStatus = "Verified";
+        } else {
+            $latestResumeStatus = "Pending Verification";
+        }
     }
 }
 
@@ -130,12 +153,14 @@ $adminProfile = get_admin_profile();
       <?php endif; ?>
       <p>Reg No: <?php echo htmlspecialchars($student["regno"]); ?></p>
       <p>CGPA: <?php echo htmlspecialchars($student["cgpa"]); ?></p>
-      <p>
-        Resume Status: <?php echo htmlspecialchars($latestResumeStatus); ?>
-        <?php if ($latestResumeVisibility !== ""): ?>
-          (<?php echo htmlspecialchars(ucfirst($latestResumeVisibility)); ?>)
-        <?php endif; ?>
-      </p>
+      <?php if ($showResumeStatus): ?>
+        <p>
+          Resume Status: <?php echo htmlspecialchars($latestResumeStatus); ?>
+          <?php if ($latestResumeVisibility !== ""): ?>
+            (<?php echo htmlspecialchars(ucfirst($latestResumeVisibility)); ?>)
+          <?php endif; ?>
+        </p>
+      <?php endif; ?>
       <?php if ($hasScorecardColumn): ?>
         <p>
           KTU Scorecard:
