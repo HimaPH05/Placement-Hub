@@ -65,6 +65,7 @@ Under Section 2(f) of UGC Act 1956 (Approved by AICTE & Affiliated to APJ Abdul 
 <span id="togglePassword">&#128065;</span>
 </div>
 
+<label for="role">Role</label>
 <select id="role" name="role" required>
 <option value="">Select Role</option>
 <option value="student">Student</option>
