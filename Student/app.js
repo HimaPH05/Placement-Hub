@@ -378,6 +378,7 @@ function renderResumes() {
           : "";
         const editBtn = r.is_owner
           ? `<a href="submit-resume.html" class="btn">Edit Resume</a>`
+          : "";
         const verificationHtml = isPublic
           ? `<p><b>Verification:</b> <span class="status ${verificationClass}">${escapeHtml(verificationLabel)}</span></p>`
           : "";
