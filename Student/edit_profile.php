@@ -124,102 +124,31 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
   <meta charset="UTF-8">
   <title>Edit Profile</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f9;
-    }
-
-    .edit-container {
-      max-width: 520px;
-      margin: 60px auto;
-      background: white;
-      padding: 34px;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    }
-
-    .edit-container h2 {
-      text-align: center;
-      margin-bottom: 22px;
-      color: #0d47a1;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-
-    .form-group input:focus {
-      border-color: #0d47a1;
-      outline: none;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background: #0d47a1;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    .btn:hover {
-      background: #08306b;
-    }
-
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 15px;
-      text-decoration: none;
-      color: #0d47a1;
-      font-size: 14px;
-    }
-
-    .hint {
-      font-size: 12px;
-      color: #666;
-      margin-top: 4px;
-    }
-
-    .error {
-      background: #ffebee;
-      color: #b71c1c;
-      padding: 10px;
-      border-radius: 6px;
-      margin-bottom: 14px;
-      font-size: 14px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css?v=20260309">
 </head>
 <body>
 
-<div class="edit-container">
-  <h2>Edit Profile</h2>
+<header class="topbar">Student Dashboard</header>
+<nav class="navbar">
+  <h2 class="logo">Placement Hub</h2>
+  <div class="links">
+    <a href="home.php">Home</a>
+    <a href="companies.html">Companies</a>
+    <a href="wishlist.html">Wishlist</a>
+    <a href="feedback.html">Feedback</a>
+    <a href="resumes.html">Resumes</a>
+  </div>
+</nav>
+
+<div class="container">
+<div class="form-wrapper">
+  <h1>Edit Profile</h1>
 
   <?php if ($error !== ""): ?>
     <div class="error"><?php echo htmlspecialchars($error); ?></div>
   <?php endif; ?>
 
-  <form method="POST" enctype="multipart/form-data">
+  <form method="POST" enctype="multipart/form-data" class="form-card">
     <div class="form-group">
       <label>Full Name</label>
       <input type="text" name="fullname" value="<?php echo htmlspecialchars($fullname); ?>" required>
@@ -256,7 +185,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <button type="submit" class="btn">Update Profile</button>
   </form>
 
-  <a href="home.php" class="back-link">Back to Dashboard</a>
+  <a href="home.php" class="btn" style="margin-top:10px;">Back to Dashboard</a>
+</div>
 </div>
 
 </body>

@@ -79,6 +79,7 @@ $adminProfile = get_admin_profile();
 </head>
 
 <body>
+<header class="topbar">Student Dashboard</header>
 
 <nav class="navbar">
   <div class="logo">Placement Hub</div>
@@ -114,14 +115,14 @@ $adminProfile = get_admin_profile();
       <?php endif; ?>
       <hr>
       <a href="edit_profile.php">Edit Profile</a><br><br>
-      <a href="../logout.php">Logout</a>
+      <a href="logout.php">Logout</a>
     </div>
   </div>
 </nav>
 
 <div class="container">
   <section class="hero">
-    <h1>Welcome to Placement Hub 🎓</h1>
+    <h1>Welcome to Placement Hub</h1>
     <p>Your gateway to career opportunities and campus placements</p>
 
     <div class="hero-buttons">
@@ -132,44 +133,44 @@ $adminProfile = get_admin_profile();
 
   <section class="features">
     <div class="feature-card">
-      <h3>🏢 Companies</h3>
+      <h3>Companies</h3>
       <p>Browse companies visiting campus</p>
     </div>
 
     <div class="feature-card">
-      <h3>⭐ Wishlist</h3>
+      <h3>Wishlist</h3>
       <p>Save your favorite companies</p>
     </div>
 
     <div class="feature-card">
-      <h3>📌 Applications</h3>
+      <h3>Applications</h3>
       <p>Track your current application status</p>
     </div>
 
     <div class="feature-card">
-      <h3>📄 Resumes</h3>
+      <h3>Resumes</h3>
       <p>Upload and manage resumes</p>
     </div>
 
     <div class="feature-card">
-      <h3>💬 Feedback</h3>
+      <h3>Feedback</h3>
       <p>Share your placement experience</p>
     </div>
   </section>
-</div>
 
-<div class="officer-section">
-  <h2 class="section-title">Placement Officer</h2>
+  <div class="officer-section">
+    <h2 class="section-title">Placement Officer</h2>
 
-  <div class="officer-card">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="officer-avatar">
+    <div class="officer-card">
+      <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="officer-avatar">
 
-    <div class="officer-info">
-      <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
-      <p class="role"><?php echo htmlspecialchars($adminProfile["role_title"]); ?></p>
-      <p>📧 <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
-      <p>📞 <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
-      <p>🏢 <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
+      <div class="officer-info">
+        <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
+        <p class="role"><?php echo htmlspecialchars($adminProfile["role_title"]); ?></p>
+        <p>📧 <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
+        <p>📞 <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
+        <p>🏢 <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
+      </div>
     </div>
   </div>
 </div>
