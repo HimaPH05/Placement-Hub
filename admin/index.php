@@ -79,7 +79,7 @@ $adminProfile = get_admin_profile();
 
 <div class="info-grid">
   <div class="info-card">
-    <div class="info-icon">*</div>
+
     <h3>About Placement Team</h3>
     <p>
       We connect students with top recruiters through campus hiring,
@@ -88,7 +88,7 @@ $adminProfile = get_admin_profile();
   </div>
 
   <div class="info-card">
-    <div class="info-icon">*</div>
+   
     <h3>Contact Details</h3>
     <p><b>Name:</b> <?php echo htmlspecialchars($adminProfile["name"]); ?></p>
     <p><b>Email:</b> <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
