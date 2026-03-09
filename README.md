@@ -226,21 +226,28 @@ You can update password from:
 - Basic input validation on auth and CRUD endpoints
 - Resume access restrictions in `view_resume.php`
 
-## Notes and limitations
-
-- Wishlist is stored in browser `localStorage` (not in DB).
-- Some migration behavior is runtime-triggered by specific pages/endpoints.
-- Project uses direct mysqli + procedural PHP style (not framework-based).
-- Add `.htaccess` and stronger upload hardening before production deployment.
-
 ## Future improvements
 
-- Move credentials and DB config to `.env`
-- Add CSRF protection on all POST forms
-- Add centralized router/API response format
-- Add automated tests
-- Add role-based middleware abstraction
-- Add email sending backend (SMTP) instead of compose-only flow
+- Build a dedicated Placement Officer workflow dashboard with:
+  - single-screen candidate pipeline tracking
+  - filter by company, branch, status, and CGPA
+  - one-click shortlist/reject actions
+- Add bulk operations for officers:
+  - bulk resume verify/reject
+  - bulk company onboarding and credential generation
+  - bulk status updates for applications
+- Add automated communication support for officers:
+  - in-app email templates for shortlist/reject/interview rounds
+  - SMTP-based direct mail sending (no manual compose flow)
+  - scheduled reminders for pending actions
+- Add interview and drive management tools:
+  - drive calendar
+  - slot allocation
+  - attendance and result entry
+- Add smarter officer insights:
+  - company-wise and branch-wise placement analytics
+  - pending-task alerts
+  - downloadable placement reports
 
 ## Contributors
 
