@@ -159,9 +159,9 @@ function renderAdminResumes(data = adminResumes) {
       const isVerified = r.is_verified === true;
       const statusClass = isVerified ? "verified" : "pending";
       const statusText = isVerified ? "Verified" : "Pending Verification";
-      const verifyButtonClass = isVerified ? "mail" : "verify";
-      const verifyButtonText = isVerified ? "Unverify" : "Verify";
-      const verifyTarget = isVerified ? 0 : 1;
+      const verifyAction = isVerified
+        ? ""
+        : `<button type="button" class="verify" onclick="toggleResumeVerification(${Number(r.id)})">Verify</button>`;
 
       return `
         <div class="resume-card">
@@ -173,9 +173,7 @@ function renderAdminResumes(data = adminResumes) {
           <div class="resume-actions">
             <a href="${escapeHtml(r.file_url)}" target="_blank" class="primary">View</a>
             <a href="${escapeHtml(r.download_url)}" class="primary">Download</a>
-            <button type="button" class="${verifyButtonClass}" onclick="toggleResumeVerification(${Number(
-        r.id
-      )}, ${verifyTarget})">${verifyButtonText}</button>
+            ${verifyAction}
           </div>
         </div>
       `;
@@ -183,14 +181,13 @@ function renderAdminResumes(data = adminResumes) {
     .join("");
 }
 
-async function toggleResumeVerification(resumeId, isVerified) {
+async function toggleResumeVerification(resumeId) {
   try {
     const res = await fetch("resume-actions.php", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        resume_id: Number(resumeId),
-        is_verified: Number(isVerified)
+        resume_id: Number(resumeId)
       })
     });
 

@@ -87,8 +87,7 @@ if (!is_array($payload)) {
 }
 
 $resumeId = (int)($payload["resume_id"] ?? 0);
-$isVerified = (int)($payload["is_verified"] ?? 0);
-$isVerified = ($isVerified === 1) ? 1 : 0;
+$isVerified = 1;
 
 if ($resumeId <= 0) {
     http_response_code(400);
@@ -126,9 +125,9 @@ if ($update->affected_rows === 0) {
 
 echo json_encode([
     "success" => true,
-    "message" => $isVerified === 1 ? "Resume verified" : "Resume marked as unverified",
+    "message" => "Resume verified",
     "resume_id" => $resumeId,
-    "is_verified" => ($isVerified === 1)
+    "is_verified" => true
 ]);
 exit();
 ?>
