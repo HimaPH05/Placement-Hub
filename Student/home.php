@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . "/../admin-credentials.php";
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "student") {
     header("Location: ../login.php");
@@ -67,6 +68,8 @@ $student = [
     "cgpa" => $cgpa,
     "ktu_scorecard_path" => $ktu_scorecard_path
 ];
+
+$adminProfile = get_admin_profile();
 ?>
 <!DOCTYPE html>
 <html>
@@ -162,11 +165,11 @@ $student = [
     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="officer-avatar">
 
     <div class="officer-info">
-      <h3>Dr. Anjali Menon</h3>
-      <p class="role">Placement Officer</p>
-      <p>📧 placement@college.edu</p>
-      <p>📞 +91 98765 43210</p>
-      <p>🏢 Training & Placement Cell, Block A</p>
+      <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
+      <p class="role"><?php echo htmlspecialchars($adminProfile["role_title"]); ?></p>
+      <p>📧 <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
+      <p>📞 <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
+      <p>🏢 <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
     </div>
   </div>
 </div>
