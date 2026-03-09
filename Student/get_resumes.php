@@ -20,6 +20,11 @@ $verifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verif
 if ($verifyColCheck && $verifyColCheck->num_rows > 0) {
     $hasVerifyColumns = true;
 }
+$hasRejectColumns = false;
+$rejectColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_rejected'");
+if ($rejectColCheck && $rejectColCheck->num_rows > 0) {
+    $hasRejectColumns = true;
+}
 
 $student_id = (int)$_SESSION["user_id"];
 $username = trim($_SESSION["username"] ?? "");
@@ -27,6 +32,9 @@ $username = trim($_SESSION["username"] ?? "");
 $verifySelect = $hasVerifyColumns
     ? "COALESCE(sr.is_verified, 0) AS is_verified, sr.verified_at,"
     : "0 AS is_verified, NULL AS verified_at,";
+$rejectSelect = $hasRejectColumns
+    ? "COALESCE(sr.is_rejected, 0) AS is_rejected, sr.rejected_at,"
+    : "0 AS is_rejected, NULL AS rejected_at,";
 
 $stmt = $conn->prepare("
     SELECT
@@ -40,6 +48,7 @@ $stmt = $conn->prepare("
         sr.file_name,
         sr.visibility,
         {$verifySelect}
+        {$rejectSelect}
         s.username AS owner_username
     FROM student_resumes sr
     LEFT JOIN students s ON s.id = sr.student_id
@@ -77,7 +86,9 @@ while ($row = $result->fetch_assoc()) {
         "visibility" => $row["visibility"],
         "is_owner" => $isOwner,
         "is_verified" => ((int)($row["is_verified"] ?? 0)) === 1,
-        "verified_at" => $row["verified_at"] ?? null
+        "verified_at" => $row["verified_at"] ?? null,
+        "is_rejected" => ((int)($row["is_rejected"] ?? 0)) === 1,
+        "rejected_at" => $row["rejected_at"] ?? null
     ];
 }
 
