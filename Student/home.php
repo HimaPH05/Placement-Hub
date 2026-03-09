@@ -69,6 +69,33 @@ $student = [
     "ktu_scorecard_path" => $ktu_scorecard_path
 ];
 
+$hasResumeVerifyCol = false;
+$resumeVerifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
+if ($resumeVerifyColCheck && $resumeVerifyColCheck->num_rows > 0) {
+    $hasResumeVerifyCol = true;
+}
+
+$latestResumeStatus = "Not Submitted";
+$latestResumeVisibility = "";
+if ($hasResumeVerifyCol) {
+    $resumeStmt = $conn->prepare("
+        SELECT visibility, COALESCE(is_verified, 0) AS is_verified
+        FROM student_resumes
+        WHERE student_id = ?
+        ORDER BY created_at DESC, id DESC
+        LIMIT 1
+    ");
+    $resumeStmt->bind_param("i", $student_id);
+    $resumeStmt->execute();
+    $resumeRow = $resumeStmt->get_result()->fetch_assoc();
+
+    if ($resumeRow) {
+        $latestResumeVisibility = strtolower((string)($resumeRow["visibility"] ?? ""));
+        $isVerified = ((int)($resumeRow["is_verified"] ?? 0)) === 1;
+        $latestResumeStatus = $isVerified ? "Verified" : "Pending Verification";
+    }
+}
+
 $adminProfile = get_admin_profile();
 ?>
 <!DOCTYPE html>
@@ -103,6 +130,12 @@ $adminProfile = get_admin_profile();
       <?php endif; ?>
       <p>Reg No: <?php echo htmlspecialchars($student["regno"]); ?></p>
       <p>CGPA: <?php echo htmlspecialchars($student["cgpa"]); ?></p>
+      <p>
+        Resume Status: <?php echo htmlspecialchars($latestResumeStatus); ?>
+        <?php if ($latestResumeVisibility !== ""): ?>
+          (<?php echo htmlspecialchars(ucfirst($latestResumeVisibility)); ?>)
+        <?php endif; ?>
+      </p>
       <?php if ($hasScorecardColumn): ?>
         <p>
           KTU Scorecard:

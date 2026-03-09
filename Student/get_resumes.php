@@ -15,8 +15,18 @@ if ($conn->connect_error) {
     exit;
 }
 
+$hasVerifyColumns = false;
+$verifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
+if ($verifyColCheck && $verifyColCheck->num_rows > 0) {
+    $hasVerifyColumns = true;
+}
+
 $student_id = (int)$_SESSION["user_id"];
 $username = trim($_SESSION["username"] ?? "");
+
+$verifySelect = $hasVerifyColumns
+    ? "COALESCE(sr.is_verified, 0) AS is_verified, sr.verified_at,"
+    : "0 AS is_verified, NULL AS verified_at,";
 
 $stmt = $conn->prepare("
     SELECT
@@ -29,6 +39,7 @@ $stmt = $conn->prepare("
         sr.skills,
         sr.file_name,
         sr.visibility,
+        {$verifySelect}
         s.username AS owner_username
     FROM student_resumes sr
     LEFT JOIN students s ON s.id = sr.student_id
@@ -64,7 +75,9 @@ while ($row = $result->fetch_assoc()) {
         "file_url" => "../view_resume.php?id=" . $resumeId,
         "download_url" => "../view_resume.php?id=" . $resumeId . "&dl=1",
         "visibility" => $row["visibility"],
-        "is_owner" => $isOwner
+        "is_owner" => $isOwner,
+        "is_verified" => ((int)($row["is_verified"] ?? 0)) === 1,
+        "verified_at" => $row["verified_at"] ?? null
     ];
 }
 

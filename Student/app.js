@@ -266,8 +266,15 @@ function renderResumes() {
         const skills = Array.isArray(r.skills) ? r.skills : [];
         const visibilityLabel = r.visibility === "public" ? "Public" : "Private";
         const ownerLabel = r.is_owner ? "My Resume" : "Shared";
+        const verificationLabel = r.is_verified ? "Verified" : "Pending Verification";
+        const verificationClass = r.is_verified ? "verified" : "pending";
+        const nextVisibility = r.visibility === "public" ? "private" : "public";
+        const toggleLabel = r.visibility === "public" ? "Make Private" : "Make Public";
         const removeBtn = r.is_owner
           ? `<button class="remove-btn" onclick="removeResume(${r.id})">Remove</button>`
+          : "";
+        const toggleBtn = r.is_owner
+          ? `<button class="btn" onclick="toggleResumeVisibility(${r.id}, '${nextVisibility}')">${escapeHtml(toggleLabel)}</button>`
           : "";
 
         resumeBox.innerHTML += `
@@ -275,12 +282,14 @@ function renderResumes() {
             <h3>${escapeHtml(r.name)}</h3>
             <p>${escapeHtml(r.branch)} | GPA ${escapeHtml(r.gpa)}</p>
             <p><b>Visibility:</b> ${escapeHtml(visibilityLabel)} (${escapeHtml(ownerLabel)})</p>
+            <p><b>Verification:</b> <span class="status ${verificationClass}">${escapeHtml(verificationLabel)}</span></p>
             <div>
               ${skills.map((s) => `<span class="badge">${escapeHtml(s)}</span>`).join("")}
             </div>
             <p style="font-size:13px;margin-top:8px;">File: ${escapeHtml(r.file_name)}</p>
             <div style="margin-top:10px;">
               <a href="${escapeHtml(r.file_url)}" target="_blank" class="view-btn">View Resume</a>
+              ${toggleBtn}
               ${removeBtn}
             </div>
           </div>
@@ -304,6 +313,30 @@ function removeResume(resumeId) {
     .then((res) => res.json())
     .then((result) => {
       alert(result.message || "Unable to remove resume.");
+      if (result.success) {
+        renderResumes();
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+      alert("Server not reachable.");
+    });
+}
+
+function toggleResumeVisibility(resumeId, visibility) {
+  fetch("update_resume_visibility.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      resume_id: resumeId,
+      visibility: visibility
+    })
+  })
+    .then((res) => res.json())
+    .then((result) => {
+      alert(result.message || "Unable to update visibility.");
       if (result.success) {
         renderResumes();
       }
