@@ -21,7 +21,7 @@ require_once __DIR__ . "/auth-check.php";
     <a href="resume.php" class="active">Resumes</a>
     <a href="feedback.php">Feedback</a>
     <a href="profile.php">Admin Profile</a>
-    <a href="../logout.php" class="logout" id="logoutBtn">Logout</a>
+    <a href="logout.php" class="logout" id="logoutBtn">Logout</a>
   </div>
 </nav>
 

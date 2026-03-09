@@ -39,7 +39,7 @@ $adminProfile = get_admin_profile();
     <a href="resume.php">Resumes</a>
     <a href="feedback.php">Feedback</a>
     <a href="profile.php">Admin Profile</a>
-    <a href="../logout.php" class="logout" id="logoutBtn">Logout</a>
+    <a href="logout.php" class="logout" id="logoutBtn">Logout</a>
   </div>
 </nav>
 
