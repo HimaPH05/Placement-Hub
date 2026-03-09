@@ -126,6 +126,7 @@ $conn->close();
 
       <div class="actions">
         <button type="submit" class="btn">Update Profile</button>
+        <a href="../company-password.php?mode=change" class="btn">Change Password</a>
         <a href="company.php" class="cancel-btn">Cancel</a>
       </div>
     </form>
