@@ -128,7 +128,7 @@ while($row = $result->fetch_assoc()){
 <body>
 
 <header class="topbar">
-  Applicants Dashboard
+  Company Dashboard
 </header>
 
 <nav class="navbar">
@@ -142,29 +142,29 @@ while($row = $result->fetch_assoc()){
 
 <!-- ================= STATS ================= -->
 <div class="stats">
-  <div class="stat-card">
+  <div class="stat-card card">
     <h2><?php echo $total; ?></h2>
     <p>Total</p>
   </div>
 
-  <div class="stat-card yellow">
+  <div class="stat-card yellow card">
     <h2><?php echo $pending; ?></h2>
     <p>Pending</p>
   </div>
 
-  <div class="stat-card green">
+  <div class="stat-card green card">
     <h2><?php echo $shortlisted; ?></h2>
     <p>Shortlisted</p>
   </div>
 
-  <div class="stat-card red">
+  <div class="stat-card red card">
     <h2><?php echo $rejected; ?></h2>
     <p>Rejected</p>
   </div>
 </div>
 
 <!-- ================= TABLE ================= -->
-<div class="table-card">
+<div class="table-card card">
   <h3>Applicant List</h3>
 
   <table>
@@ -222,8 +222,10 @@ while($row = $result->fetch_assoc()){
             </span>
           </td>
           <td>
-            <a href="applicants.php?action=shortlist&id=<?php echo $app['id']; ?>">Shortlist</a> |
-            <a href="applicants.php?action=reject&id=<?php echo $app['id']; ?>">Reject</a>
+            <div class="table-actions">
+              <a class="action-btn" href="applicants.php?action=shortlist&id=<?php echo $app['id']; ?>">Shortlist</a>
+              <a class="action-btn reject" href="applicants.php?action=reject&id=<?php echo $app['id']; ?>">Reject</a>
+            </div>
           </td>
         </tr>
         <?php endforeach; ?>
