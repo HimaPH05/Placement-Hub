@@ -72,11 +72,44 @@ body{
 
 .officer-section{margin-top:26px;display:flex;flex-direction:column;align-items:center}
 .section-title{color:#0a3f9f;margin-bottom:16px;text-align:center;font-size:34px}
-.officer-card{width:100%;max-width:700px;padding:24px;display:flex;align-items:center;gap:22px}
+.officer-card{
+  width:100%;
+  max-width:700px;
+  padding:24px;
+  display:flex;
+  align-items:center;
+  gap:22px;
+  background:var(--card);
+  border:1px solid rgba(23,84,194,.12);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+}
 .officer-avatar{width:96px;height:96px;border-radius:50%;box-shadow:0 8px 16px rgba(19,52,119,.18)}
 .officer-info h3{margin-bottom:4px;color:#0d47a1}
 .role{font-size:14px;color:#566781;margin-bottom:10px;font-weight:700}
 .officer-info p{font-size:14px;margin-bottom:4px;color:#35527e}
+.team-section{margin-top:30px}
+.student-team-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.student-team-card{
+  background:var(--card);
+  border:1px solid rgba(23,84,194,.12);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  padding:18px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.student-team-avatar{
+  width:58px;
+  height:58px;
+  border-radius:50%;
+  box-shadow:0 8px 16px rgba(19,52,119,.15);
+  flex-shrink:0;
+}
+.student-team-info h3{color:#0d47a1;margin-bottom:4px;font-size:20px;line-height:1.1}
+.student-team-role{font-size:14px;color:#35527e;margin-bottom:3px;font-weight:700}
+.student-team-mobile{font-size:14px;color:#3f5a84;margin-bottom:0}
 
 .empty-text{text-align:center;color:#567094;margin-top:30px;background:#f7fbff;border:1px dashed #bfd6ff;border-radius:12px;padding:14px}
 .remove-btn{background:#d6344a;color:#fff;box-shadow:none}
@@ -144,4 +177,13 @@ body{
   .hero h1{font-size:34px}
   .hero-buttons{justify-content:flex-start}
   .officer-card{flex-direction:column;text-align:center}
+  .student-team-grid{grid-template-columns:1fr}
+  .student-team-card{padding:16px}
+  .student-team-info h3{font-size:18px}
+  .student-team-role{font-size:14px}
+  .student-team-mobile{font-size:16px}
+}
+
+@media (min-width:701px) and (max-width:1050px){
+  .student-team-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

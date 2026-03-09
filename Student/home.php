@@ -120,6 +120,7 @@ if ($hasResumeVerifyCol || $hasResumeRejectCol) {
 }
 
 $adminProfile = get_admin_profile();
+$teamMembers = get_admin_team_members();
 ?>
 <!DOCTYPE html>
 <html>
@@ -231,6 +232,24 @@ $adminProfile = get_admin_profile();
       </div>
     </div>
   </div>
+
+  <section class="team-section">
+    <h2 class="section-title">Placement Team Members</h2>
+    <div class="student-team-grid">
+      <?php foreach ($teamMembers as $member): ?>
+        <div class="student-team-card">
+          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="student-team-avatar" alt="Team member">
+          <div class="student-team-info">
+            <h3><?php echo htmlspecialchars($member["name"] ?? ""); ?></h3>
+            <p class="student-team-role"><?php echo htmlspecialchars($member["role"] ?? ""); ?></p>
+            <?php if (!empty($member["mobile"])): ?>
+              <p class="student-team-mobile">📞 <?php echo htmlspecialchars($member["mobile"]); ?></p>
+            <?php endif; ?>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </section>
 </div>
 
 <script>
