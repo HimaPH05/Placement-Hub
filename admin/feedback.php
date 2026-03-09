@@ -29,7 +29,7 @@ if ($result) {
   <meta charset="UTF-8">
   <title>Student Feedback</title>
   <link rel="stylesheet" href="astyle.css">
-  <script defer src="script.js?v=8"></script>
+  <script defer src="script.js?v=10"></script>
 </head>
 
 <body>

@@ -23,7 +23,7 @@ $publicResumeCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM student_r
   <meta charset="UTF-8">
   <title>Home - Placement Hub</title>
   <link rel="stylesheet" href="astyle.css">
-  <script defer src="script.js?v=8"></script>
+  <script defer src="script.js?v=10"></script>
 </head>
 
 <body>
