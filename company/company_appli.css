@@ -198,6 +198,7 @@ body{
 table{
   width:100%;
   border-collapse:collapse;
+  table-layout:auto;
 }
 
 thead{
@@ -208,6 +209,7 @@ thead{
 th, td{
   padding:12px 14px;
   text-align:left;
+  vertical-align:top;
 }
 
 tbody tr{
@@ -216,6 +218,20 @@ tbody tr{
 
 tbody tr:hover{
   background:#f5f7fa;
+}
+
+.applicant-details{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:220px;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.muted{
+  color:#666;
+  font-size:13px;
 }
 
 
