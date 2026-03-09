@@ -28,6 +28,12 @@ if (!isset($_SESSION["company_id"])) {
 
 $company_id = (int)$_SESSION['company_id'];
 
+$hasScorecardColumn = false;
+$scorecardCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
+if ($scorecardCheck && $scorecardCheck->num_rows > 0) {
+    $hasScorecardColumn = true;
+}
+
 /* =========================
    UPDATE STATUS
 ========================= */
@@ -53,11 +59,32 @@ if(isset($_GET['action']) && isset($_GET['id'])){
 /* =========================
    FETCH APPLICATIONS
 ========================= */
+$scorecardSelect = $hasScorecardColumn ? "students.ktu_scorecard_path," : "'' AS ktu_scorecard_path,";
+
 $query = "
-SELECT applications.*, students.fullname, students.cgpa, jobs.job_title
+SELECT
+    applications.*,
+    students.fullname,
+    students.username,
+    students.email,
+    students.regno,
+    students.dob,
+    students.cgpa,
+    {$scorecardSelect}
+    jobs.job_title,
+    sr.id AS resume_id,
+    sr.file_name AS resume_file_name
 FROM applications
 JOIN students ON applications.student_id = students.id
 JOIN jobs ON applications.job_id = jobs.id
+LEFT JOIN student_resumes sr ON sr.id = (
+    SELECT sr2.id
+    FROM student_resumes sr2
+    WHERE sr2.student_id = applications.student_id
+      AND sr2.visibility = 'public'
+    ORDER BY sr2.created_at DESC, sr2.id DESC
+    LIMIT 1
+)
 WHERE applications.company_id = ?
 ORDER BY applications.applied_at DESC
 ";
@@ -139,7 +166,9 @@ while($row = $result->fetch_assoc()){
       <tr>
         <th>Name</th>
         <th>Position</th>
-        <th>CGPA</th>
+        <th>Applicant Details</th>
+        <th>Resume</th>
+        <th>KTU Scorecard</th>
         <th>Status</th>
         <th>Actions</th>
       </tr>
@@ -151,8 +180,41 @@ while($row = $result->fetch_assoc()){
         <tr>
           <td><?php echo htmlspecialchars($app['fullname']); ?></td>
           <td><?php echo htmlspecialchars($app['job_title']); ?></td>
-          <td><?php echo $app['cgpa']; ?></td>
-          <td><?php echo $app['status']; ?></td>
+          <td>
+            <div class="applicant-details">
+            <div><strong>CGPA:</strong> <?php echo htmlspecialchars((string)$app['cgpa']); ?></div>
+              <div><strong>Username:</strong> <?php echo htmlspecialchars((string)$app['username']); ?></div>
+              <div><strong>Email:</strong> <?php echo htmlspecialchars((string)$app['email']); ?></div>
+              <div><strong>Reg No:</strong> <?php echo htmlspecialchars((string)$app['regno']); ?></div>
+              <div><strong>DOB:</strong> <?php echo htmlspecialchars((string)$app['dob']); ?></div>
+              <div><strong>Applied:</strong> <?php echo htmlspecialchars((string)$app['applied_at']); ?></div>
+            </div>
+          </td>
+          <td>
+            <?php if (!empty($app['resume_id'])): ?>
+              <a href="../view_resume.php?id=<?php echo (int)$app['resume_id']; ?>" target="_blank" class="action-btn view">View Resume</a>
+            <?php else: ?>
+              <span class="muted">No public resume</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php if (!empty($app['ktu_scorecard_path'])): ?>
+              <a href="../<?php echo htmlspecialchars($app['ktu_scorecard_path']); ?>" target="_blank" class="action-btn view">View Scorecard</a>
+            <?php else: ?>
+              <span class="muted">Not uploaded</span>
+            <?php endif; ?>
+          </td>
+          <td>
+            <?php
+              $statusClass = strtolower((string)$app['status']);
+              if (!in_array($statusClass, ["pending", "shortlisted", "rejected"], true)) {
+                  $statusClass = "pending";
+              }
+            ?>
+            <span class="badge <?php echo $statusClass; ?>">
+              <?php echo htmlspecialchars((string)$app['status']); ?>
+            </span>
+          </td>
           <td>
             <a href="applicants.php?action=shortlist&id=<?php echo $app['id']; ?>">Shortlist</a> |
             <a href="applicants.php?action=reject&id=<?php echo $app['id']; ?>">Reject</a>
@@ -161,7 +223,7 @@ while($row = $result->fetch_assoc()){
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="5">No applicants yet.</td>
+          <td colspan="7">No applicants yet.</td>
         </tr>
       <?php endif; ?>
     </tbody>
