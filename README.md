@@ -244,6 +244,10 @@ You can update password from:
   - drive calendar
   - slot allocation
   - attendance and result entry
+- Add external application link support:
+  - allow companies to add a direct job application link in each job post
+  - show that link to students on the company/job details page
+  - support both internal apply and external apply flow
 - Add smarter officer insights:
   - company-wise and branch-wise placement analytics
   - pending-task alerts
