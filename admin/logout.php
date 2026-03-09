@@ -22,9 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["confirm_logout"])) {
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Logout | Placement Hub</title>
-  <link rel="stylesheet" href="admin_logout.css?v=1">
+  <link rel="stylesheet" href="astyle.css?v=20260309">
 </head>
 <body>
 <header class="topbar">Admin Dashboard</header>
@@ -36,16 +35,18 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["confirm_logout"])) {
     <a href="resume.php">Resumes</a>
     <a href="feedback.php">Feedback</a>
     <a href="profile.php">Admin Profile</a>
+    <a href="logout.php" class="active">Logout</a>
   </div>
 </nav>
 
 <div class="container">
   <div class="logout-card">
-    <h1>Logout</h1>
+    <h2>Logout</h2>
     <p>Are you sure you want to end your admin session?</p>
+
     <form method="POST" class="logout-actions">
-      <button type="submit" name="confirm_logout" class="btn">Yes, Logout</button>
-      <a href="index.php" class="btn secondary">Cancel</a>
+      <button type="submit" name="confirm_logout" class="primary">Yes, Logout</button>
+      <a href="index.php" class="cancel">Cancel</a>
     </form>
   </div>
 </div>
