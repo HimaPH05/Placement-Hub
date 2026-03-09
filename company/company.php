@@ -29,8 +29,8 @@ $company_id = (int)$_SESSION["company_id"];
 ========================= */
 if(isset($_POST['update_company'])){
     $name = $_POST['companyName'] ?? '';
-    $industryValue = trim($_POST['industry'] ?? ($_POST['description'] ?? ''));
-    $desc = $industryValue;
+    $industryValue = trim($_POST['industry'] ?? '');
+    $desc = trim($_POST['description'] ?? '');
     $emp  = isset($_POST['employees']) ? (int)$_POST['employees'] : 0;
     $locationItemsRaw = $_POST['location_items'] ?? [];
     if(!is_array($locationItemsRaw)){
@@ -291,13 +291,18 @@ $jobs = $stmt->get_result();
       <div class="field">
         <label for="industry">Industry Type</label>
         <select id="industry" name="industry" required>
-          <option value="" disabled <?php echo $companyDescription === '' ? 'selected' : ''; ?>>Select Industry</option>
+          <option value="" disabled <?php echo ($company['industry'] ?? '') === '' ? 'selected' : ''; ?>>Select Industry</option>
           <?php foreach($industryOptions as $opt): ?>
-            <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo $companyDescription === $opt ? 'selected' : ''; ?>>
+            <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo ($company['industry'] ?? '') === $opt ? 'selected' : ''; ?>>
               <?php echo htmlspecialchars($opt); ?>
             </option>
           <?php endforeach; ?>
         </select>
+      </div>
+
+      <div class="field">
+        <label for="company_description">Company Description</label>
+        <textarea id="company_description" name="description" rows="4" placeholder="Add company overview, culture, and hiring focus..."><?php echo htmlspecialchars($company['description'] ?? ''); ?></textarea>
       </div>
 
       <div class="field">

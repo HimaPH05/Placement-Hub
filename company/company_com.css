@@ -186,7 +186,8 @@ body{
 .edit-company-modal form{max-width:650px;margin:0 auto;background:#f7faff;border:1px solid #d7e5ff;border-radius:20px;padding:24px;gap:14px}
 .edit-company-modal .field{display:flex;flex-direction:column;gap:6px}
 .edit-company-modal label{display:block;width:100%;font-size:14px;font-weight:700;color:#20477f;letter-spacing:.2px}
-.edit-company-modal input,.edit-company-modal select{min-height:50px;background:#fff;border:1px solid #bfd4fa;border-radius:12px;font-size:15px;padding:11px 13px}
+.edit-company-modal input,.edit-company-modal select,.edit-company-modal textarea{min-height:50px;background:#fff;border:1px solid #bfd4fa;border-radius:12px;font-size:15px;padding:11px 13px}
+.edit-company-modal textarea{min-height:120px;resize:vertical;line-height:1.45}
 
 .edit-company-modal .location-row{display:grid;grid-template-columns:1fr 180px;gap:12px}
 .edit-company-modal #company_locations_count{text-align:center}
