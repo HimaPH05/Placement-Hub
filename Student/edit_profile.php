@@ -182,7 +182,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       </div>
     <?php endif; ?>
 
-    <button type="submit" class="btn">Update Profile</button>
+    <div class="actions">
+      <button type="submit" class="btn">Update Profile</button>
+      <a href="../student-password.php?mode=change" class="btn secondary">Change Password</a>
+    </div>
   </form>
 
   <a href="home.php" class="btn" style="margin-top:10px;">Back to Dashboard</a>

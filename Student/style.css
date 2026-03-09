@@ -83,6 +83,7 @@ body{
 .form-group{display:flex;flex-direction:column;gap:6px;text-align:left}
 .form-group label{font-size:14px;color:#35527e;font-weight:700}
 .form-card textarea{resize:none;min-height:90px}
+.form-card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
 .feedback-wrapper textarea:focus,.form-card input:focus,.form-card select:focus,.form-card textarea:focus{outline:none;border-color:#7ea7ff;box-shadow:0 0 0 3px rgba(43,123,255,.15);background:#fff}
 .success-msg{margin-top:12px;color:#2e7d32;font-size:14px}
 .error{margin:0 0 10px;background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2;border-radius:10px;padding:10px;font-size:14px}

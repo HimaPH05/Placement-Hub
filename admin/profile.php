@@ -98,7 +98,10 @@ $profile = get_admin_profile();
       <label for="phone">Phone</label>
       <input id="phone" name="phone" value="<?php echo htmlspecialchars($profile["phone"]); ?>">
 
-      <button type="submit" class="primary">Save Profile</button>
+      <div class="actions">
+        <button type="submit" class="primary">Save Profile</button>
+        <a href="../admin-password.php?mode=change" class="cancel">Change Password</a>
+      </div>
       <?php if ($message !== ""): ?>
         <p class="profile-msg <?php echo $messageClass; ?>"><?php echo htmlspecialchars($message); ?></p>
       <?php endif; ?>
