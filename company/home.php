@@ -44,15 +44,13 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <title>Company Dashboard</title>
-    <link rel="stylesheet" href="company_home.css">
+    <link rel="stylesheet" href="company_home.css?v=20260309">
 </head>
 
 <body>
 
 <header class="topbar">
-    <div>
-        placement@university.edu | +91 9876543210
-    </div>
+    <div>Company Dashboard</div>
 
     <div class="topbar-right">
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
@@ -68,7 +66,7 @@ $conn->close();
             <p><strong>Industry:</strong> <?php echo htmlspecialchars($industry); ?></p>
             <hr>
             <a href="edit_company.php">Edit Profile</a><br>
-            <a href="../logout.php">Logout</a>
+            <a href="logout.php">Logout</a>
         </div>
     </div>
 </header>
@@ -82,60 +80,34 @@ $conn->close();
 
 <div class="container">
 
-    <!-- HERO SECTION -->
-    <section class="hero">
+    <section class="card hero">
         <div class="hero-text">
-            <h1>Welcome, <?php echo htmlspecialchars($companyName); ?> 👋</h1>
+            <h1>Welcome, <?php echo htmlspecialchars($companyName); ?></h1>
             <p>Your gateway to hiring top students quickly and efficiently.</p>
-            <button class="btn" onclick="window.location.href='company.php'">Explore</button>
+            <a class="btn" href="company.php">Explore Company</a>
         </div>
 
         <img src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png" class="hero-img">
     </section>
 
 
-    <section style="margin:60px 0 80px 0; text-align:center;">
+    <section class="card officer-section">
+      <h2>Placement Officer</h2>
 
-    <h2 style="font-size:28px; color:#0d47a1; margin-bottom:30px;">
-        Placement Officer
-    </h2>
-
-    <div style="
-        width:650px;
-        margin:0 auto;
-        background:#eef1f5;
-        padding:35px 40px;
-        border-radius:18px;
-        display:flex;
-        align-items:center;
-        gap:35px;
-        text-align:left;
-        box-shadow:0 6px 18px rgba(0,0,0,0.08);
-    ">
-
-        <div style="
-            background:#dfe6f1;
-            padding:15px;
-            border-radius:50%;
-            flex-shrink:0;
-        ">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                 style="width:90px; height:90px; border-radius:50%;">
+      <div class="officer-card">
+        <div class="officer-avatar-wrap">
+            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="officer-avatar">
         </div>
 
-        <div>
-            <h3 style="font-size:20px; color:#0d47a1; margin-bottom:6px;">
-                Dr. Anjali Menon
-            </h3>
-            <p style="margin-bottom:10px; color:#444;">Placement Officer</p>
+        <div class="officer-info">
+            <h3>Dr. Anjali Menon</h3>
+            <p class="designation">Placement Officer</p>
             <p>📧 placement@college.edu</p>
             <p>📞 +91 98765 43210</p>
             <p>🏢 Training & Placement Cell, Block A</p>
         </div>
-
-    </div>
-
-</section>
+      </div>
+    </section>
 </div>
 
 <script>

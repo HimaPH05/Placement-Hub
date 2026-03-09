@@ -1,177 +1,139 @@
-/* RESET */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
+@import url("./company_com.css");
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-body {
-  background: #f4f6f9;
-  color: #333;
+.topbar-right{
+  position:relative;
 }
 
-/* TOPBAR */
-.topbar {
-  background: #0d47a1;
-  color: white;
-  padding: 12px 30px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.top-profile-icon{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  cursor:pointer;
+  border:2px solid rgba(255,255,255,.6);
 }
 
-.topbar-right {
-  position: relative;
+.top-profile-dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:46px;
+  width:260px;
+  background:#fff;
+  color:#2a3f63;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #d4e3ff;
+  box-shadow:0 16px 30px rgba(11,44,87,.2);
+  z-index:60;
 }
 
-.top-profile-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  cursor: pointer;
+.top-profile-dropdown p{
+  margin-bottom:6px;
+  font-size:14px;
 }
 
-.top-profile-dropdown {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: 45px;
-  background: white;
-  color: #333;
-  padding: 15px;
-  width: 240px;
-  border-radius: 10px;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.2);
-  z-index: 1000;
+.top-profile-dropdown a{
+  color:#0f4fd0;
+  text-decoration:none;
+  font-weight:700;
 }
 
-/* NAVBAR */
-.navbar {
-  display: flex;
-  gap: 30px;
-  padding: 15px 40px;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+.hero{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:24px;
+  align-items:center;
 }
 
-.navbar a {
-  text-decoration: none;
-  color: #444;
-  font-weight: 600;
+.hero-text h1{
+  color:#093a94;
+  font-size:42px;
+  line-height:1.08;
+  margin-bottom:10px;
 }
 
-.navbar .active {
-  color: #0d47a1;
+.hero-text p{
+  color:#5e6c84;
+  font-size:18px;
+  margin-bottom:18px;
 }
 
-/* CONTAINER */
-.container {
-  padding: 40px 60px;
+.hero-img{
+  width:230px;
+  max-width:100%;
 }
 
-/* HERO */
-.hero {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 60px;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  margin-bottom: 60px;
+.officer-section h2{
+  color:#0a3f9f;
+  font-size:34px;
+  margin-bottom:16px;
 }
 
-.hero-text h1 {
-  font-size: 38px;
-  color: #0d47a1;
-  margin-bottom: 15px;
+.officer-card{
+  max-width:700px;
+  background:linear-gradient(180deg,#fff 0%,#f7fbff 100%);
+  border:1px solid #d7e5ff;
+  border-radius:16px;
+  padding:24px;
+  display:flex;
+  gap:22px;
+  align-items:center;
 }
 
-.hero-text p {
-  font-size: 18px;
-  color: #555;
-  margin-bottom: 20px;
+.officer-avatar-wrap{
+  width:112px;
+  height:112px;
+  border-radius:28px;
+  border:4px solid #f0f5ff;
+  box-shadow:0 12px 22px rgba(19,52,119,.2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#dbe7fb;
+  flex-shrink:0;
 }
 
-.hero-img {
-  width: 240px;
+.officer-avatar{
+  width:92px;
+  height:92px;
+  border-radius:50%;
 }
 
-.btn {
-  background: #0d47a1;
-  color: white;
-  padding: 12px 25px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.officer-info h3{
+  color:#123566;
+  font-size:26px;
+  margin-bottom:2px;
 }
 
-/* SECTION TITLE */
-.section-title {
-  text-align: center;
-  font-size: 28px;
-  color: #0d47a1;
-  margin-bottom: 30px;
+.designation{
+  color:#5e6c84;
+  font-weight:700;
+  margin-bottom:10px;
 }
 
-/* SECTION TITLE */
-.section-title {
-  text-align: center;
-  font-size: 30px;
-  color: #0d47a1;
-  margin-bottom: 25px;
-  font-weight: 600;
+.officer-info p{
+  color:#2e466f;
+  margin-bottom:4px;
 }
 
-/* WRAPPER TO CENTER BOX */
-.officer-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 80px;
-}
+@media (max-width:760px){
+  .hero{
+    grid-template-columns:1fr;
+  }
 
-/* MAIN CARD */
-.officer-card {
-  background: #f1f3f6;
-  width: 700px;
-  padding: 30px 40px;
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  gap: 35px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-}
+  .hero-img{
+    margin:0 auto;
+    width:180px;
+  }
 
-/* IMAGE BOX */
-.officer-img-box {
-  background: #e0e7f1;
-  padding: 15px;
-  border-radius: 50%;
-}
-
-/* SMALL IMAGE */
-.officer-img {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-}
-
-/* DETAILS */
-.officer-details h3 {
-  font-size: 22px;
-  color: #0d47a1;
-  margin-bottom: 5px;
-}
-
-.designation {
-  font-size: 16px;
-  margin-bottom: 12px;
-  color: #444;
-}
-
-.officer-details p {
-  font-size: 15px;
-  color: #555;
-  margin-bottom: 6px;
+  .officer-card{
+    flex-direction:column;
+    text-align:center;
+  }
 }

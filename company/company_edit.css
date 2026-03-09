@@ -1,0 +1,68 @@
+@import url("./company_com.css");
+
+.edit-card{
+  max-width:760px;
+  margin:0 auto;
+}
+
+.edit-card h2{
+  font-size:36px;
+  color:#0c3a94;
+  margin-bottom:8px;
+}
+
+.subtitle{
+  color:#5d6f8f;
+  margin-bottom:20px;
+}
+
+.profile-form{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.field-group{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.field-group label{
+  font-size:14px;
+  font-weight:700;
+  color:#234574;
+}
+
+.field-group input{
+  width:100%;
+  border:1px solid #ccdaf4;
+  background:#f8fbff;
+  border-radius:10px;
+  padding:11px 12px;
+  font-size:14px;
+  font-family:inherit;
+}
+
+.field-group input:focus{
+  outline:none;
+  border-color:#7ea7ff;
+  box-shadow:0 0 0 3px rgba(43,123,255,.15);
+  background:#fff;
+}
+
+.actions{
+  margin-top:6px;
+  display:flex;
+  gap:10px;
+}
+
+.actions .btn,
+.actions .cancel-btn{
+  min-width:140px;
+}
+
+@media (max-width:560px){
+  .edit-card h2{font-size:30px}
+  .actions{flex-direction:column}
+}
