@@ -27,7 +27,7 @@ require_once __DIR__ . "/auth-check.php";
 
 <div class="container">
   <div class="page-head">
-    <h2>Resume Management</h2>
+    <h2>Public Resume Verification</h2>
 
     <input
       type="text"
