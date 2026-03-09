@@ -8,7 +8,14 @@ function get_default_admin_credentials(): array {
     return [
         "username" => "admin",
         "email" => "admin@geck.com",
-        "password_hash" => password_hash("admin@geck", PASSWORD_DEFAULT)
+        "password_hash" => password_hash("admin@geck", PASSWORD_DEFAULT),
+        "profile" => [
+            "name" => "Admin User",
+            "email" => "admin@geck.com",
+            "role_title" => "Placement Coordinator",
+            "department" => "Placement Cell",
+            "phone" => "+91 9876543210"
+        ]
     ];
 }
 
@@ -36,6 +43,14 @@ function get_admin_credentials(): array {
         return $defaults;
     }
 
+    if (!isset($decoded["profile"]) || !is_array($decoded["profile"])) {
+        $defaults = get_default_admin_credentials();
+        $decoded["profile"] = $defaults["profile"];
+    } else {
+        $defaults = get_default_admin_credentials();
+        $decoded["profile"] = array_merge($defaults["profile"], $decoded["profile"]);
+    }
+
     return $decoded;
 }
 
@@ -43,4 +58,19 @@ function save_admin_credentials(array $creds): bool {
     $path = get_admin_credential_path();
     $json = json_encode($creds, JSON_PRETTY_PRINT);
     return $json !== false && file_put_contents($path, $json) !== false;
+}
+
+function get_admin_profile(): array {
+    $creds = get_admin_credentials();
+    $defaults = get_default_admin_credentials()["profile"];
+    $profile = is_array($creds["profile"] ?? null) ? $creds["profile"] : [];
+    return array_merge($defaults, $profile);
+}
+
+function save_admin_profile(array $profile): bool {
+    $creds = get_admin_credentials();
+    $defaults = get_default_admin_credentials()["profile"];
+    $creds["profile"] = array_merge($defaults, $profile);
+    $creds["email"] = $creds["profile"]["email"];
+    return save_admin_credentials($creds);
 }

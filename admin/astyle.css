@@ -495,6 +495,47 @@ body{
   margin-bottom:4px;
 }
 
+.profile-edit-card{
+  margin-bottom:30px;
+}
+
+.profile-form{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:8px;
+}
+
+.profile-form label{
+  font-size:13px;
+  color:#444;
+  font-weight:600;
+}
+
+.profile-form input{
+  padding:9px 10px;
+  border:1px solid #d0d0d0;
+  border-radius:6px;
+}
+
+.profile-form .primary{
+  width:fit-content;
+  margin-top:8px;
+}
+
+.profile-msg{
+  margin-top:8px;
+  font-size:13px;
+}
+
+.profile-msg.success{
+  color:#2e7d32;
+}
+
+.profile-msg.error{
+  color:#c62828;
+}
+
 
 /* ===== Team Section ===== */
 

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/auth-check.php";
 require_once __DIR__ . "/../db.php";
+require_once __DIR__ . "/../admin-credentials.php";
 
 function fetch_total(mysqli $conn, string $sql): int
 {
@@ -16,6 +17,7 @@ function fetch_total(mysqli $conn, string $sql): int
 $studentCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM students");
 $companyCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM companies");
 $publicResumeCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM student_resumes WHERE visibility = 'public'");
+$adminProfile = get_admin_profile();
 ?>
 <!DOCTYPE html>
 <html>
@@ -87,9 +89,10 @@ $publicResumeCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM student_r
   <div class="info-card">
     <div class="info-icon">*</div>
     <h3>Contact Details</h3>
-    <p><b>Email:</b> placement@university.edu</p>
-    <p><b>Phone:</b> +91 9876543210</p>
-    <p><b>Office:</b> Training & Placement Cell</p>
+    <p><b>Name:</b> <?php echo htmlspecialchars($adminProfile["name"]); ?></p>
+    <p><b>Email:</b> <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
+    <p><b>Phone:</b> <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
+    <p><b>Office:</b> <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
   </div>
 </div>
 
