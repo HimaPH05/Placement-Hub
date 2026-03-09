@@ -36,7 +36,28 @@ if ($visibility !== "public" && $visibility !== "private") {
     exit;
 }
 
-$stmt = $conn->prepare("UPDATE student_resumes SET visibility = ? WHERE id = ? AND student_id = ?");
+$hasVerifyColumns = false;
+$verifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
+if ($verifyColCheck && $verifyColCheck->num_rows > 0) {
+    $hasVerifyColumns = true;
+}
+$hasRejectColumns = false;
+$rejectColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_rejected'");
+if ($rejectColCheck && $rejectColCheck->num_rows > 0) {
+    $hasRejectColumns = true;
+}
+
+$statusResetSql = "";
+if ($visibility === "public") {
+    if ($hasVerifyColumns) {
+        $statusResetSql .= ", is_verified = 0, verified_at = NULL";
+    }
+    if ($hasRejectColumns) {
+        $statusResetSql .= ", is_rejected = 0, rejected_at = NULL";
+    }
+}
+
+$stmt = $conn->prepare("UPDATE student_resumes SET visibility = ?{$statusResetSql} WHERE id = ? AND student_id = ?");
 if (!$stmt) {
     http_response_code(500);
     echo json_encode(["success" => false, "message" => "Unable to update resume visibility"]);

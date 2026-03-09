@@ -34,6 +34,17 @@ if ($name === "" || $branch === "" || $gpa === "") {
     exit;
 }
 
+$hasVerifyColumns = false;
+$verifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
+if ($verifyColCheck && $verifyColCheck->num_rows > 0) {
+    $hasVerifyColumns = true;
+}
+$hasRejectColumns = false;
+$rejectColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_rejected'");
+if ($rejectColCheck && $rejectColCheck->num_rows > 0) {
+    $hasRejectColumns = true;
+}
+
 $resumeQuery = $conn->prepare("SELECT id, file_name, mime_type, file_data FROM student_resumes WHERE student_id = ? ORDER BY created_at DESC, id DESC");
 $resumeQuery->bind_param("i", $student_id);
 $resumeQuery->execute();
@@ -87,7 +98,15 @@ if (($fileData === null || $fileData === "") && $latestResume === null) {
 $blob = null;
 
 if ($latestResume !== null) {
-    $update = $conn->prepare("UPDATE student_resumes SET name = ?, branch = ?, gpa = ?, about = ?, skills = ?, file_name = ?, mime_type = ?, file_data = ?, visibility = ? WHERE id = ? AND student_id = ?");
+    $statusResetSql = "";
+    if ($hasVerifyColumns) {
+        $statusResetSql .= ", is_verified = 0, verified_at = NULL";
+    }
+    if ($hasRejectColumns) {
+        $statusResetSql .= ", is_rejected = 0, rejected_at = NULL";
+    }
+
+    $update = $conn->prepare("UPDATE student_resumes SET name = ?, branch = ?, gpa = ?, about = ?, skills = ?, file_name = ?, mime_type = ?, file_data = ?, visibility = ?{$statusResetSql} WHERE id = ? AND student_id = ?");
     $latestId = (int)$latestResume["id"];
     $update->bind_param("sssssssbsii", $name, $branch, $gpa, $about, $skills, $fileName, $mimeType, $blob, $visibility, $latestId, $student_id);
     $update->send_long_data(7, $fileData);
