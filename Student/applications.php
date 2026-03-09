@@ -16,6 +16,47 @@ if ($conn->connect_error) {
 }
 
 $student_id = (int)$_SESSION["user_id"];
+$flashMessage = "";
+$flashType = "success";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["cancel_application_id"])) {
+    $applicationId = (int)$_POST["cancel_application_id"];
+
+    $checkStmt = $conn->prepare("
+        SELECT status
+        FROM applications
+        WHERE id = ? AND student_id = ?
+        LIMIT 1
+    ");
+    $checkStmt->bind_param("ii", $applicationId, $student_id);
+    $checkStmt->execute();
+    $appRow = $checkStmt->get_result()->fetch_assoc();
+
+    if (!$appRow) {
+        $flashType = "error";
+        $flashMessage = "Application not found.";
+    } else {
+        $currentStatus = trim((string)$appRow["status"]);
+        if (in_array($currentStatus, ["Rejected", "Cancelled"], true)) {
+            $flashType = "error";
+            $flashMessage = "This application cannot be cancelled.";
+        } else {
+            $cancelStmt = $conn->prepare("
+                UPDATE applications
+                SET status = 'Cancelled'
+                WHERE id = ? AND student_id = ?
+            ");
+            $cancelStmt->bind_param("ii", $applicationId, $student_id);
+            if ($cancelStmt->execute()) {
+                $flashType = "success";
+                $flashMessage = "Application cancelled successfully.";
+            } else {
+                $flashType = "error";
+                $flashMessage = "Unable to cancel application.";
+            }
+        }
+    }
+}
 
 $query = "
 SELECT
@@ -43,7 +84,8 @@ $counts = [
     "total" => 0,
     "pending" => 0,
     "shortlisted" => 0,
-    "rejected" => 0
+    "rejected" => 0,
+    "cancelled" => 0
 ];
 
 while ($row = $result->fetch_assoc()) {
@@ -57,6 +99,8 @@ while ($row = $result->fetch_assoc()) {
         $counts["shortlisted"]++;
     } elseif ($status === "rejected") {
         $counts["rejected"]++;
+    } elseif ($status === "cancelled") {
+        $counts["cancelled"]++;
     }
 }
 ?>
@@ -83,6 +127,12 @@ while ($row = $result->fetch_assoc()) {
 </nav>
 
 <div class="container">
+  <?php if ($flashMessage !== ""): ?>
+    <div class="flash-msg <?php echo $flashType === "success" ? "flash-success" : "flash-error"; ?>">
+      <?php echo htmlspecialchars($flashMessage); ?>
+    </div>
+  <?php endif; ?>
+
   <div class="page-head">
     <div>
       <h1>My Applications</h1>
@@ -107,6 +157,10 @@ while ($row = $result->fetch_assoc()) {
       <h3><?php echo (int)$counts["rejected"]; ?></h3>
       <p>Rejected</p>
     </div>
+    <div class="stat-card cancelled-card">
+      <h3><?php echo (int)$counts["cancelled"]; ?></h3>
+      <p>Cancelled</p>
+    </div>
   </div>
 
   <div class="table-wrap">
@@ -119,6 +173,7 @@ while ($row = $result->fetch_assoc()) {
           <th>Min CGPA</th>
           <th>Applied On</th>
           <th>Status</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -127,7 +182,9 @@ while ($row = $result->fetch_assoc()) {
             <?php
               $statusClass = strtolower((string)$app["status"]);
               if (!in_array($statusClass, ["pending", "shortlisted", "rejected"], true)) {
-                  $statusClass = "pending";
+                  if ($statusClass !== "cancelled") {
+                      $statusClass = "pending";
+                  }
               }
             ?>
             <tr>
@@ -137,11 +194,21 @@ while ($row = $result->fetch_assoc()) {
               <td><?php echo $app["min_cgpa"] !== null ? htmlspecialchars((string)$app["min_cgpa"]) : "No minimum"; ?></td>
               <td><?php echo htmlspecialchars((string)$app["applied_at"]); ?></td>
               <td><span class="status-badge <?php echo $statusClass; ?>"><?php echo htmlspecialchars((string)$app["status"]); ?></span></td>
+              <td>
+                <?php if (in_array((string)$app["status"], ["Pending", "Shortlisted"], true)): ?>
+                  <form method="post" onsubmit="return confirm('Cancel this application?');">
+                    <input type="hidden" name="cancel_application_id" value="<?php echo (int)$app["id"]; ?>">
+                    <button type="submit" class="btn danger-btn">Cancel Application</button>
+                  </form>
+                <?php else: ?>
+                  <span class="muted-text">Not available</span>
+                <?php endif; ?>
+              </td>
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
           <tr>
-            <td colspan="6" class="empty-cell">You have not applied to any jobs yet.</td>
+            <td colspan="7" class="empty-cell">You have not applied to any jobs yet.</td>
           </tr>
         <?php endif; ?>
       </tbody>

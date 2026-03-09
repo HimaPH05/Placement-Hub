@@ -36,6 +36,25 @@
   margin-bottom:14px;
 }
 
+.flash{
+  border-radius:10px;
+  padding:12px 14px;
+  margin-bottom:16px;
+  font-weight:600;
+}
+
+.flash-success{
+  background:#e8f7ef;
+  border:1px solid #b9e7cb;
+  color:#1c7b47;
+}
+
+.flash-error{
+  background:#ffecec;
+  border:1px solid #f2b5b5;
+  color:#ab2f2f;
+}
+
 table{
   width:100%;
   border-collapse:collapse;
@@ -87,9 +106,54 @@ tbody tr:hover{
 .badge.pending{background:#f2b631}
 .badge.shortlisted{background:#31a465}
 .badge.rejected{background:#d6344a}
+.badge.cancelled{background:#7b879e}
 
 .table-actions{
   display:flex;
   gap:8px;
   flex-wrap:wrap;
+}
+
+.locked-msg{
+  color:#5b6e90;
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.mail-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(12, 24, 44, 0.55);
+  align-items:center;
+  justify-content:center;
+  z-index:2000;
+  padding:16px;
+}
+
+.mail-modal-box{
+  width:min(760px, 96vw);
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 16px 34px rgba(0,0,0,0.22);
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.mail-modal-box h3{
+  color:#0d47a1;
+}
+
+.mail-modal-box textarea{
+  width:100%;
+  min-height:240px;
+  border:1px solid #cdddf6;
+  border-radius:8px;
+  padding:10px 12px;
+  font-size:14px;
+  line-height:1.45;
+  resize:vertical;
 }

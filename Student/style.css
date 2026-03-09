@@ -154,6 +154,27 @@ body{
 .pending-card{border-left:6px solid #f2b631}
 .shortlisted-card{border-left:6px solid #31a465}
 .rejected-card{border-left:6px solid #d6344a}
+.cancelled-card{border-left:6px solid #7b879e}
+
+.flash-msg{
+  border-radius:10px;
+  padding:10px 12px;
+  margin-bottom:14px;
+  font-size:14px;
+  font-weight:700;
+}
+
+.flash-success{
+  background:#e8f7ef;
+  color:#1b6f43;
+  border:1px solid #b8e5cc;
+}
+
+.flash-error{
+  background:#ffecec;
+  color:#a92f2f;
+  border:1px solid #f2b8b8;
+}
 
 .table-wrap{padding:14px;overflow-x:auto}
 .app-table{width:100%;border-collapse:collapse;min-width:760px}
@@ -166,6 +187,22 @@ body{
 .status-badge.pending{background:#f2b631}
 .status-badge.shortlisted{background:#31a465}
 .status-badge.rejected{background:#d6344a}
+.status-badge.cancelled{background:#7b879e}
+
+.danger-btn{
+  background:#c62828;
+  box-shadow:none;
+}
+
+.danger-btn:hover{
+  background:#a91f1f;
+}
+
+.muted-text{
+  color:#7182a0;
+  font-size:13px;
+  font-weight:600;
+}
 
 @media (max-width:700px){
   .topbar{text-align:center;padding:12px 14px}

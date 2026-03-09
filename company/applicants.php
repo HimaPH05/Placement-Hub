@@ -27,6 +27,8 @@ if (!isset($_SESSION["company_id"])) {
 }
 
 $company_id = (int)$_SESSION['company_id'];
+$flashMessage = "";
+$flashType = "success";
 
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
@@ -47,23 +49,77 @@ if ($applicationResumeIdCheck && $applicationResumeIdCheck->num_rows > 0) {
 /* =========================
    UPDATE STATUS
 ========================= */
-if(isset($_GET['action']) && isset($_GET['id'])){
-    $app_id = $_GET['id'];
-    $action = $_GET['action'];
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action_status"], $_POST["app_id"])) {
+    $app_id = (int)$_POST["app_id"];
+    $action = trim((string)$_POST["action_status"]);
+    $mailMessage = trim((string)($_POST["mail_message"] ?? ""));
 
-    if($action == "shortlist"){
+    if ($action === "shortlist") {
         $status = "Shortlisted";
-    } elseif($action == "reject"){
+        if ($mailMessage === "") {
+            $mailMessage = "Congratulations. You are shortlisted. Further procedure details will be shared with you soon.";
+        }
+    } elseif ($action === "reject") {
         $status = "Rejected";
+        if ($mailMessage === "") {
+            $mailMessage = "Thank you for applying. We are unable to move ahead with your profile at this stage.";
+        }
     } else {
         $status = "Pending";
     }
 
-    $stmt = $conn->prepare("UPDATE applications 
-                            SET status=? 
-                            WHERE id=? AND company_id=?");
-    $stmt->bind_param("sii", $status, $app_id, $company_id);
-    $stmt->execute();
+    $appInfoStmt = $conn->prepare("
+        SELECT
+            a.id,
+            a.status AS current_status,
+            s.fullname AS student_name,
+            " . ($hasEmailColumn ? "s.email AS student_email," : "'' AS student_email,") . "
+            j.job_title,
+            c.companyName,
+            c.email AS company_email
+        FROM applications a
+        JOIN students s ON a.student_id = s.id
+        JOIN jobs j ON a.job_id = j.id
+        JOIN companies c ON a.company_id = c.id
+        WHERE a.id = ? AND a.company_id = ?
+        LIMIT 1
+    ");
+    $appInfoStmt->bind_param("ii", $app_id, $company_id);
+    $appInfoStmt->execute();
+    $appInfo = $appInfoStmt->get_result()->fetch_assoc();
+
+    if (!$appInfo) {
+        $flashType = "error";
+        $flashMessage = "Applicant record not found.";
+    } else {
+        $currentStatus = trim((string)($appInfo["current_status"] ?? "Pending"));
+        $isLockedTransition = (
+            ($currentStatus === "Shortlisted" && $status === "Rejected") ||
+            ($currentStatus === "Rejected" && $status === "Shortlisted")
+        );
+
+        $isCancelled = ($currentStatus === "Cancelled");
+
+        if ($isCancelled) {
+            $flashType = "error";
+            $flashMessage = "This application was cancelled by the student and cannot be updated.";
+        } elseif ($isLockedTransition) {
+            $flashType = "error";
+            $flashMessage = "Status is locked. You cannot change from {$currentStatus} to {$status}.";
+        } else {
+        $updateStmt = $conn->prepare("UPDATE applications SET status=? WHERE id=? AND company_id=?");
+        $updateStmt->bind_param("sii", $status, $app_id, $company_id);
+        $updated = $updateStmt->execute();
+
+        if (!$updated) {
+            $flashType = "error";
+            $flashMessage = "Status update failed. Try again.";
+        } else {
+            $flashType = "success";
+            $flashMessage = "Status updated. Gmail compose is used for sending mail.";
+        }
+        }
+    }
 }
 
 /* =========================
@@ -160,6 +216,11 @@ while($row = $result->fetch_assoc()){
 </nav>
 
 <div class="container">
+<?php if ($flashMessage !== ""): ?>
+  <div class="flash <?php echo $flashType === "success" ? "flash-success" : "flash-error"; ?>">
+    <?php echo htmlspecialchars($flashMessage); ?>
+  </div>
+<?php endif; ?>
 
 <!-- ================= STATS ================= -->
 <div class="stats">
@@ -234,7 +295,7 @@ while($row = $result->fetch_assoc()){
           <td>
             <?php
               $statusClass = strtolower((string)$app['status']);
-              if (!in_array($statusClass, ["pending", "shortlisted", "rejected"], true)) {
+              if (!in_array($statusClass, ["pending", "shortlisted", "rejected", "cancelled"], true)) {
                   $statusClass = "pending";
               }
             ?>
@@ -243,10 +304,68 @@ while($row = $result->fetch_assoc()){
             </span>
           </td>
           <td>
-            <div class="table-actions">
-              <a class="action-btn" href="applicants.php?action=shortlist&id=<?php echo $app['id']; ?>">Shortlist</a>
-              <a class="action-btn reject" href="applicants.php?action=reject&id=<?php echo $app['id']; ?>">Reject</a>
-            </div>
+            <?php
+              $currentStatus = (string)$app['status'];
+              $studentName = (string)$app['fullname'];
+              $jobTitle = (string)$app['job_title'];
+              $shortTemplate = "Dear {$studentName},\n\nCongratulations! You are shortlisted for the role of {$jobTitle}.\n\nFurther procedure:\n1. \n2. \n\nRegards,\nRecruitment Team";
+              $rejectTemplate = "Dear {$studentName},\n\nThank you for applying for {$jobTitle}.\n\nWe regret to inform you that your application has been rejected for the following reason:\n- \n\nRegards,\nRecruitment Team";
+            ?>
+
+            <?php if ($currentStatus === "Pending"): ?>
+              <div class="table-actions">
+                <button
+                  type="button"
+                  class="action-btn view"
+                  data-app-id="<?php echo (int)$app['id']; ?>"
+                  data-action="shortlist"
+                  data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
+                  data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
+                  data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
+                  data-title="Shortlist Mail"
+                  onclick="openGmailCompose(this)"
+                >Shortlist</button>
+                <button
+                  type="button"
+                  class="action-btn reject"
+                  data-app-id="<?php echo (int)$app['id']; ?>"
+                  data-action="reject"
+                  data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
+                  data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
+                  data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
+                  data-title="Rejection Mail"
+                  onclick="openGmailCompose(this)"
+                >Reject</button>
+              </div>
+            <?php elseif ($currentStatus === "Shortlisted"): ?>
+              <div class="locked-msg">Shortlisted. Rejection is locked.</div>
+              <button
+                type="button"
+                class="action-btn view"
+                data-app-id="<?php echo (int)$app['id']; ?>"
+                data-action="shortlist"
+                data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
+                data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
+                data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
+                data-title="Shortlist Mail"
+                onclick="openGmailCompose(this)"
+              >Edit + Resend Shortlist Mail</button>
+            <?php elseif ($currentStatus === "Rejected"): ?>
+              <div class="locked-msg">Rejected. Shortlisting is locked.</div>
+              <button
+                type="button"
+                class="action-btn reject"
+                data-app-id="<?php echo (int)$app['id']; ?>"
+                data-action="reject"
+                data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
+                data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
+                data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
+                data-title="Rejection Mail"
+                onclick="openGmailCompose(this)"
+              >Edit + Resend Rejection Mail</button>
+            <?php elseif ($currentStatus === "Cancelled"): ?>
+              <div class="locked-msg">Cancelled by student.</div>
+            <?php endif; ?>
           </td>
         </tr>
         <?php endforeach; ?>
@@ -261,5 +380,71 @@ while($row = $result->fetch_assoc()){
 </div>
 
 </div>
+
+<script>
+function openGmailCompose(btn) {
+  var appId = btn.getAttribute("data-app-id") || "";
+  var action = btn.getAttribute("data-action") || "";
+  var toEmail = btn.getAttribute("data-email") || "";
+  var student = btn.getAttribute("data-student") || "Candidate";
+  var job = btn.getAttribute("data-job") || "the role";
+  var template = "";
+  var subject = "";
+
+  if (!toEmail) {
+    alert("Student email not available.");
+    return;
+  }
+
+  if (action === "shortlist") {
+    subject = "Application Update: Shortlisted for " + job;
+    template =
+      "Dear " + student + ",\n\n" +
+      "Congratulations! You are shortlisted for the role of " + job + ".\n\n" +
+      "Further procedure:\n1. \n2. \n\n" +
+      "Regards,\nRecruitment Team";
+  } else {
+    subject = "Application Update for " + job;
+    template =
+      "Dear " + student + ",\n\n" +
+      "Thank you for applying for " + job + ".\n\n" +
+      "We regret to inform you that your application has been rejected for the following reason:\n- \n\n" +
+      "Regards,\nRecruitment Team";
+  }
+
+  var gmailUrl =
+    "https://mail.google.com/mail/?view=cm&fs=1" +
+    "&to=" + encodeURIComponent(toEmail) +
+    "&su=" + encodeURIComponent(subject) +
+    "&body=" + encodeURIComponent(template);
+
+  window.open(gmailUrl, "_blank");
+
+  var form = document.createElement("form");
+  form.method = "POST";
+  form.action = "applicants.php";
+
+  var appIdInput = document.createElement("input");
+  appIdInput.type = "hidden";
+  appIdInput.name = "app_id";
+  appIdInput.value = appId;
+  form.appendChild(appIdInput);
+
+  var actionInput = document.createElement("input");
+  actionInput.type = "hidden";
+  actionInput.name = "action_status";
+  actionInput.value = action;
+  form.appendChild(actionInput);
+
+  var messageInput = document.createElement("input");
+  messageInput.type = "hidden";
+  messageInput.name = "mail_message";
+  messageInput.value = template;
+  form.appendChild(messageInput);
+
+  document.body.appendChild(form);
+  form.submit();
+}
+</script>
 </body>
 </html>
