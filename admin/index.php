@@ -24,23 +24,24 @@ $adminProfile = get_admin_profile();
 <head>
   <meta charset="UTF-8">
   <title>Home - Placement Hub</title>
-  <link rel="stylesheet" href="astyle.css">
+  <link rel="stylesheet" href="astyle.css?v=20260309">
   <script defer src="script.js?v=10"></script>
 </head>
 
 <body>
-<header class="navbar">
+<header class="topbar">Admin Dashboard</header>
+<nav class="navbar">
   <div class="logo">Placement Hub Admin</div>
 
-  <nav>
+  <div class="links">
     <a href="index.php" class="active">Home</a>
     <a href="company.php">Company</a>
     <a href="resume.php">Resumes</a>
     <a href="feedback.php">Feedback</a>
     <a href="profile.php">Admin Profile</a>
     <a href="../logout.php" class="logout" id="logoutBtn">Logout</a>
-  </nav>
-</header>
+  </div>
+</nav>
 
 <div class="container">
 
