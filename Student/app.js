@@ -52,9 +52,7 @@ function renderCompanies(data = companies) {
     const minCgpaText = c.latest_job_min_cgpa !== null && c.latest_job_min_cgpa !== undefined
       ? String(c.latest_job_min_cgpa)
       : "No minimum";
-    const applyLabel = hasJob
-      ? `Apply (${c.latest_job_title || "Open Role"})`
-      : "No Open Role";
+    const applyLabel = hasJob ? "Apply" : "No Open Role";
 
     companyBox.innerHTML += `
       <div class="company-card">
