@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const message = document.getElementById("message");
     const togglePassword = document.getElementById("togglePassword");
     const changePasswordSection = document.getElementById("changePasswordSection");
-    const changePasswordLink = document.getElementById("changePasswordLink");
     const forgotPasswordLink = document.getElementById("forgotPasswordLink");
 
     function redirectIfAdminAlreadyLoggedIn() {
@@ -38,10 +37,8 @@ document.addEventListener("DOMContentLoaded", function () {
         changePasswordSection.style.display = "block";
 
         if (page) {
-            changePasswordLink.href = `${page}?mode=change`;
             forgotPasswordLink.href = `${page}?mode=forgot`;
         } else {
-            changePasswordLink.href = "#";
             forgotPasswordLink.href = "#";
         }
     }
@@ -59,7 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
         updatePasswordOptions();
     });
 
-    changePasswordLink.addEventListener("click", requireRoleForPasswordLink);
     forgotPasswordLink.addEventListener("click", requireRoleForPasswordLink);
 
     updatePasswordOptions();

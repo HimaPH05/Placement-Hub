@@ -76,8 +76,6 @@ Under Section 2(f) of UGC Act 1956 (Approved by AICTE & Affiliated to APJ Abdul 
 <button type="submit">Login</button>
 
 <div id="changePasswordSection" class="change-password-section">
-<a id="changePasswordLink" href="#">Change Password</a>
-<span>|</span>
 <a id="forgotPasswordLink" href="#">Forgot Password</a>
 </div>
 
