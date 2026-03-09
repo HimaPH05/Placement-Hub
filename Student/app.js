@@ -3,6 +3,8 @@
 ================================================= */
 
 let companies = [];
+const openingsByCompany = {};
+const expandedCompanies = new Set();
 
 /* =================================================
    COMPANIES DATA FROM DB
@@ -47,12 +49,16 @@ function renderCompanies(data = companies) {
   }
 
   data.forEach((c) => {
+    const companyId = Number(c.id);
     const website = c.website ? `<span><b>Website:</b> ${c.website}</span>` : "";
     const hasJob = Number.isInteger(c.latest_job_id) && c.latest_job_id > 0;
     const minCgpaText = c.latest_job_min_cgpa !== null && c.latest_job_min_cgpa !== undefined
       ? String(c.latest_job_min_cgpa)
       : "No minimum";
     const applyLabel = hasJob ? "Apply" : "No Open Role";
+    const isExpanded = expandedCompanies.has(companyId);
+    const openingItems = Array.isArray(openingsByCompany[companyId]) ? openingsByCompany[companyId] : null;
+    const openingContent = renderCompanyOpenings(companyId, openingItems);
 
     companyBox.innerHTML += `
       <div class="company-card">
@@ -68,12 +74,15 @@ function renderCompanies(data = companies) {
           </div>
 
           <div class="action-row">
-            <button class="btn" onclick="addWishById(${c.id})">Add to Wishlist</button>
+            <button class="btn" onclick="addWishById(${companyId})">Add to Wishlist</button>
             <button
               class="btn secondary apply-btn-student"
-              onclick="applyToCompany(${c.id}, ${hasJob ? c.latest_job_id : 0})"
+              onclick="toggleCompanyOpenings(${companyId})"
               ${hasJob ? "" : "disabled"}
             >${escapeHtml(applyLabel)}</button>
+          </div>
+          <div id="openings-${companyId}" class="openings-wrap ${isExpanded ? "openings-visible" : ""}">
+            ${openingContent}
           </div>
         </div>
       </div>
@@ -81,17 +90,48 @@ function renderCompanies(data = companies) {
   });
 }
 
-function searchCompany() {
+function renderCompanyOpenings(companyId, openings) {
+  if (!Array.isArray(openings)) {
+    return '<p class="openings-msg">Click Apply to view available openings.</p>';
+  }
+
+  if (!openings.length) {
+    return '<p class="openings-msg">No openings available right now.</p>';
+  }
+
+  return openings.map((job) => {
+    const minCgpaText = job.min_cgpa !== null && job.min_cgpa !== undefined
+      ? escapeHtml(String(job.min_cgpa))
+      : "No minimum";
+
+    return `
+      <div class="opening-item">
+        <h4>${escapeHtml(job.job_title || "Open Role")}</h4>
+        <p>${escapeHtml(job.job_description || "No description available.")}</p>
+        <div class="opening-meta">
+          <span><b>Location:</b> ${escapeHtml(job.location || "N/A")}</span>
+          <span><b>Openings:</b> ${escapeHtml(String(job.openings ?? 0))}</span>
+          <span><b>Min CGPA:</b> ${minCgpaText}</span>
+        </div>
+        <button class="btn" onclick="applyToCompany(${companyId}, ${Number(job.id) || 0})">Apply</button>
+      </div>
+    `;
+  }).join("");
+}
+
+function getVisibleCompanies() {
   const input = document.getElementById("searchCompany");
-  if (!input) return;
+  const value = input ? input.value.toLowerCase().trim() : "";
 
-  const value = input.value.toLowerCase().trim();
+  if (!value) return companies;
 
-  const filtered = companies.filter((c) =>
+  return companies.filter((c) =>
     (c.name || "").toLowerCase().includes(value)
   );
+}
 
-  renderCompanies(filtered);
+function searchCompany() {
+  renderCompanies(getVisibleCompanies());
 }
 
 /* =================================================
@@ -185,11 +225,68 @@ async function applyToCompany(companyId, jobId) {
       })
     });
 
-    const result = await res.json();
-    alert(result.message || "Unable to apply right now.");
+    const raw = await res.text();
+    let result = null;
+    try {
+      result = JSON.parse(raw);
+    } catch (parseErr) {
+      console.error(parseErr);
+    }
+
+    if (!res.ok) {
+      const fallback = raw && raw.trim()
+        ? raw.trim().slice(0, 220)
+        : `Apply failed (HTTP ${res.status})`;
+      alert((result && result.message) || fallback);
+      return;
+    }
+
+    if (result && result.message) {
+      alert(result.message);
+      return;
+    }
+
+    const successFallback = raw && raw.trim() ? raw.trim().slice(0, 220) : "Application submitted.";
+    alert(successFallback);
   } catch (err) {
     console.error(err);
     alert("Server not reachable.");
+  }
+}
+
+async function toggleCompanyOpenings(companyId) {
+  const normalizedCompanyId = Number(companyId);
+  if (!normalizedCompanyId) return;
+
+  if (expandedCompanies.has(normalizedCompanyId)) {
+    expandedCompanies.delete(normalizedCompanyId);
+    renderCompanies(getVisibleCompanies());
+    return;
+  }
+
+  expandedCompanies.add(normalizedCompanyId);
+  renderCompanies(getVisibleCompanies());
+
+  if (Array.isArray(openingsByCompany[normalizedCompanyId])) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`get_company_openings.php?company_id=${normalizedCompanyId}`);
+    const result = await res.json();
+
+    if (!res.ok || !Array.isArray(result.openings)) {
+      openingsByCompany[normalizedCompanyId] = [];
+    } else {
+      openingsByCompany[normalizedCompanyId] = result.openings;
+    }
+  } catch (err) {
+    console.error(err);
+    openingsByCompany[normalizedCompanyId] = [];
+  }
+
+  if (expandedCompanies.has(normalizedCompanyId)) {
+    renderCompanies(getVisibleCompanies());
   }
 }
 

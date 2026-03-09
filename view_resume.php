@@ -39,12 +39,40 @@ $role = $_SESSION["role"];
 $user_id = isset($_SESSION["user_id"]) ? (int)$_SESSION["user_id"] : 0;
 $isOwner = ((int)$row["student_id"] === $user_id);
 $isPublic = ($row["visibility"] === "public");
+$hasAppliedAccess = false;
+
+if ($role === "company") {
+    $companyId = isset($_SESSION["company_id"]) ? (int)$_SESSION["company_id"] : 0;
+
+    if ($companyId <= 0 && isset($_SESSION["username"])) {
+        $companyStmt = $conn->prepare("SELECT id FROM companies WHERE username = ? LIMIT 1");
+        $companyStmt->bind_param("s", $_SESSION["username"]);
+        $companyStmt->execute();
+        $companyRow = $companyStmt->get_result()->fetch_assoc();
+        if ($companyRow) {
+            $companyId = (int)$companyRow["id"];
+            $_SESSION["company_id"] = $companyId;
+        }
+    }
+
+    if ($companyId > 0) {
+        $accessStmt = $conn->prepare("
+            SELECT id
+            FROM applications
+            WHERE company_id = ? AND resume_id = ?
+            LIMIT 1
+        ");
+        $accessStmt->bind_param("ii", $companyId, $resume_id);
+        $accessStmt->execute();
+        $hasAppliedAccess = $accessStmt->get_result()->num_rows > 0;
+    }
+}
 
 $allowed = false;
 if ($role === "admin") {
     $allowed = true;
 } elseif ($role === "company") {
-    $allowed = $isPublic;
+    $allowed = $isPublic || $hasAppliedAccess;
 } elseif ($role === "student") {
     $allowed = $isPublic || $isOwner;
 }

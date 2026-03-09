@@ -90,6 +90,12 @@ $conn->query("CREATE TABLE IF NOT EXISTS student_resumes (
     INDEX idx_visibility_created (visibility, created_at)
 )");
 
+/* APPLICATIONS TABLE MIGRATION: add resume_id if missing */
+$resumeIdCol = $conn->query("SHOW COLUMNS FROM applications LIKE 'resume_id'");
+if ($resumeIdCol && $resumeIdCol->num_rows === 0) {
+    $conn->query("ALTER TABLE applications ADD COLUMN resume_id INT NULL AFTER job_id");
+}
+
 /* STUDENT RESUME VERIFICATION COLUMNS */
 $resumeVerifiedCol = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
 if ($resumeVerifiedCol && $resumeVerifiedCol->num_rows === 0) {

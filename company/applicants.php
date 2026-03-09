@@ -30,6 +30,7 @@ $company_id = (int)$_SESSION['company_id'];
 
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
+$hasApplicationResumeIdColumn = false;
 $scorecardCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($scorecardCheck && $scorecardCheck->num_rows > 0) {
     $hasScorecardColumn = true;
@@ -37,6 +38,10 @@ if ($scorecardCheck && $scorecardCheck->num_rows > 0) {
 $emailCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
 if ($emailCheck && $emailCheck->num_rows > 0) {
     $hasEmailColumn = true;
+}
+$applicationResumeIdCheck = $conn->query("SHOW COLUMNS FROM applications LIKE 'resume_id'");
+if ($applicationResumeIdCheck && $applicationResumeIdCheck->num_rows > 0) {
+    $hasApplicationResumeIdColumn = true;
 }
 
 /* =========================
@@ -67,6 +72,27 @@ if(isset($_GET['action']) && isset($_GET['id'])){
 $scorecardSelect = $hasScorecardColumn ? "students.ktu_scorecard_path," : "'' AS ktu_scorecard_path,";
 $emailSelect = $hasEmailColumn ? "students.email," : "'' AS email,";
 
+$resumeJoinExpr = $hasApplicationResumeIdColumn
+    ? "COALESCE(
+        applications.resume_id,
+        (
+            SELECT sr2.id
+            FROM student_resumes sr2
+            WHERE sr2.student_id = applications.student_id
+              AND sr2.visibility = 'public'
+            ORDER BY sr2.created_at DESC, sr2.id DESC
+            LIMIT 1
+        )
+    )"
+    : "(
+        SELECT sr2.id
+        FROM student_resumes sr2
+        WHERE sr2.student_id = applications.student_id
+          AND sr2.visibility = 'public'
+        ORDER BY sr2.created_at DESC, sr2.id DESC
+        LIMIT 1
+    )";
+
 $query = "
 SELECT
     applications.*,
@@ -84,12 +110,7 @@ FROM applications
 JOIN students ON applications.student_id = students.id
 JOIN jobs ON applications.job_id = jobs.id
 LEFT JOIN student_resumes sr ON sr.id = (
-    SELECT sr2.id
-    FROM student_resumes sr2
-    WHERE sr2.student_id = applications.student_id
-      AND sr2.visibility = 'public'
-    ORDER BY sr2.created_at DESC, sr2.id DESC
-    LIMIT 1
+    {$resumeJoinExpr}
 )
 WHERE applications.company_id = ?
 ORDER BY applications.applied_at DESC
