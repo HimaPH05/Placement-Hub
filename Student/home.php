@@ -70,6 +70,7 @@ $student = [
   <div class="links">
     <a href="home.php" class="active">Home</a>
     <a href="companies.html">Companies</a>
+    <a href="applications.php">My Applications</a>
     <a href="wishlist.html">Wishlist</a>
     <a href="feedback.html">Feedback</a>
     <a href="resumes.html">Resumes</a>
@@ -133,6 +134,11 @@ $student = [
     <div class="feature-card">
       <h3>⭐ Wishlist</h3>
       <p>Save your favorite companies</p>
+    </div>
+
+    <div class="feature-card">
+      <h3>📌 Applications</h3>
+      <p>Track your current application status</p>
     </div>
 
     <div class="feature-card">

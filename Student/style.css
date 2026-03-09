@@ -536,3 +536,96 @@ body{
 .apply-btn-student:disabled:hover{
   background:#9e9e9e;
 }
+
+/* ================= MY APPLICATIONS ================= */
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.stat-card{
+  background:white;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  padding:16px 18px;
+}
+
+.stat-card h3{
+  color:#0d47a1;
+  font-size:28px;
+  margin-bottom:4px;
+}
+
+.stat-card p{
+  color:#666;
+  font-size:14px;
+}
+
+.pending-card{border-left:5px solid #f9a825;}
+.shortlisted-card{border-left:5px solid #2e7d32;}
+.rejected-card{border-left:5px solid #c62828;}
+
+.table-wrap{
+  background:white;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  overflow-x:auto;
+}
+
+.app-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.app-table thead{
+  background:#0d47a1;
+}
+
+.app-table th{
+  color:white;
+  text-align:left;
+  padding:12px 14px;
+  font-size:14px;
+}
+
+.app-table td{
+  padding:12px 14px;
+  border-bottom:1px solid #eee;
+  font-size:14px;
+  color:#333;
+}
+
+.app-table tbody tr:hover{
+  background:#f5f7fa;
+}
+
+.status-badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+
+.status-badge.pending{
+  background:#fff3cd;
+  color:#8a6d1d;
+}
+
+.status-badge.shortlisted{
+  background:#d4edda;
+  color:#155724;
+}
+
+.status-badge.rejected{
+  background:#f8d7da;
+  color:#721c24;
+}
+
+.empty-cell{
+  text-align:center;
+  color:#666;
+}
