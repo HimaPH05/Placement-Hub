@@ -7,7 +7,7 @@ require_once __DIR__ . "/auth-check.php";
   <meta charset="UTF-8">
   <title>Company Management</title>
   <link rel="stylesheet" href="astyle.css">
-  <script defer src="script.js?v=8"></script>
+  <script defer src="script.js?v=9"></script>
 </head>
 
 <body>
@@ -38,7 +38,8 @@ require_once __DIR__ . "/auth-check.php";
     <h3>Add Company</h3>
     <input id="name" placeholder="Company Name">
     <input id="email" placeholder="HR Email">
-    <input id="cgpa" placeholder="Minimum CGPA">
+    <input id="location" placeholder="Location">
+    <input id="industry" placeholder="Industry">
 
     <div class="modal-actions">
       <button class="primary" onclick="addCompany()">Save</button>
