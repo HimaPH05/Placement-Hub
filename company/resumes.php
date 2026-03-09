@@ -44,13 +44,13 @@ $result = $stmt->get_result();
 <head>
   <meta charset="UTF-8">
   <title>Resumes - Placement Hub</title>
-  <link rel="stylesheet" href="company_resume.css">
+  <link rel="stylesheet" href="company_resume.css?v=20260309">
 </head>
 
 <body>
 
 <header class="topbar">
-  Student Resume Database
+  Company Dashboard
 </header>
 
 <nav class="navbar">
@@ -62,7 +62,8 @@ $result = $stmt->get_result();
 
 <div class="container">
 
-<div class="search-box">
+<div class="search-box card">
+  <h3>Student Resume Database</h3>
   <form method="GET">
     <input
       type="text"
@@ -78,7 +79,7 @@ $result = $stmt->get_result();
 <?php if ($result->num_rows > 0): ?>
   <?php while ($resume = $result->fetch_assoc()): ?>
 
-    <div class="resume-card">
+    <div class="resume-card card">
       <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="resume-avatar">
 
       <h4><?php echo htmlspecialchars($resume["name"]); ?></h4>
@@ -101,7 +102,7 @@ $result = $stmt->get_result();
 
   <?php endwhile; ?>
 <?php else: ?>
-  <p>No public resumes found.</p>
+  <p class="empty-state">No public resumes found.</p>
 <?php endif; ?>
 
 </div>
