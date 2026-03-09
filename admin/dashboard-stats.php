@@ -32,7 +32,12 @@ $conn->query("CREATE TABLE IF NOT EXISTS admin_settings (
 
 $students = get_count($conn, "students");
 $companies = get_count($conn, "companies");
-$resumes = get_count($conn, "student_resumes");
+$resumes = 0;
+$publicResumeResult = $conn->query("SELECT COUNT(*) AS total FROM student_resumes WHERE visibility = 'public'");
+if ($publicResumeResult) {
+    $publicResumeRow = $publicResumeResult->fetch_assoc();
+    $resumes = (int)($publicResumeRow["total"] ?? 0);
+}
 
 $placements = 0;
 $stmt = $conn->prepare("SELECT value_text FROM admin_settings WHERE key_name = 'placements_count' LIMIT 1");

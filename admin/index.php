@@ -1,5 +1,21 @@
 <?php
 require_once __DIR__ . "/auth-check.php";
+require_once __DIR__ . "/../db.php";
+
+function fetch_total(mysqli $conn, string $sql): int
+{
+  $result = $conn->query($sql);
+  if (!$result) {
+    return 0;
+  }
+
+  $row = $result->fetch_assoc();
+  return (int)($row["total"] ?? 0);
+}
+
+$studentCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM students");
+$companyCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM companies");
+$publicResumeCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM student_resumes WHERE visibility = 'public'");
 ?>
 <!DOCTYPE html>
 <html>
@@ -34,17 +50,17 @@ require_once __DIR__ . "/auth-check.php";
   <div class="stats-grid">
     <div class="stat-card blue">
       <p>Students</p>
-      <h2 id="studentCount">0</h2>
+      <h2 id="studentCount"><?php echo $studentCount; ?></h2>
     </div>
 
     <div class="stat-card green">
       <p>Companies</p>
-      <h2 id="companyCount">0</h2>
+      <h2 id="companyCount"><?php echo $companyCount; ?></h2>
     </div>
 
     <div class="stat-card purple">
-      <p>Resumes</p>
-      <h2 id="resumeCount">0</h2>
+      <p>Public Resumes</p>
+      <h2 id="resumeCount"><?php echo $publicResumeCount; ?></h2>
     </div>
 
     <div class="stat-card orange">
