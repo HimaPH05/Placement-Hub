@@ -42,19 +42,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_team"])) {
   $names = $_POST["team_name"] ?? [];
   $roles = $_POST["team_role"] ?? [];
+  $mobiles = $_POST["team_mobile"] ?? [];
   $members = [];
 
-  if (is_array($names) && is_array($roles)) {
-    $count = max(count($names), count($roles));
+  if (is_array($names) && is_array($roles) && is_array($mobiles)) {
+    $count = max(count($names), count($roles), count($mobiles));
     for ($i = 0; $i < $count; $i++) {
       $memberName = trim((string)($names[$i] ?? ""));
       $memberRole = trim((string)($roles[$i] ?? ""));
-      if ($memberName === "" && $memberRole === "") {
+      $memberMobile = trim((string)($mobiles[$i] ?? ""));
+      if ($memberName === "" && $memberRole === "" && $memberMobile === "") {
         continue;
       }
       $members[] = [
         "name" => $memberName,
-        "role" => $memberRole
+        "role" => $memberRole,
+        "mobile" => $memberMobile
       ];
     }
   }
@@ -152,6 +155,7 @@ $teamMembers = get_admin_team_members();
       <div class="team-card">
         <h4><?php echo htmlspecialchars($member["name"] ?? ""); ?></h4>
         <p><?php echo htmlspecialchars($member["role"] ?? ""); ?></p>
+        <p><?php echo htmlspecialchars($member["mobile"] ?? ""); ?></p>
       </div>
     <?php endforeach; ?>
   </div>
@@ -176,6 +180,13 @@ $teamMembers = get_admin_team_members();
             name="team_role[]"
             value="<?php echo htmlspecialchars($teamMembers[$i]["role"] ?? ""); ?>"
             placeholder="Team member role">
+
+          <label for="team_mobile_<?php echo $i; ?>">Member <?php echo $i + 1; ?> Mobile Number</label>
+          <input
+            id="team_mobile_<?php echo $i; ?>"
+            name="team_mobile[]"
+            value="<?php echo htmlspecialchars($teamMembers[$i]["mobile"] ?? ""); ?>"
+            placeholder="+91 9876543210">
         </div>
       <?php endfor; ?>
 

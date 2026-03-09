@@ -17,10 +17,10 @@ function get_default_admin_credentials(): array {
             "phone" => "+91 9876543210"
         ],
         "team_members" => [
-            ["name" => "Dr. John Smith", "role" => "Head Coordinator"],
-            ["name" => "Sarah Johnson", "role" => "Assistant Coordinator"],
-            ["name" => "Emily Davis", "role" => "Industry Liaison"],
-            ["name" => "David Wilson", "role" => "Student Relations"]
+            ["name" => "Dr. John Smith", "role" => "Head Coordinator", "mobile" => "+91 9876543211"],
+            ["name" => "Sarah Johnson", "role" => "Assistant Coordinator", "mobile" => "+91 9876543212"],
+            ["name" => "Emily Davis", "role" => "Industry Liaison", "mobile" => "+91 9876543213"],
+            ["name" => "David Wilson", "role" => "Student Relations", "mobile" => "+91 9876543214"]
         ]
     ];
 }
@@ -68,12 +68,14 @@ function get_admin_credentials(): array {
             }
             $memberName = trim((string)($member["name"] ?? ""));
             $memberRole = trim((string)($member["role"] ?? ""));
-            if ($memberName === "" && $memberRole === "") {
+            $memberMobile = trim((string)($member["mobile"] ?? ""));
+            if ($memberName === "" && $memberRole === "" && $memberMobile === "") {
                 continue;
             }
             $normalizedTeam[] = [
                 "name" => $memberName,
-                "role" => $memberRole
+                "role" => $memberRole,
+                "mobile" => $memberMobile
             ];
         }
         $decoded["team_members"] = count($normalizedTeam) > 0 ? $normalizedTeam : $defaultTeam;
@@ -115,10 +117,11 @@ function get_admin_team_members(): array {
         }
         $name = trim((string)($member["name"] ?? ""));
         $role = trim((string)($member["role"] ?? ""));
-        if ($name === "" && $role === "") {
+        $mobile = trim((string)($member["mobile"] ?? ""));
+        if ($name === "" && $role === "" && $mobile === "") {
             continue;
         }
-        $normalized[] = ["name" => $name, "role" => $role];
+        $normalized[] = ["name" => $name, "role" => $role, "mobile" => $mobile];
     }
 
     return count($normalized) > 0 ? $normalized : $defaultTeam;
@@ -133,10 +136,11 @@ function save_admin_team_members(array $members): bool {
         }
         $name = trim((string)($member["name"] ?? ""));
         $role = trim((string)($member["role"] ?? ""));
-        if ($name === "" && $role === "") {
+        $mobile = trim((string)($member["mobile"] ?? ""));
+        if ($name === "" && $role === "" && $mobile === "") {
             continue;
         }
-        $normalized[] = ["name" => $name, "role" => $role];
+        $normalized[] = ["name" => $name, "role" => $role, "mobile" => $mobile];
     }
 
     if (count($normalized) === 0) {
