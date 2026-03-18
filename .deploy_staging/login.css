@@ -1,0 +1,257 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-1: #0a1f44;
+  --bg-2: #134e5e;
+  --accent: #f59e0b;
+  --panel: #ffffff;
+  --text-dark: #10213d;
+  --text-soft: #4f5f78;
+  --line: #d6dbe6;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(320px, 1.15fr) minmax(320px, 0.85fr);
+  align-items: stretch;
+  background:
+    radial-gradient(900px 500px at 20% 10%, rgba(245, 158, 11, 0.2), transparent 55%),
+    radial-gradient(700px 500px at 85% 80%, rgba(20, 184, 166, 0.2), transparent 65%),
+    linear-gradient(120deg, var(--bg-1), var(--bg-2));
+  color: #fff;
+  font-family: "Segoe UI", "Trebuchet MS", Verdana, sans-serif;
+  overflow-x: hidden;
+}
+
+.college-header {
+  padding: 56px 56px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+}
+
+.college-header::before {
+  content: "";
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  right: -140px;
+  top: -160px;
+  background: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+}
+
+.college-logo {
+  width: 86px;
+  height: 86px;
+  border-radius: 50%;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+}
+
+.college-name {
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.12;
+  max-width: 14ch;
+  font-weight: 750;
+  letter-spacing: 0.3px;
+  color: #fff;
+}
+
+.college-text {
+  max-width: 58ch;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+}
+
+.college-text-small {
+  max-width: 62ch;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 14px;
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+}
+
+.card {
+  width: min(430px, 100%);
+  background: var(--panel);
+  color: var(--text-dark);
+  border-radius: 22px;
+  padding: 34px 30px;
+  box-shadow: 0 18px 40px rgba(5, 18, 43, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.card h2 {
+  font-size: 32px;
+  line-height: 1;
+  margin-bottom: 6px;
+  font-weight: 800;
+  color: var(--text-dark);
+}
+
+.card h3 {
+  font-size: 14px;
+  margin-bottom: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-soft);
+  text-transform: uppercase;
+}
+
+label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fcfdff;
+  color: var(--text-dark);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: #2f6df6;
+  box-shadow: 0 0 0 3px rgba(47, 109, 246, 0.18);
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper span {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #3c4f6f;
+}
+
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(29, 78, 216, 0.28);
+}
+
+.change-password-section {
+  margin-top: 12px;
+  text-align: right;
+  font-size: 13px;
+}
+
+.change-password-section a {
+  color: #b91c1c;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.change-password-section a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  color: #b91c1c;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 13px;
+  min-height: 18px;
+}
+
+#logoutMessage {
+  color: #15803d !important;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.signup-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #e3e7ef;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.signup-section a {
+  color: #1d4ed8;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.signup-section a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  body {
+    grid-template-columns: 1fr;
+  }
+
+  .college-header {
+    padding: 40px 22px 18px;
+    text-align: center;
+    align-items: center;
+  }
+
+  .college-name {
+    max-width: 20ch;
+  }
+
+  .college-text,
+  .college-text-small {
+    max-width: 72ch;
+  }
+
+  .container {
+    padding: 14px 16px 32px;
+  }
+
+  .card {
+    padding: 28px 22px;
+    border-radius: 16px;
+  }
+}

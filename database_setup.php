@@ -1,5 +1,7 @@
 <?php
-$conn = new mysqli("localhost", "root", "", "detailsdb");
+require_once __DIR__ . "/db-config.php";
+$cfg = placementhub_db_config();
+$conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
 if ($conn->connect_error) die("Connection failed");
 
 /* STUDENT EMAIL VERIFICATION COLUMNS (if students table exists) */

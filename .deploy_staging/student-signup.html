@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Student Account</title>
+  <link rel="stylesheet" href="student-signup.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0e4ccf">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Placement Hub">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <script defer src="pwa-register.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <form id="signupForm" class="card">
+      <h2>Placement Hub</h2>
+      <h3>Create Student Account</h3>
+
+      <label>Username</label>
+      <input type="text" id="username" placeholder="Create username" required>
+
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Enter email address" required>
+
+      <label>Password</label>
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Create password" required>
+        <span id="togglePassword">👁️</span>
+      </div>
+
+      <label>Full Name</label>
+      <input type="text" id="fullname" placeholder="Enter full name" required>
+
+      <label>University Register Number</label>
+      <input type="text" id="regno" placeholder="Enter register number" required>
+
+      <label>Date of Joining (College)</label>
+      <input type="date" id="admission_date" required>
+
+      <label>Date of Birth</label>
+      <input type="date" id="dob" required>
+
+      <label>CGPA</label>
+      <input type="number" id="cgpa" step="0.01" min="0" max="10" placeholder="Enter CGPA" required>
+
+      <button type="submit">Create Account</button>
+
+      <p class="switch">
+        Already have an account?
+        <a href="login.php">Login</a>
+      </p>
+
+      <p id="error" class="error"></p>
+    </form>
+  </div>
+
+  <script src="student-signup.js"></script>
+</body>
+</html>

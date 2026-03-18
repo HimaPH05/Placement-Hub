@@ -1,7 +1,9 @@
 <?php
 header("Content-Type: application/json");
 
-$conn = new mysqli("localhost", "root", "", "detailsdb");
+require_once __DIR__ . "/db-config.php";
+$cfg = placementhub_db_config();
+$conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
 if ($conn->connect_error) {
     echo json_encode(["message" => "Database connection failed"]);
     exit;

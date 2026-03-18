@@ -1,0 +1,139 @@
+@import url("./company_com.css");
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.topbar-right{
+  position:relative;
+}
+
+.top-profile-icon{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  cursor:pointer;
+  border:2px solid rgba(255,255,255,.6);
+}
+
+.top-profile-dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:46px;
+  width:260px;
+  background:#fff;
+  color:#2a3f63;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #d4e3ff;
+  box-shadow:0 16px 30px rgba(11,44,87,.2);
+  z-index:60;
+}
+
+.top-profile-dropdown p{
+  margin-bottom:6px;
+  font-size:14px;
+}
+
+.top-profile-dropdown a{
+  color:#0f4fd0;
+  text-decoration:none;
+  font-weight:700;
+}
+
+.hero{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:24px;
+  align-items:center;
+}
+
+.hero-text h1{
+  color:#093a94;
+  font-size:42px;
+  line-height:1.08;
+  margin-bottom:10px;
+}
+
+.hero-text p{
+  color:#5e6c84;
+  font-size:18px;
+  margin-bottom:18px;
+}
+
+.hero-img{
+  width:230px;
+  max-width:100%;
+}
+
+.officer-section h2{
+  color:#0a3f9f;
+  font-size:34px;
+  margin-bottom:16px;
+}
+
+.officer-card{
+  max-width:700px;
+  background:linear-gradient(180deg,#fff 0%,#f7fbff 100%);
+  border:1px solid #d7e5ff;
+  border-radius:16px;
+  padding:24px;
+  display:flex;
+  gap:22px;
+  align-items:center;
+}
+
+.officer-avatar-wrap{
+  width:112px;
+  height:112px;
+  border-radius:28px;
+  border:4px solid #f0f5ff;
+  box-shadow:0 12px 22px rgba(19,52,119,.2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#dbe7fb;
+  flex-shrink:0;
+}
+
+.officer-avatar{
+  width:92px;
+  height:92px;
+  border-radius:50%;
+}
+
+.officer-info h3{
+  color:#123566;
+  font-size:26px;
+  margin-bottom:2px;
+}
+
+.designation{
+  color:#5e6c84;
+  font-weight:700;
+  margin-bottom:10px;
+}
+
+.officer-info p{
+  color:#2e466f;
+  margin-bottom:4px;
+}
+
+@media (max-width:760px){
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+  .hero-img{
+    margin:0 auto;
+    width:180px;
+  }
+
+  .officer-card{
+    flex-direction:column;
+    text-align:center;
+  }
+}

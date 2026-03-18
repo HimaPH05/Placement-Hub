@@ -1,0 +1,15 @@
+RewriteEngine On
+
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+Header set Pragma "no-cache"
+Header set Expires "0"
+</IfModule>
+
+RewriteRule ^$ index.php [L]
+RewriteRule ^index\.html$ index.php [R=302,L]
+RewriteRule ^company\.html$ company.php [R=302,L]
+RewriteRule ^resume\.html$ resume.php [R=302,L]
+RewriteRule ^profile\.html$ profile.php [R=302,L]

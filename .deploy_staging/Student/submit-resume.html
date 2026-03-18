@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Submit Resume | Placement Hub</title>
+  <link rel="stylesheet" href="style.css?v=20260310">
+  <script defer src="app.js?v=20260314"></script>
+</head>
+
+<body>
+<header class="topbar">Student Dashboard</header>
+
+<nav class="navbar">
+  <h2 class="logo">Placement Hub</h2>
+
+  <div class="links">
+    <a href="home.php">Home</a>
+    <a href="companies.html">Companies</a>
+    <a href="applications.php">My Applications</a>
+    <a href="wishlist.html">Wishlist</a>
+    <a href="feedback.html">Feedback</a>
+    <a href="resumes.html" class="active">Resumes</a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="form-wrapper">
+    <h1>Submit Your Resume</h1>
+    <p class="sub-text">Fill in your details to showcase your profile to recruiters.</p>
+
+    <form id="resumeForm" onsubmit="submitResume(event)" class="form-card" enctype="multipart/form-data">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="text" id="branch" placeholder="Branch (eg: CSE)" required>
+      <input type="text" id="gpa" placeholder="GPA" required>
+      <textarea id="about" placeholder="Short Profile"></textarea>
+      <input type="text" id="skills" placeholder="Skills (comma separated)">
+
+      <div class="file-upload">
+        <label for="visibility">Resume Visibility</label>
+        <select id="visibility" required>
+          <option value="private">Private (only me)</option>
+          <option value="public">Public (all student accounts)</option>
+        </select>
+      </div>
+
+      <div class="file-upload">
+        <label for="resumeFile" id="resumeFileLabel">Upload Resume (PDF / DOC)</label>
+        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx">
+      </div>
+
+      <button type="submit" class="btn">Submit Resume</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

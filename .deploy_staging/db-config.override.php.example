@@ -1,0 +1,8 @@
+<?php
+// Copy this file to `db-config.override.php` and fill your hosting DB credentials.
+
+define("PLACEMENTHUB_DB_HOST", "sql108.infinityfree.com");
+define("PLACEMENTHUB_DB_USER", "if0_41424809");
+define("PLACEMENTHUB_DB_PASS", "YOUR_DB_PASSWORD");
+define("PLACEMENTHUB_DB_NAME", "if0_41424809_placementhub");
+
