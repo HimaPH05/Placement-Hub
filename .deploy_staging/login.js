@@ -146,31 +146,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 message.textContent = result.message;
                 message.style.color = "red";
 
-                if (result.code === "EMAIL_NOT_VERIFIED") {
-                    message.innerHTML =
-                      `${result.message} <a href="#" id="resendVerifyLink" style="color:#0e4ccf; font-weight:700;">Resend verification</a>`;
-
-                    const resend = document.getElementById("resendVerifyLink");
-                    resend.addEventListener("click", function (ev) {
-                        ev.preventDefault();
-                        fetch("resend-verification.php", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            credentials: "include",
-                            body: JSON.stringify({ username: user, password: pass })
-                        })
-                        .then(r => r.json())
-                        .then(rj => {
-                            message.textContent = rj.message || "Verification email sent.";
-                            message.style.color = "#15803d";
-                        })
-                        .catch(() => {
-                            message.textContent = "Failed to resend verification email.";
-                            message.style.color = "red";
-                        });
-                    });
-                }
-
                 if (result.code === "STUDENT_ACCESS_EXPIRED") {
                     // Hard stop; redirect to login page with a persistent message.
                     window.location.replace("login.php?expired=1");

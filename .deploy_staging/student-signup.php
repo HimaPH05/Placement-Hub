@@ -54,11 +54,6 @@ if ($result->num_rows > 0) {
 
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 
-$tokenBytes = random_bytes(32);
-$token = rtrim(strtr(base64_encode($tokenBytes), "+/", "-_"), "=");
-$tokenHash = hash("sha256", $token);
-$expiresAt = (new DateTimeImmutable("+24 hours"))->format("Y-m-d H:i:s");
-
 $hasLifecycleCols = false;
 $lifeColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'access_expires_at'");
 if ($lifeColCheck && $lifeColCheck->num_rows > 0) {
@@ -91,44 +86,6 @@ if ($hasLifecycleCols) {
 }
 
 if ($stmt->execute()) {
-    $studentId = (int)$stmt->insert_id;
-
-    // Only enable verification if DB has the columns (keeps compatibility before running database_setup.php).
-    $hasVerify = false;
-    $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email_verify_token_hash'");
-    if ($colCheck && $colCheck->num_rows > 0) {
-        $hasVerify = true;
-    }
-
-    if ($hasVerify) {
-        $u = $conn->prepare("UPDATE students SET is_email_verified = 0, email_verify_token_hash = ?, email_verify_expires_at = ? WHERE id = ?");
-        $u->bind_param("ssi", $tokenHash, $expiresAt, $studentId);
-        $u->execute();
-        $u->close();
-
-        $scheme = (!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] !== "off") ? "https" : "http";
-        $host = $_SERVER["HTTP_HOST"] ?? "localhost";
-        $basePath = rtrim(str_replace("\\", "/", dirname($_SERVER["SCRIPT_NAME"] ?? "/")), "/");
-        $verifyUrl = "{$scheme}://{$host}{$basePath}/verify-email.php?token=" . urlencode($token);
-
-        require_once __DIR__ . "/email.php";
-        $subject = "Verify your Placement Hub email";
-        $body = "Hi {$fullname},\n\n";
-        $body .= "Please verify your email to activate your Placement Hub student account:\n\n";
-        $body .= $verifyUrl . "\n\n";
-        $body .= "This link expires in 24 hours.\n\n";
-        $body .= "If you did not create this account, you can ignore this email.\n";
-
-        [$sent, $note] = send_email($email, $subject, $body);
-
-        echo json_encode([
-            "message" => "Account created. Verification email sent. Please verify before login.",
-            "needs_verification" => true,
-            "mail_note" => $sent ? "" : $note
-        ]);
-        exit;
-    }
-
     echo json_encode(["message" => "Student account created", "needs_verification" => false]);
 } else {
     echo json_encode(["message" => "Signup failed"]);

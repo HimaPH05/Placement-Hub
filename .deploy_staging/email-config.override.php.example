@@ -1,0 +1,9 @@
+<?php
+define("PLACEMENTHUB_SMTP_HOST", "smtp.gmail.com");
+define("PLACEMENTHUB_SMTP_PORT", "587");
+define("PLACEMENTHUB_SMTP_USER", "yourgmail@gmail.com");
+define("PLACEMENTHUB_SMTP_PASS", "YOUR_GMAIL_APP_PASSWORD");
+define("PLACEMENTHUB_SMTP_SECURE", "tls");
+define("PLACEMENTHUB_FROM_EMAIL", "yourgmail@gmail.com");
+define("PLACEMENTHUB_FROM_NAME", "Placement Hub");
+

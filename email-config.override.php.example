@@ -1,0 +1,22 @@
+<?php
+/**
+ * Copy to `email-config.override.php` and fill values.
+ *
+ * For Gmail SMTP:
+ * - You MUST use a Gmail "App Password" (enable 2-step verification first).
+ * - Use your real Gmail address as FROM for best deliverability.
+ *
+ * Note: Some free hosts block outbound SMTP connections. If you see
+ * "SMTP connect failed" in `mail_note`, you must switch to an email provider
+ * that works on your host (or use an HTTPS email API like Brevo).
+ */
+
+// Gmail SMTP example
+define("PLACEMENTHUB_SMTP_HOST", "smtp.gmail.com");
+define("PLACEMENTHUB_SMTP_PORT", "587");
+define("PLACEMENTHUB_SMTP_USER", "yourgmail@gmail.com");
+define("PLACEMENTHUB_SMTP_PASS", "YOUR_GMAIL_APP_PASSWORD");
+define("PLACEMENTHUB_SMTP_SECURE", "tls"); // tls | ssl | none
+define("PLACEMENTHUB_FROM_EMAIL", "yourgmail@gmail.com");
+define("PLACEMENTHUB_FROM_NAME", "Placement Hub");
+

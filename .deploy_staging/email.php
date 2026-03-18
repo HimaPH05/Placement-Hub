@@ -20,13 +20,28 @@ declare(strict_types=1);
 
 const EMAIL_FALLBACK_LOG_PATH = __DIR__ . "/uploads/email_outbox.log";
 
+// Hosting-friendly config: allow defining constants in a local override file.
+$emailOverride = __DIR__ . "/email-config.override.php";
+if (is_file($emailOverride)) {
+    require_once $emailOverride;
+}
+
 function email_cfg(string $key, string $default = ""): string
 {
     $val = getenv($key);
-    if ($val === false) {
-        return $default;
+    if ($val !== false) {
+        return trim((string)$val);
     }
-    return trim((string)$val);
+
+    if (defined($key)) {
+        $c = constant($key);
+        if ($c === null) {
+            return $default;
+        }
+        return trim((string)$c);
+    }
+
+    return $default;
 }
 
 function email_from_address(): string

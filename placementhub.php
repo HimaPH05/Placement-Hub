@@ -33,17 +33,8 @@ if (empty($username) || empty($password) || empty($role)) {
 /* ================= STUDENT LOGIN ================= */
 if ($role === "student") {
 
-    $hasEmailVerify = false;
-    $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'is_email_verified'");
-    if ($colCheck && $colCheck->num_rows > 0) {
-        $hasEmailVerify = true;
-    }
-
-    if ($hasEmailVerify) {
-        $stmt = $conn->prepare("SELECT id, username, password, email, regno, is_email_verified FROM students WHERE username = ?");
-    } else {
-        $stmt = $conn->prepare("SELECT id, username, password, email, regno FROM students WHERE username = ?");
-    }
+    // Email verification is disabled; only college email domain access policy applies.
+    $stmt = $conn->prepare("SELECT id, username, password, email, regno FROM students WHERE username = ?");
     $stmt->bind_param("s", $username);
 }
 
@@ -67,12 +58,7 @@ if ($stmt->num_rows === 0) {
 }
 
 if ($role === "student") {
-    if (!isset($hasEmailVerify) || $hasEmailVerify !== true) {
-        $stmt->bind_result($id, $db_username, $db_password, $db_email, $db_regno);
-        $db_is_email_verified = 1;
-    } else {
-        $stmt->bind_result($id, $db_username, $db_password, $db_email, $db_regno, $db_is_email_verified);
-    }
+    $stmt->bind_result($id, $db_username, $db_password, $db_email, $db_regno);
 } else {
     $stmt->bind_result($id, $db_username, $db_password);
     $db_email = "";
@@ -96,14 +82,6 @@ if ($role === "student") {
     );
     if (!$allowed) {
         echo json_encode(["message" => $policyMsg]);
-        exit;
-    }
-
-    if (((int)$db_is_email_verified) !== 1) {
-        echo json_encode([
-            "message" => "Email not verified. Please verify your email before login.",
-            "code" => "EMAIL_NOT_VERIFIED"
-        ]);
         exit;
     }
 

@@ -32,10 +32,7 @@ form.addEventListener("submit", async (e) => {
 
     const result = await res.json();
 
-    if (result.needs_verification === true) {
-      alert("Account created. Please verify your email before login.");
-      window.location.href = "login.php?verify=1";
-    } else if (result.message === "Student account created") {
+    if (result.message === "Student account created") {
       alert("Account created successfully!");
       window.location.href = "login.php";
     } else {

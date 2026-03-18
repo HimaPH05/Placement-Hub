@@ -2,6 +2,12 @@
 header("Content-Type: application/json");
 session_start();
 
+echo json_encode([
+    "message" => "Email verification is disabled.",
+    "mail_note" => ""
+]);
+exit;
+
 require_once __DIR__ . "/db-config.php";
 $cfg = placementhub_db_config();
 $conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
@@ -77,6 +83,8 @@ $body .= "This link expires in 24 hours.\n";
 [$sent, $note] = send_email((string)$row["email"], $subject, $body);
 
 echo json_encode([
-    "message" => $sent ? "Verification email sent. Please check your inbox." : "Verification email could not be sent. Please contact placement cell.",
+    "message" => $sent
+        ? "Verification email sent. Please check your inbox."
+        : "Could not send verification email from server. Please contact placement cell.",
     "mail_note" => $sent ? "" : $note
 ]);
