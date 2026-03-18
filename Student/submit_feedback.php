@@ -15,6 +15,15 @@ if ($conn->connect_error) {
     exit;
 }
 
+$lifeStudentId = (int)$_SESSION["user_id"];
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, $lifeStudentId);
+if (!$active) {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => $expiryMsg]);
+    exit;
+}
+
 $conn->query("CREATE TABLE IF NOT EXISTS student_feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,

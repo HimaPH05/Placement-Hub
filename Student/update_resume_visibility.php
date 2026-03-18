@@ -15,12 +15,21 @@ if ($conn->connect_error) {
     exit;
 }
 
+$lifeStudentId = (int)$_SESSION["user_id"];
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, $lifeStudentId);
+if (!$active) {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => $expiryMsg]);
+    exit;
+}
+
 $payload = json_decode(file_get_contents("php://input"), true);
 if (!is_array($payload)) {
     $payload = $_POST;
 }
 
-$student_id = (int)$_SESSION["user_id"];
+$student_id = $lifeStudentId;
 $resume_id = (int)($payload["resume_id"] ?? 0);
 $visibility = strtolower(trim((string)($payload["visibility"] ?? "")));
 

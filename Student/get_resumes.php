@@ -15,6 +15,14 @@ if ($conn->connect_error) {
     exit;
 }
 
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, (int)($_SESSION["user_id"] ?? 0));
+if (!$active) {
+    http_response_code(403);
+    echo json_encode(["message" => $expiryMsg]);
+    exit;
+}
+
 $hasVerifyColumns = false;
 $verifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
 if ($verifyColCheck && $verifyColCheck->num_rows > 0) {

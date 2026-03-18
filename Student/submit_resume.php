@@ -16,7 +16,16 @@ if ($conn->connect_error) {
     exit;
 }
 
-$student_id = (int)$_SESSION["user_id"];
+$lifeStudentId = (int)$_SESSION["user_id"];
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, $lifeStudentId);
+if (!$active) {
+    http_response_code(403);
+    echo json_encode(["success" => false, "message" => $expiryMsg]);
+    exit;
+}
+
+$student_id = $lifeStudentId;
 $name = trim($_POST["name"] ?? "");
 $branch = trim($_POST["branch"] ?? "");
 $gpa = trim($_POST["gpa"] ?? "");

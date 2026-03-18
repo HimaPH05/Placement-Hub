@@ -17,6 +17,14 @@ if ($conn->connect_error) {
     exit;
 }
 
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, (int)($_SESSION["user_id"] ?? 0));
+if (!$active) {
+    http_response_code(403);
+    echo json_encode(["message" => $expiryMsg]);
+    exit;
+}
+
 function fail_json($status, $message) {
     http_response_code($status);
     echo json_encode(["message" => $message]);

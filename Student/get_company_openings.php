@@ -25,6 +25,14 @@ if ($conn->connect_error) {
     exit;
 }
 
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, (int)($_SESSION["user_id"] ?? 0));
+if (!$active) {
+    http_response_code(403);
+    echo json_encode(["message" => $expiryMsg]);
+    exit;
+}
+
 $stmt = $conn->prepare("
     SELECT id, job_title, job_description, openings, min_cgpa, location
     FROM jobs

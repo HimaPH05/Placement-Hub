@@ -48,6 +48,15 @@ $adminProfile = get_admin_profile();
     <meta charset="UTF-8">
     <title>Company Dashboard</title>
     <link rel="stylesheet" href="company_home.css?v=20260309">
+    <link rel="manifest" href="../manifest.webmanifest">
+    <meta name="theme-color" content="#0e4ccf">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Placement Hub">
+    <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+    <link rel="icon" href="../icons/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
+    <script defer src="../pwa-register.js"></script>
 </head>
 
 <body>

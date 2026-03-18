@@ -2,6 +2,37 @@
 $conn = new mysqli("localhost", "root", "", "detailsdb");
 if ($conn->connect_error) die("Connection failed");
 
+/* STUDENT EMAIL VERIFICATION COLUMNS (if students table exists) */
+$studentsTable = $conn->query("SHOW TABLES LIKE 'students'");
+if ($studentsTable && $studentsTable->num_rows > 0) {
+    $verifyCols = [
+        "is_email_verified" => "ALTER TABLE students ADD COLUMN is_email_verified TINYINT(1) NOT NULL DEFAULT 0",
+        "email_verified_at" => "ALTER TABLE students ADD COLUMN email_verified_at DATETIME NULL",
+        "email_verify_token_hash" => "ALTER TABLE students ADD COLUMN email_verify_token_hash CHAR(64) NULL",
+        "email_verify_expires_at" => "ALTER TABLE students ADD COLUMN email_verify_expires_at DATETIME NULL"
+    ];
+
+    foreach ($verifyCols as $col => $sql) {
+        $check = $conn->query("SHOW COLUMNS FROM students LIKE '{$col}'");
+        if ($check && $check->num_rows === 0) {
+            $conn->query($sql);
+        }
+    }
+
+    /* STUDENT GRADUATION EXPIRY COLUMNS */
+    $lifecycleCols = [
+        "admission_year" => "ALTER TABLE students ADD COLUMN admission_year INT NULL",
+        "admission_date" => "ALTER TABLE students ADD COLUMN admission_date DATE NULL",
+        "access_expires_at" => "ALTER TABLE students ADD COLUMN access_expires_at DATE NULL"
+    ];
+    foreach ($lifecycleCols as $col => $sql) {
+        $check = $conn->query("SHOW COLUMNS FROM students LIKE '{$col}'");
+        if ($check && $check->num_rows === 0) {
+            $conn->query($sql);
+        }
+    }
+}
+
 /* COMPANIES TABLE MIGRATIONS (for dashboard fields) */
 $companyCols = [
     "description" => "ALTER TABLE companies ADD COLUMN description TEXT NULL",

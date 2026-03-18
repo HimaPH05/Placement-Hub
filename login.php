@@ -25,6 +25,15 @@ if (isset($_SESSION["role"])) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Placement Hub Login</title>
 <link rel="stylesheet" href="login.css?v=3">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e4ccf">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Placement Hub">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+<script defer src="pwa-register.js"></script>
 </head>
 
 <body>
@@ -81,6 +90,8 @@ Under Section 2(f) of UGC Act 1956 (Approved by AICTE & Affiliated to APJ Abdul 
 
 <p id="message" class="error"></p>
 <p id="logoutMessage" style="color:green; font-weight:bold; text-align:center;"></p>
+<p id="verifyMessage" style="color:green; font-weight:bold; text-align:center;"></p>
+<p id="expiredMessage" style="color:red; font-weight:bold; text-align:center;"></p>
 
 <div class="signup-section">
 <p>Don't have an account?</p>
@@ -98,12 +109,20 @@ Under Section 2(f) of UGC Act 1956 (Approved by AICTE & Affiliated to APJ Abdul 
 document.addEventListener("DOMContentLoaded", function () {
   const params = new URLSearchParams(window.location.search);
   const logoutMsg = document.getElementById("logoutMessage");
+  const verifyMsg = document.getElementById("verifyMessage");
+  const expiredMsg = document.getElementById("expiredMessage");
   if (params.get("logout") === "success") {
     logoutMsg.textContent = "Logged out successfully!";
     window.history.pushState(null, "", window.location.href);
     window.addEventListener("popstate", function () {
       window.history.pushState(null, "", window.location.href);
     });
+  }
+  if (params.get("verify") === "1") {
+    verifyMsg.textContent = "Please verify your college email to login. Check inbox (and spam).";
+  }
+  if (params.get("expired") === "1") {
+    expiredMsg.textContent = "Student access expired after graduation. Please contact placement cell if this is a mistake.";
   }
 });
 </script>

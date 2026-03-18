@@ -18,6 +18,14 @@ if ($conn->connect_error) {
 
 $student_id = (int)$_SESSION["user_id"];
 
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, $student_id);
+if (!$active) {
+    session_destroy();
+    header("Location: ../login.php?expired=1");
+    exit();
+}
+
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
 
@@ -127,6 +135,15 @@ $teamMembers = get_admin_team_members();
 <head>
   <title>Student Home - Placement Hub</title>
   <link rel="stylesheet" href="style.css?v=20260309">
+  <link rel="manifest" href="../manifest.webmanifest">
+  <meta name="theme-color" content="#0e4ccf">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Placement Hub">
+  <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+  <link rel="icon" href="../icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
+  <script defer src="../pwa-register.js"></script>
 </head>
 
 <body>

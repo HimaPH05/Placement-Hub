@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <title>Create Student Account</title>
   <link rel="stylesheet" href="student-signup.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0e4ccf">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Placement Hub">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" href="icons/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+  <script defer src="pwa-register.js"></script>
 </head>
 
 <body>
@@ -29,6 +38,9 @@
 
       <label>University Register Number</label>
       <input type="text" id="regno" placeholder="Enter register number" required>
+
+      <label>Date of Joining (College)</label>
+      <input type="date" id="admission_date" required>
 
       <label>Date of Birth</label>
       <input type="date" id="dob" required>

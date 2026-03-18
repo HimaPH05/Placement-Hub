@@ -16,6 +16,14 @@ if ($conn->connect_error) {
 }
 
 $student_id = (int)$_SESSION["user_id"];
+$lifeId = $student_id;
+require_once __DIR__ . "/../student-lifecycle.php";
+[$active, $expiryMsg] = enforce_student_not_expired($conn, $lifeId);
+if (!$active) {
+    session_destroy();
+    header("Location: ../login.php?expired=1");
+    exit();
+}
 $error = "";
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
