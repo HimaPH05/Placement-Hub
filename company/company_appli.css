@@ -11,6 +11,13 @@
   text-align:center;
   margin-bottom:0;
   border-left:6px solid #b8c9e8;
+  border-top:none;
+  border-right:none;
+  border-bottom:none;
+  width:100%;
+  background:#fff;
+  cursor:pointer;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
 .stat-card h2{
@@ -24,8 +31,18 @@
   font-weight:600;
 }
 
+.stat-card:hover{
+  transform:translateY(-2px);
+}
+
+.stat-filter.active{
+  box-shadow:0 14px 28px rgba(11, 63, 157, 0.18);
+  outline:2px solid rgba(13, 71, 161, 0.15);
+}
+
 .stat-card.yellow{border-left-color:#f2b631}
 .stat-card.green{border-left-color:#31a465}
+.stat-card.blue{border-left-color:#1565c0}
 .stat-card.red{border-left-color:#d6344a}
 
 .table-card{
@@ -34,6 +51,55 @@
 
 .table-card h3{
   margin-bottom:14px;
+}
+
+.table-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.table-head h3{
+  margin-bottom:0;
+}
+
+.filter-controls{
+  min-width:220px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.filter-label{
+  color:#35527e;
+  font-size:13px;
+  font-weight:700;
+}
+
+.filter-select{
+  width:100%;
+  border:1px solid #cdddf6;
+  border-radius:10px;
+  padding:10px 12px;
+  font-size:14px;
+  color:#16345f;
+  background:#f8fbff;
+}
+
+.filter-select:focus{
+  outline:none;
+  border-color:#7ea7ff;
+  box-shadow:0 0 0 3px rgba(43,123,255,.15);
+  background:#fff;
+}
+
+.filter-note{
+  color:#5b6e90;
+  font-size:13px;
+  font-weight:700;
+  margin:4px 0 0;
 }
 
 .flash{
@@ -105,8 +171,18 @@ tbody tr:hover{
 
 .badge.pending{background:#f2b631}
 .badge.shortlisted{background:#31a465}
+.badge.placed{background:#1565c0}
 .badge.rejected{background:#d6344a}
 .badge.cancelled{background:#7b879e}
+
+.action-btn.placed{
+  background:#1565c0;
+  color:#fff;
+}
+
+.action-btn.placed:hover{
+  background:#0f4d94;
+}
 
 .table-actions{
   display:flex;
@@ -156,4 +232,14 @@ tbody tr:hover{
   font-size:14px;
   line-height:1.45;
   resize:vertical;
+}
+
+@media (max-width: 700px){
+  .table-head{
+    flex-direction:column;
+  }
+
+  .filter-controls{
+    width:100%;
+  }
 }

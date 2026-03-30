@@ -98,7 +98,7 @@ body{
 .stat-card{padding:20px;text-align:center;border-left:6px solid #b8c9e8}
 .stat-card p{font-size:14px;color:#5a6f92}
 .stat-card h2{font-size:32px;color:#0b3f9d}
-.blue{border-left-color:#1f5fd9}.green{border-left-color:#31a465}.purple{border-left-color:#6a1b9a}.orange{border-left-color:#ef6c00}
+.blue{border-left-color:#1f5fd9}.green{border-left-color:#31a465}.purple{border-left-color:#6a1b9a}.teal{border-left-color:#00897b}.orange{border-left-color:#ef6c00}
 
 .placement-controls{margin-top:10px;display:flex;gap:8px;justify-content:center;align-items:center}
 .placement-controls input{width:90px;padding:6px 8px;border:1px solid #d0d0d0;border-radius:8px}

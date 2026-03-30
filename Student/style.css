@@ -153,6 +153,7 @@ body{
 .stat-card p{color:#5a6f92;font-weight:700}
 .pending-card{border-left:6px solid #f2b631}
 .shortlisted-card{border-left:6px solid #31a465}
+.placed-card{border-left:6px solid #1565c0}
 .rejected-card{border-left:6px solid #d6344a}
 .cancelled-card{border-left:6px solid #7b879e}
 
@@ -186,6 +187,7 @@ body{
 .status-badge{display:inline-block;padding:6px 12px;border-radius:999px;color:#fff;font-size:12px;font-weight:700}
 .status-badge.pending{background:#f2b631}
 .status-badge.shortlisted{background:#31a465}
+.status-badge.placed{background:#1565c0}
 .status-badge.rejected{background:#d6344a}
 .status-badge.cancelled{background:#7b879e}
 

@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["cancel_application_id
         $flashMessage = "Application not found.";
     } else {
         $currentStatus = trim((string)$appRow["status"]);
-        if (in_array($currentStatus, ["Rejected", "Cancelled"], true)) {
+        if (in_array($currentStatus, ["Rejected", "Cancelled", "Placed"], true)) {
             $flashType = "error";
             $flashMessage = "This application cannot be cancelled.";
         } else {
@@ -94,6 +94,7 @@ $counts = [
     "total" => 0,
     "pending" => 0,
     "shortlisted" => 0,
+    "placed" => 0,
     "rejected" => 0,
     "cancelled" => 0
 ];
@@ -107,6 +108,8 @@ while ($row = $result->fetch_assoc()) {
         $counts["pending"]++;
     } elseif ($status === "shortlisted") {
         $counts["shortlisted"]++;
+    } elseif ($status === "placed") {
+        $counts["placed"]++;
     } elseif ($status === "rejected") {
         $counts["rejected"]++;
     } elseif ($status === "cancelled") {
@@ -163,6 +166,10 @@ while ($row = $result->fetch_assoc()) {
       <h3><?php echo (int)$counts["shortlisted"]; ?></h3>
       <p>Shortlisted</p>
     </div>
+    <div class="stat-card placed-card">
+      <h3><?php echo (int)$counts["placed"]; ?></h3>
+      <p>Placed</p>
+    </div>
     <div class="stat-card rejected-card">
       <h3><?php echo (int)$counts["rejected"]; ?></h3>
       <p>Rejected</p>
@@ -191,7 +198,7 @@ while ($row = $result->fetch_assoc()) {
           <?php foreach ($applications as $app): ?>
             <?php
               $statusClass = strtolower((string)$app["status"]);
-              if (!in_array($statusClass, ["pending", "shortlisted", "rejected"], true)) {
+              if (!in_array($statusClass, ["pending", "shortlisted", "placed", "rejected"], true)) {
                   if ($statusClass !== "cancelled") {
                       $statusClass = "pending";
                   }

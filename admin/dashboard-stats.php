@@ -25,11 +25,6 @@ function get_count(mysqli $conn, string $table): int
     return (int)($row["total"] ?? 0);
 }
 
-$conn->query("CREATE TABLE IF NOT EXISTS admin_settings (
-    `key_name` VARCHAR(100) PRIMARY KEY,
-    `value_text` VARCHAR(255) NOT NULL
-)");
-
 $students = get_count($conn, "students");
 $companies = get_count($conn, "companies");
 $resumes = 0;
@@ -39,13 +34,18 @@ if ($publicResumeResult) {
     $resumes = (int)($publicResumeRow["total"] ?? 0);
 }
 
+$shortlisted = 0;
+$shortlistedResult = $conn->query("SELECT COUNT(*) AS total FROM applications WHERE status = 'Shortlisted'");
+if ($shortlistedResult) {
+    $shortlistedRow = $shortlistedResult->fetch_assoc();
+    $shortlisted = (int)($shortlistedRow["total"] ?? 0);
+}
+
 $placements = 0;
-$stmt = $conn->prepare("SELECT value_text FROM admin_settings WHERE key_name = 'placements_count' LIMIT 1");
-if ($stmt && $stmt->execute()) {
-    $stmt->bind_result($valueText);
-    if ($stmt->fetch()) {
-        $placements = max(0, (int)$valueText);
-    }
+$placementsResult = $conn->query("SELECT COUNT(*) AS total FROM applications WHERE status = 'Placed'");
+if ($placementsResult) {
+    $placementsRow = $placementsResult->fetch_assoc();
+    $placements = (int)($placementsRow["total"] ?? 0);
 }
 
 echo json_encode([
@@ -53,6 +53,7 @@ echo json_encode([
     "students" => $students,
     "companies" => $companies,
     "resumes" => $resumes,
+    "shortlisted" => $shortlisted,
     "placements" => $placements
 ]);
 exit();

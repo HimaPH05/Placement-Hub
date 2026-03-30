@@ -17,6 +17,8 @@ function fetch_total(mysqli $conn, string $sql): int
 $studentCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM students");
 $companyCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM companies");
 $publicResumeCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM student_resumes WHERE visibility = 'public'");
+$shortlistedCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM applications WHERE status = 'Shortlisted'");
+$placementCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM applications WHERE status = 'Placed'");
 $adminProfile = get_admin_profile();
 ?>
 <!DOCTYPE html>
@@ -75,14 +77,15 @@ $adminProfile = get_admin_profile();
       <h2 id="resumeCount"><?php echo $publicResumeCount; ?></h2>
     </div>
 
+    <div class="stat-card teal">
+      <p>Shortlisted</p>
+      <h2 id="shortlistedCount"><?php echo $shortlistedCount; ?></h2>
+    </div>
+
     <div class="stat-card orange">
       <p>Placements</p>
-      <h2 id="placementCount">0</h2>
-      <div class="placement-controls">
-        <input type="number" id="placementInput" min="0" value="0" aria-label="Placement count">
-        <button type="button" class="primary" id="savePlacementBtn">Save</button>
-      </div>
-      <p id="placementMsg" class="placement-msg"></p>
+      <h2 id="placementCount"><?php echo $placementCount; ?></h2>
+      <p class="placement-msg">Live count from company applicant updates.</p>
     </div>
   </div>
 

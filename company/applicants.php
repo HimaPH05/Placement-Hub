@@ -59,6 +59,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action_status"], $_PO
         if ($mailMessage === "") {
             $mailMessage = "Congratulations. You are shortlisted. Further procedure details will be shared with you soon.";
         }
+    } elseif ($action === "place") {
+        $status = "Placed";
+        if ($mailMessage === "") {
+            $mailMessage = "Congratulations. You have been placed for this role after the interview process. Further onboarding details will be shared with you soon.";
+        }
     } elseif ($action === "reject") {
         $status = "Rejected";
         if ($mailMessage === "") {
@@ -95,7 +100,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action_status"], $_PO
         $currentStatus = trim((string)($appInfo["current_status"] ?? "Pending"));
         $isLockedTransition = (
             ($currentStatus === "Shortlisted" && $status === "Rejected") ||
-            ($currentStatus === "Rejected" && $status === "Shortlisted")
+            ($currentStatus === "Rejected" && $status === "Shortlisted") ||
+            ($currentStatus === "Rejected" && $status === "Placed") ||
+            ($currentStatus === "Pending" && $status === "Placed") ||
+            ($currentStatus === "Placed" && $status !== "Placed")
         );
 
         $isCancelled = ($currentStatus === "Cancelled");
@@ -182,18 +190,28 @@ $result = $stmt->get_result();
 $total = 0;
 $pending = 0;
 $shortlisted = 0;
+$placed = 0;
 $rejected = 0;
 
 $applications = [];
+$jobOptions = [];
 
 while($row = $result->fetch_assoc()){
     $applications[] = $row;
     $total++;
 
+    $jobId = (int)($row['job_id'] ?? 0);
+    if ($jobId > 0 && !isset($jobOptions[$jobId])) {
+        $jobOptions[$jobId] = (string)$row['job_title'];
+    }
+
     if($row['status'] == "Pending") $pending++;
     if($row['status'] == "Shortlisted") $shortlisted++;
+    if($row['status'] == "Placed") $placed++;
     if($row['status'] == "Rejected") $rejected++;
 }
+
+asort($jobOptions, SORT_NATURAL | SORT_FLAG_CASE);
 ?>
 <!DOCTYPE html>
 <html>
@@ -224,30 +242,49 @@ while($row = $result->fetch_assoc()){
 
 <!-- ================= STATS ================= -->
 <div class="stats">
-  <div class="stat-card card">
+  <button type="button" class="stat-card card stat-filter active" data-filter="all">
     <h2><?php echo $total; ?></h2>
     <p>Total</p>
-  </div>
+  </button>
 
-  <div class="stat-card yellow card">
+  <button type="button" class="stat-card yellow card stat-filter" data-filter="pending">
     <h2><?php echo $pending; ?></h2>
     <p>Pending</p>
-  </div>
+  </button>
 
-  <div class="stat-card green card">
+  <button type="button" class="stat-card green card stat-filter" data-filter="shortlisted">
     <h2><?php echo $shortlisted; ?></h2>
     <p>Shortlisted</p>
-  </div>
+  </button>
 
-  <div class="stat-card red card">
+  <button type="button" class="stat-card blue card stat-filter" data-filter="placed">
+    <h2><?php echo $placed; ?></h2>
+    <p>Placed</p>
+  </button>
+
+  <button type="button" class="stat-card red card stat-filter" data-filter="rejected">
     <h2><?php echo $rejected; ?></h2>
     <p>Rejected</p>
-  </div>
+  </button>
 </div>
 
 <!-- ================= TABLE ================= -->
 <div class="table-card card">
-  <h3>Applicant List</h3>
+  <div class="table-head">
+    <div>
+      <h3 id="applicantListTitle">Applicant List</h3>
+      <p class="filter-note" id="filterNote">Showing all applicants.</p>
+    </div>
+    <div class="filter-controls">
+      <label for="jobFilter" class="filter-label">Job Role</label>
+      <select id="jobFilter" class="filter-select">
+        <option value="all">All Jobs</option>
+        <?php foreach ($jobOptions as $jobOptionId => $jobOptionTitle): ?>
+          <option value="<?php echo (int)$jobOptionId; ?>"><?php echo htmlspecialchars($jobOptionTitle); ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  </div>
 
   <table>
     <thead>
@@ -265,7 +302,12 @@ while($row = $result->fetch_assoc()){
     <tbody>
       <?php if($total > 0): ?>
         <?php foreach($applications as $app): ?>
-        <tr>
+        <tr
+          class="applicant-row"
+          data-status="<?php echo htmlspecialchars(strtolower((string)$app['status'])); ?>"
+          data-job-id="<?php echo (int)$app['job_id']; ?>"
+          data-job-title="<?php echo htmlspecialchars((string)$app['job_title'], ENT_QUOTES); ?>"
+        >
           <td><?php echo htmlspecialchars($app['fullname']); ?></td>
           <td><?php echo htmlspecialchars($app['job_title']); ?></td>
           <td>
@@ -295,7 +337,7 @@ while($row = $result->fetch_assoc()){
           <td>
             <?php
               $statusClass = strtolower((string)$app['status']);
-              if (!in_array($statusClass, ["pending", "shortlisted", "rejected", "cancelled"], true)) {
+              if (!in_array($statusClass, ["pending", "shortlisted", "placed", "rejected", "cancelled"], true)) {
                   $statusClass = "pending";
               }
             ?>
@@ -308,8 +350,6 @@ while($row = $result->fetch_assoc()){
               $currentStatus = (string)$app['status'];
               $studentName = (string)$app['fullname'];
               $jobTitle = (string)$app['job_title'];
-              $shortTemplate = "Dear {$studentName},\n\nCongratulations! You are shortlisted for the role of {$jobTitle}.\n\nFurther procedure:\n1. \n2. \n\nRegards,\nRecruitment Team";
-              $rejectTemplate = "Dear {$studentName},\n\nThank you for applying for {$jobTitle}.\n\nWe regret to inform you that your application has been rejected for the following reason:\n- \n\nRegards,\nRecruitment Team";
             ?>
 
             <?php if ($currentStatus === "Pending"): ?>
@@ -338,18 +378,44 @@ while($row = $result->fetch_assoc()){
                 >Reject</button>
               </div>
             <?php elseif ($currentStatus === "Shortlisted"): ?>
-              <div class="locked-msg">Shortlisted. Rejection is locked.</div>
+              <div class="locked-msg">Shortlisted. You can now mark this applicant as placed after interview.</div>
+              <div class="table-actions">
+                <button
+                  type="button"
+                  class="action-btn view"
+                  data-app-id="<?php echo (int)$app['id']; ?>"
+                  data-action="shortlist"
+                  data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
+                  data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
+                  data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
+                  data-title="Shortlist Mail"
+                  onclick="openGmailCompose(this)"
+                >Edit + Resend Shortlist Mail</button>
+                <button
+                  type="button"
+                  class="action-btn placed"
+                  data-app-id="<?php echo (int)$app['id']; ?>"
+                  data-action="place"
+                  data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
+                  data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
+                  data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
+                  data-title="Placement Mail"
+                  onclick="openGmailCompose(this)"
+                >Mark as Placed</button>
+              </div>
+            <?php elseif ($currentStatus === "Placed"): ?>
+              <div class="locked-msg">Placed after interview.</div>
               <button
                 type="button"
-                class="action-btn view"
+                class="action-btn placed"
                 data-app-id="<?php echo (int)$app['id']; ?>"
-                data-action="shortlist"
+                data-action="place"
                 data-email="<?php echo htmlspecialchars((string)$app['email'], ENT_QUOTES); ?>"
                 data-student="<?php echo htmlspecialchars($studentName, ENT_QUOTES); ?>"
                 data-job="<?php echo htmlspecialchars($jobTitle, ENT_QUOTES); ?>"
-                data-title="Shortlist Mail"
+                data-title="Placement Mail"
                 onclick="openGmailCompose(this)"
-              >Edit + Resend Shortlist Mail</button>
+              >Edit + Resend Placement Mail</button>
             <?php elseif ($currentStatus === "Rejected"): ?>
               <div class="locked-msg">Rejected. Shortlisting is locked.</div>
               <button
@@ -370,10 +436,13 @@ while($row = $result->fetch_assoc()){
         </tr>
         <?php endforeach; ?>
       <?php else: ?>
-        <tr>
+        <tr id="emptyApplicantsRow">
           <td colspan="7">No applicants yet.</td>
         </tr>
       <?php endif; ?>
+      <tr id="filteredEmptyRow" style="display:none;">
+        <td colspan="7">No applicants found for this filter.</td>
+      </tr>
     </tbody>
 
   </table>
@@ -402,6 +471,13 @@ function openGmailCompose(btn) {
       "Dear " + student + ",\n\n" +
       "Congratulations! You are shortlisted for the role of " + job + ".\n\n" +
       "Further procedure:\n1. \n2. \n\n" +
+      "Regards,\nRecruitment Team";
+  } else if (action === "place") {
+    subject = "Application Update: Placed for " + job;
+    template =
+      "Dear " + student + ",\n\n" +
+      "Congratulations! You have been placed for the role of " + job + " after the interview process.\n\n" +
+      "Further onboarding details will be shared with you soon.\n\n" +
       "Regards,\nRecruitment Team";
   } else {
     subject = "Application Update for " + job;
@@ -444,6 +520,104 @@ function openGmailCompose(btn) {
 
   document.body.appendChild(form);
   form.submit();
+}
+
+var filterButtons = document.querySelectorAll(".stat-filter");
+var applicantRows = document.querySelectorAll(".applicant-row");
+var filterNote = document.getElementById("filterNote");
+var applicantListTitle = document.getElementById("applicantListTitle");
+var filteredEmptyRow = document.getElementById("filteredEmptyRow");
+var jobFilter = document.getElementById("jobFilter");
+var currentStatusFilter = "all";
+var statusLabels = {
+  all: "All",
+  pending: "Pending",
+  shortlisted: "Shortlisted",
+  placed: "Placed",
+  rejected: "Rejected"
+};
+
+function buildFilterMessage(statusFilter, jobTitle) {
+  if (statusFilter === "all" && !jobTitle) {
+    return "Showing all applicants.";
+  }
+
+  if (statusFilter === "all" && jobTitle) {
+    return "Showing applicants for " + jobTitle + ".";
+  }
+
+  if (statusFilter !== "all" && !jobTitle) {
+    return "Showing only " + statusLabels[statusFilter].toLowerCase() + " applicants.";
+  }
+
+  return "Showing " + statusLabels[statusFilter].toLowerCase() + " applicants for " + jobTitle + ".";
+}
+
+function buildFilterTitle(statusFilter, jobTitle) {
+  if (statusFilter === "all" && !jobTitle) {
+    return "Applicant List";
+  }
+
+  if (statusFilter === "all" && jobTitle) {
+    return jobTitle + " Applicants";
+  }
+
+  if (statusFilter !== "all" && !jobTitle) {
+    return statusLabels[statusFilter] + " Applicants";
+  }
+
+  return statusLabels[statusFilter] + " - " + jobTitle;
+}
+
+function applyApplicantFilter(statusFilter) {
+  currentStatusFilter = statusFilter;
+  var visibleCount = 0;
+  var selectedJobId = jobFilter ? jobFilter.value : "all";
+  var selectedJobTitle = "";
+
+  if (jobFilter && jobFilter.selectedIndex >= 0 && selectedJobId !== "all") {
+    selectedJobTitle = jobFilter.options[jobFilter.selectedIndex].text;
+  }
+
+  filterButtons.forEach(function(btn) {
+    btn.classList.toggle("active", btn.getAttribute("data-filter") === statusFilter);
+  });
+
+  applicantRows.forEach(function(row) {
+    var rowStatus = row.getAttribute("data-status") || "";
+    var rowJobId = row.getAttribute("data-job-id") || "";
+    var matchesStatus = statusFilter === "all" || rowStatus === statusFilter;
+    var matchesJob = selectedJobId === "all" || rowJobId === selectedJobId;
+    var showRow = matchesStatus && matchesJob;
+    row.style.display = showRow ? "" : "none";
+    if (showRow) {
+      visibleCount++;
+    }
+  });
+
+  if (applicantListTitle) {
+    applicantListTitle.textContent = buildFilterTitle(statusFilter, selectedJobTitle);
+  }
+
+  if (filterNote) {
+    filterNote.textContent = buildFilterMessage(statusFilter, selectedJobTitle);
+  }
+
+  if (filteredEmptyRow) {
+    filteredEmptyRow.style.display = visibleCount === 0 ? "" : "none";
+  }
+}
+
+filterButtons.forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    applyApplicantFilter(btn.getAttribute("data-filter") || "all");
+  });
+});
+
+if (jobFilter) {
+  jobFilter.addEventListener("change", function() {
+    applyApplicantFilter(currentStatusFilter);
+  });
 }
 </script>
 </body>

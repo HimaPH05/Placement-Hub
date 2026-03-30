@@ -304,21 +304,14 @@ async function loadAdminResumes() {
   }
 }
 
-function setPlacementMessage(message, isError) {
-  const msg = document.getElementById("placementMsg");
-  if (!msg) return;
-  msg.textContent = message;
-  msg.style.color = isError ? "#c62828" : "#2e7d32";
-}
-
 async function loadDashboardStats() {
   const studentCount = document.getElementById("studentCount");
   const companyCount = document.getElementById("companyCount");
   const resumeCount = document.getElementById("resumeCount");
+  const shortlistedCount = document.getElementById("shortlistedCount");
   const placementCount = document.getElementById("placementCount");
-  const placementInput = document.getElementById("placementInput");
 
-  if (!studentCount || !companyCount || !resumeCount || !placementCount) return;
+  if (!studentCount || !companyCount || !resumeCount || !shortlistedCount || !placementCount) return;
 
   try {
     const res = await fetch("dashboard-stats.php", { cache: "no-store" });
@@ -331,45 +324,10 @@ async function loadDashboardStats() {
     studentCount.textContent = String(data.students ?? 0);
     companyCount.textContent = String(data.companies ?? 0);
     resumeCount.textContent = String(data.resumes ?? 0);
+    shortlistedCount.textContent = String(data.shortlisted ?? 0);
     placementCount.textContent = String(data.placements ?? 0);
-    if (placementInput) {
-      placementInput.value = String(data.placements ?? 0);
-    }
   } catch (err) {
     console.error(err);
-  }
-}
-
-async function savePlacements() {
-  const input = document.getElementById("placementInput");
-  const count = document.getElementById("placementCount");
-  if (!input || !count) return;
-
-  const placements = Number.parseInt(input.value, 10);
-  if (!Number.isFinite(placements) || placements < 0) {
-    setPlacementMessage("Enter a valid placement count.", true);
-    return;
-  }
-
-  try {
-    const res = await fetch("update-placement.php", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ placements })
-    });
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      setPlacementMessage(data.message || "Unable to save placements.", true);
-      return;
-    }
-
-    count.textContent = String(data.placements ?? placements);
-    input.value = String(data.placements ?? placements);
-    setPlacementMessage("Placement count saved.", false);
-  } catch (err) {
-    console.error(err);
-    setPlacementMessage("Server not reachable.", true);
   }
 }
 
@@ -438,9 +396,4 @@ document.addEventListener("DOMContentLoaded", () => {
   loadAdminCompanies();
   loadAdminResumes();
   setupTeamMemberEditor();
-
-  const savePlacementBtn = document.getElementById("savePlacementBtn");
-  if (savePlacementBtn) {
-    savePlacementBtn.addEventListener("click", savePlacements);
-  }
 });
