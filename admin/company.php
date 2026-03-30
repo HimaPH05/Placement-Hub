@@ -7,7 +7,7 @@ require_once __DIR__ . "/auth-check.php";
   <meta charset="UTF-8">
   <title>Company Management</title>
   <link rel="stylesheet" href="astyle.css?v=20260309">
-  <script defer src="script.js?v=10"></script>
+  <script defer src="script.js?v=11"></script>
 </head>
 
 <body>

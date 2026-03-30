@@ -148,9 +148,11 @@ body{
 .profile-dropdown a:hover{opacity:.85}
 
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:18px}
-.stat-card{padding:18px;text-align:center}
+.stat-card{padding:18px;text-align:center;border-top:none;border-right:none;border-bottom:none;width:100%;cursor:pointer;transition:.18s ease}
 .stat-card h3{color:#0b3f9d;font-size:34px}
 .stat-card p{color:#5a6f92;font-weight:700}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-filter.active{box-shadow:0 14px 28px rgba(11,63,157,.18);outline:2px solid rgba(13,71,161,.15)}
 .pending-card{border-left:6px solid #f2b631}
 .shortlisted-card{border-left:6px solid #31a465}
 .placed-card{border-left:6px solid #1565c0}
@@ -178,6 +180,9 @@ body{
 }
 
 .table-wrap{padding:14px;overflow-x:auto}
+.table-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.table-head h3{color:#0a3f9f}
+.filter-note{color:#5b6e90;font-size:13px;font-weight:700;margin-top:6px}
 .app-table{width:100%;border-collapse:collapse;min-width:760px}
 .app-table thead{background:#0d47a1;color:#fff}
 .app-table th,.app-table td{padding:12px 14px;text-align:left;vertical-align:top}
@@ -221,6 +226,7 @@ body{
   .student-team-info h3{font-size:18px}
   .student-team-role{font-size:14px}
   .student-team-mobile{font-size:16px}
+  .table-head{flex-direction:column}
 }
 
 @media (min-width:701px) and (max-width:1050px){

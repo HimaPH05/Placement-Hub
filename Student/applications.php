@@ -154,33 +154,37 @@ while ($row = $result->fetch_assoc()) {
   </div>
 
   <div class="stats">
-    <div class="stat-card">
+    <button type="button" class="stat-card stat-filter active" data-filter="all">
       <h3><?php echo (int)$counts["total"]; ?></h3>
       <p>Total</p>
-    </div>
-    <div class="stat-card pending-card">
+    </button>
+    <button type="button" class="stat-card pending-card stat-filter" data-filter="pending">
       <h3><?php echo (int)$counts["pending"]; ?></h3>
       <p>Pending</p>
-    </div>
-    <div class="stat-card shortlisted-card">
+    </button>
+    <button type="button" class="stat-card shortlisted-card stat-filter" data-filter="shortlisted">
       <h3><?php echo (int)$counts["shortlisted"]; ?></h3>
       <p>Shortlisted</p>
-    </div>
-    <div class="stat-card placed-card">
+    </button>
+    <button type="button" class="stat-card placed-card stat-filter" data-filter="placed">
       <h3><?php echo (int)$counts["placed"]; ?></h3>
       <p>Placed</p>
-    </div>
-    <div class="stat-card rejected-card">
+    </button>
+    <button type="button" class="stat-card rejected-card stat-filter" data-filter="rejected">
       <h3><?php echo (int)$counts["rejected"]; ?></h3>
       <p>Rejected</p>
-    </div>
-    <div class="stat-card cancelled-card">
+    </button>
+    <button type="button" class="stat-card cancelled-card stat-filter" data-filter="cancelled">
       <h3><?php echo (int)$counts["cancelled"]; ?></h3>
       <p>Cancelled</p>
-    </div>
+    </button>
   </div>
 
   <div class="table-wrap">
+    <div class="table-head">
+      <h3 id="applicationListTitle">Applied Jobs</h3>
+      <p class="filter-note" id="applicationFilterNote">Showing all applications.</p>
+    </div>
     <table class="app-table">
       <thead>
         <tr>
@@ -204,7 +208,7 @@ while ($row = $result->fetch_assoc()) {
                   }
               }
             ?>
-            <tr>
+            <tr class="application-row" data-status="<?php echo htmlspecialchars($statusClass); ?>">
               <td><?php echo htmlspecialchars((string)$app["company_name"]); ?></td>
               <td><?php echo htmlspecialchars((string)$app["job_title"]); ?></td>
               <td><?php echo htmlspecialchars((string)($app["job_location"] ?? "-")); ?></td>
@@ -224,14 +228,70 @@ while ($row = $result->fetch_assoc()) {
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
-          <tr>
+          <tr id="defaultEmptyRow">
             <td colspan="7" class="empty-cell">You have not applied to any jobs yet.</td>
           </tr>
         <?php endif; ?>
+        <tr id="filteredEmptyRow" style="display:none;">
+          <td colspan="7" class="empty-cell">No applications found for this filter.</td>
+        </tr>
       </tbody>
     </table>
   </div>
 </div>
+
+<script>
+var applicationFilterButtons = document.querySelectorAll(".stat-filter");
+var applicationRows = document.querySelectorAll(".application-row");
+var applicationListTitle = document.getElementById("applicationListTitle");
+var applicationFilterNote = document.getElementById("applicationFilterNote");
+var applicationFilteredEmptyRow = document.getElementById("filteredEmptyRow");
+var applicationStatusLabels = {
+  all: "All",
+  pending: "Pending",
+  shortlisted: "Shortlisted",
+  placed: "Placed",
+  rejected: "Rejected",
+  cancelled: "Cancelled"
+};
+
+function applyApplicationFilter(filter) {
+  var visibleCount = 0;
+
+  applicationFilterButtons.forEach(function(btn) {
+    btn.classList.toggle("active", btn.getAttribute("data-filter") === filter);
+  });
+
+  applicationRows.forEach(function(row) {
+    var rowStatus = row.getAttribute("data-status") || "";
+    var showRow = filter === "all" || rowStatus === filter;
+    row.style.display = showRow ? "" : "none";
+    if (showRow) {
+      visibleCount++;
+    }
+  });
+
+  if (applicationListTitle) {
+    applicationListTitle.textContent = filter === "all" ? "Applied Jobs" : applicationStatusLabels[filter] + " Jobs";
+  }
+
+  if (applicationFilterNote) {
+    applicationFilterNote.textContent = filter === "all"
+      ? "Showing all applications."
+      : "Showing only " + applicationStatusLabels[filter].toLowerCase() + " applications.";
+  }
+
+  if (applicationFilteredEmptyRow) {
+    applicationFilteredEmptyRow.style.display = visibleCount === 0 ? "" : "none";
+  }
+}
+
+applicationFilterButtons.forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    applyApplicationFilter(btn.getAttribute("data-filter") || "all");
+  });
+});
+</script>
 
 </body>
 </html>

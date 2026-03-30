@@ -1,4 +1,8 @@
 let adminCompanies = [];
+let adminStudents = [];
+let adminApplications = [];
+let adminApplicationStatusFilter = "all";
+let dashboardApplicationsLoaded = false;
 
 function escapeHtml(value) {
   if (value === null || value === undefined) return "";
@@ -83,6 +87,81 @@ function renderAdminCompanies(data = adminCompanies) {
       `;
     })
     .join("");
+}
+
+async function loadAdminStudents() {
+  const list = document.getElementById("studentList");
+  if (!list) return;
+
+  list.innerHTML = "<p>Loading students...</p>";
+
+  try {
+    const res = await fetch("students-actions.php", { cache: "no-store" });
+    const data = await res.json();
+
+    if (!res.ok || !data.success || !Array.isArray(data.students)) {
+      list.innerHTML = "<p>Unable to load students.</p>";
+      return;
+    }
+
+    adminStudents = data.students;
+    renderAdminStudents();
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = "<p>Server not reachable.</p>";
+  }
+}
+
+function renderAdminStudents(data = adminStudents) {
+  const list = document.getElementById("studentList");
+  if (!list) return;
+
+  if (!data.length) {
+    list.innerHTML = "<p>No students found.</p>";
+    return;
+  }
+
+  list.innerHTML = data
+    .map((item) => {
+      return `
+        <div class="student-card">
+          <h3>${escapeHtml(item.fullname)}</h3>
+          <p><b>Username:</b> ${escapeHtml(item.username || "N/A")}</p>
+          <p><b>Email:</b> ${escapeHtml(item.email || "N/A")}</p>
+          <p><b>Reg No:</b> ${escapeHtml(item.regno || "N/A")}</p>
+          <p><b>Department:</b> ${escapeHtml(item.branch || "N/A")}</p>
+          <p><b>Year:</b> ${escapeHtml(item.year_label || "N/A")}</p>
+          <p><b>CGPA:</b> ${escapeHtml(item.cgpa || "N/A")}</p>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function searchAdminStudents() {
+  const input = document.getElementById("searchStudents");
+  const list = document.getElementById("studentList");
+  if (!input || !list) return;
+
+  const term = input.value.toLowerCase().trim();
+  const filtered = adminStudents.filter((s) => {
+    const fullname = (s.fullname || "").toLowerCase();
+    const username = (s.username || "").toLowerCase();
+    const email = (s.email || "").toLowerCase();
+    const regno = (s.regno || "").toLowerCase();
+    const branch = (s.branch || "").toLowerCase();
+    const yearLabel = (s.year_label || "").toLowerCase();
+    return (
+      fullname.includes(term) ||
+      username.includes(term) ||
+      email.includes(term) ||
+      regno.includes(term) ||
+      branch.includes(term) ||
+      yearLabel.includes(term)
+    );
+  });
+
+  renderAdminStudents(filtered);
 }
 
 async function addCompany() {
@@ -304,6 +383,210 @@ async function loadAdminResumes() {
   }
 }
 
+async function loadAdminApplications() {
+  const list = document.getElementById("adminApplicationList");
+  if (!list) return;
+
+  list.innerHTML = '<tr><td colspan="6">Loading applications...</td></tr>';
+
+  try {
+    const res = await fetch("applications-actions.php?status=all", { cache: "no-store" });
+    const data = await res.json();
+
+    if (!res.ok || !data.success || !Array.isArray(data.applications)) {
+      list.innerHTML = '<tr><td colspan="6">Unable to load applications.</td></tr>';
+      return;
+    }
+
+    adminApplications = data.applications;
+    updateAdminApplicationCounts();
+    renderAdminApplications();
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = '<tr><td colspan="6">Server not reachable.</td></tr>';
+  }
+}
+
+async function loadDashboardApplications() {
+  const list = document.getElementById("dashboardApplicationList");
+  if (!list) return;
+
+  if (dashboardApplicationsLoaded) {
+    return;
+  }
+
+  list.innerHTML = '<tr><td colspan="6">Loading applications...</td></tr>';
+
+  try {
+    const res = await fetch("applications-actions.php?status=all", { cache: "no-store" });
+    const data = await res.json();
+
+    if (!res.ok || !data.success || !Array.isArray(data.applications)) {
+      list.innerHTML = '<tr><td colspan="6">Unable to load applications.</td></tr>';
+      return;
+    }
+
+    adminApplications = data.applications;
+    dashboardApplicationsLoaded = true;
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = '<tr><td colspan="6">Server not reachable.</td></tr>';
+  }
+}
+
+function renderDashboardApplications(filter) {
+  const panel = document.getElementById("dashboardApplicationPanel");
+  const list = document.getElementById("dashboardApplicationList");
+  const title = document.getElementById("dashboardApplicationTitle");
+  const note = document.getElementById("dashboardApplicationNote");
+  if (!panel || !list || !title || !note) return;
+
+  const labelMap = {
+    shortlisted: "Shortlisted",
+    placed: "Placed"
+  };
+
+  const filtered = adminApplications.filter((item) => {
+    return String(item.status || "").toLowerCase() === filter;
+  });
+
+  panel.style.display = "block";
+  title.textContent = `${labelMap[filter]} Students`;
+  note.textContent = `Showing students marked as ${labelMap[filter].toLowerCase()} from company applicants page.`;
+
+  if (!filtered.length) {
+    list.innerHTML = `<tr><td colspan="6">No ${labelMap[filter].toLowerCase()} students found.</td></tr>`;
+    return;
+  }
+
+  list.innerHTML = filtered
+    .map((item) => {
+      const statusClass = String(item.status || "Pending").toLowerCase();
+      return `
+        <tr>
+          <td>${escapeHtml(item.student_name)}</td>
+          <td>${escapeHtml(item.company_name || "N/A")}</td>
+          <td>${escapeHtml(item.job_title || "N/A")}</td>
+          <td>${escapeHtml(item.regno || "N/A")}</td>
+          <td>${escapeHtml(item.applied_at || "N/A")}</td>
+          <td><span class="status ${escapeHtml(statusClass)}">${escapeHtml(item.status || "Pending")}</span></td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function updateAdminApplicationCounts() {
+  const counts = {
+    all: adminApplications.length,
+    pending: 0,
+    shortlisted: 0,
+    placed: 0,
+    rejected: 0,
+    cancelled: 0
+  };
+
+  adminApplications.forEach((item) => {
+    const status = String(item.status || "").toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(counts, status)) {
+      counts[status] += 1;
+    }
+  });
+
+  const totalEl = document.getElementById("adminTotalApplications");
+  const pendingEl = document.getElementById("adminPendingApplications");
+  const shortlistedEl = document.getElementById("adminShortlistedApplications");
+  const placedEl = document.getElementById("adminPlacedApplications");
+  const rejectedEl = document.getElementById("adminRejectedApplications");
+  const cancelledEl = document.getElementById("adminCancelledApplications");
+
+  if (totalEl) totalEl.textContent = String(counts.all);
+  if (pendingEl) pendingEl.textContent = String(counts.pending);
+  if (shortlistedEl) shortlistedEl.textContent = String(counts.shortlisted);
+  if (placedEl) placedEl.textContent = String(counts.placed);
+  if (rejectedEl) rejectedEl.textContent = String(counts.rejected);
+  if (cancelledEl) cancelledEl.textContent = String(counts.cancelled);
+}
+
+function renderAdminApplications(data = adminApplications) {
+  const list = document.getElementById("adminApplicationList");
+  if (!list) return;
+
+  const searchInput = document.getElementById("searchApplications");
+  const term = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+  const filtered = data.filter((item) => {
+    const student = (item.student_name || "").toLowerCase();
+    const company = (item.company_name || "").toLowerCase();
+    const job = (item.job_title || "").toLowerCase();
+    const regno = (item.regno || "").toLowerCase();
+    const status = (item.status || "").toLowerCase();
+    const matchesSearch =
+      term === "" ||
+      student.includes(term) ||
+      company.includes(term) ||
+      job.includes(term) ||
+      regno.includes(term) ||
+      status.includes(term);
+    const matchesStatus =
+      adminApplicationStatusFilter === "all" || status === adminApplicationStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const title = document.getElementById("adminApplicationTitle");
+  const note = document.getElementById("adminApplicationNote");
+  const labelMap = {
+    all: "All",
+    pending: "Pending",
+    shortlisted: "Shortlisted",
+    placed: "Placed",
+    rejected: "Rejected",
+    cancelled: "Cancelled"
+  };
+
+  if (title) {
+    title.textContent = adminApplicationStatusFilter === "all"
+      ? "Application List"
+      : `${labelMap[adminApplicationStatusFilter]} Applications`;
+  }
+
+  if (note) {
+    note.textContent = adminApplicationStatusFilter === "all"
+      ? "Showing all applications."
+      : `Showing only ${labelMap[adminApplicationStatusFilter].toLowerCase()} applications.`;
+  }
+
+  if (!data.length) {
+    list.innerHTML = '<tr><td colspan="6">No applications found.</td></tr>';
+    return;
+  }
+
+  if (!filtered.length) {
+    list.innerHTML = '<tr><td colspan="6">No applications found for this filter.</td></tr>';
+    return;
+  }
+
+  list.innerHTML = filtered
+    .map((item) => {
+      const statusClass = String(item.status || "Pending").toLowerCase();
+      return `
+        <tr>
+          <td>${escapeHtml(item.student_name)}</td>
+          <td>${escapeHtml(item.company_name || "N/A")}</td>
+          <td>${escapeHtml(item.job_title || "N/A")}</td>
+          <td>${escapeHtml(item.regno || "N/A")}</td>
+          <td>${escapeHtml(item.applied_at || "N/A")}</td>
+          <td><span class="status ${escapeHtml(statusClass)}">${escapeHtml(item.status || "Pending")}</span></td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+function searchAdminApplications() {
+  renderAdminApplications();
+}
+
 async function loadDashboardStats() {
   const studentCount = document.getElementById("studentCount");
   const companyCount = document.getElementById("companyCount");
@@ -394,6 +677,48 @@ function setupTeamMemberEditor() {
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboardStats();
   loadAdminCompanies();
+  loadAdminStudents();
+  loadAdminApplications();
   loadAdminResumes();
   setupTeamMemberEditor();
+
+  const applicationStats = document.getElementById("adminApplicationStats");
+  if (applicationStats) {
+    const initialStatus = applicationStats.getAttribute("data-initial-status");
+    if (initialStatus) {
+      adminApplicationStatusFilter = initialStatus;
+    }
+
+    const filterButtons = document.querySelectorAll(".stat-filter");
+    filterButtons.forEach((btn) => {
+      if (btn.getAttribute("data-filter") === adminApplicationStatusFilter) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+
+      btn.addEventListener("click", () => {
+        adminApplicationStatusFilter = btn.getAttribute("data-filter") || "all";
+        filterButtons.forEach((innerBtn) => {
+          innerBtn.classList.toggle("active", innerBtn === btn);
+        });
+        renderAdminApplications();
+      });
+    });
+  }
+
+  const dashboardFilterButtons = document.querySelectorAll(".stat-filter-dashboard");
+  dashboardFilterButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const filter = btn.getAttribute("data-filter") || "";
+      if (!filter) return;
+
+      dashboardFilterButtons.forEach((innerBtn) => {
+        innerBtn.classList.toggle("active", innerBtn === btn);
+      });
+
+      await loadDashboardApplications();
+      renderDashboardApplications(filter);
+    });
+  });
 });

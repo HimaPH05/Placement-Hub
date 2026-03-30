@@ -35,7 +35,7 @@ $adminProfile = get_admin_profile();
   <link rel="icon" href="../icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
-  <script defer src="script.js?v=10"></script>
+  <script defer src="script.js?v=11"></script>
   <script defer src="../pwa-register.js"></script>
 </head>
 
@@ -62,31 +62,56 @@ $adminProfile = get_admin_profile();
   </div>
 
   <div class="stats-grid">
-    <div class="stat-card blue">
+    <a href="students.php" class="stat-card blue stat-link">
       <p>Students</p>
       <h2 id="studentCount"><?php echo $studentCount; ?></h2>
-    </div>
+    </a>
 
-    <div class="stat-card green">
+    <a href="company.php" class="stat-card green stat-link">
       <p>Companies</p>
       <h2 id="companyCount"><?php echo $companyCount; ?></h2>
-    </div>
+    </a>
 
-    <div class="stat-card purple">
+    <a href="resume.php" class="stat-card purple stat-link">
       <p>Public Resumes</p>
       <h2 id="resumeCount"><?php echo $publicResumeCount; ?></h2>
-    </div>
+    </a>
 
-    <div class="stat-card teal">
+    <button type="button" class="stat-card teal stat-filter-dashboard" data-filter="shortlisted">
       <p>Shortlisted</p>
       <h2 id="shortlistedCount"><?php echo $shortlistedCount; ?></h2>
-    </div>
+    </button>
 
-    <div class="stat-card orange">
+    <button type="button" class="stat-card orange stat-filter-dashboard" data-filter="placed">
       <p>Placements</p>
       <h2 id="placementCount"><?php echo $placementCount; ?></h2>
       <p class="placement-msg">Live count from company applicant updates.</p>
+    </button>
+  </div>
+
+  <div id="dashboardApplicationPanel" class="table-wrap admin-table-wrap" style="display:none;">
+    <div class="table-head">
+      <h3 id="dashboardApplicationTitle">Applications</h3>
+      <p class="filter-note" id="dashboardApplicationNote"></p>
     </div>
+
+    <table class="app-table">
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Company</th>
+          <th>Job Role</th>
+          <th>Reg No</th>
+          <th>Applied On</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="dashboardApplicationList">
+        <tr>
+          <td colspan="6">Select Shortlisted or Placements to view students.</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
 <div class="info-grid">

@@ -5,7 +5,7 @@ require_once __DIR__ . "/auth-check.php";
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Resume Management</title>
+  <title>Student Management</title>
   <link rel="stylesheet" href="astyle.css?v=20260309">
   <script defer src="script.js?v=11"></script>
 </head>
@@ -17,8 +17,10 @@ require_once __DIR__ . "/auth-check.php";
 
   <div class="links">
     <a href="index.php">Home</a>
+    <a href="students.php" class="active">Students</a>
     <a href="company.php">Company</a>
-    <a href="resume.php" class="active">Resumes</a>
+    <a href="applications.php">Applications</a>
+    <a href="resume.php">Resumes</a>
     <a href="feedback.php">Feedback</a>
     <a href="profile.php">Admin Profile</a>
     <a href="logout.php" class="logout" id="logoutBtn">Logout</a>
@@ -27,18 +29,19 @@ require_once __DIR__ . "/auth-check.php";
 
 <div class="container">
   <div class="page-head">
-    <h2>Public Resume Verification</h2>
-
+    <h2>Registered Students</h2>
     <input
       type="text"
-      id="searchResume"
+      id="searchStudents"
       class="search"
-      placeholder="Search student..."
-      onkeyup="searchResume()"
+      placeholder="Search student, branch, reg no..."
+      onkeyup="searchAdminStudents()"
     >
   </div>
 
-  <div id="resumeList" class="resume-grid"></div>
+  <p class="sub">Sorted by department/branch and year.</p>
+
+  <div id="studentList" class="student-grid"></div>
 </div>
 
 </body>
