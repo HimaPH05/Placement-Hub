@@ -23,6 +23,8 @@ if ($studentsTable && $studentsTable->num_rows > 0) {
 
     /* STUDENT GRADUATION EXPIRY COLUMNS */
     $lifecycleCols = [
+        "department" => "ALTER TABLE students ADD COLUMN department VARCHAR(20) NULL AFTER regno",
+        "current_year" => "ALTER TABLE students ADD COLUMN current_year TINYINT NULL AFTER department",
         "admission_year" => "ALTER TABLE students ADD COLUMN admission_year INT NULL",
         "admission_date" => "ALTER TABLE students ADD COLUMN admission_date DATE NULL",
         "access_expires_at" => "ALTER TABLE students ADD COLUMN access_expires_at DATE NULL"
@@ -103,6 +105,24 @@ $conn->query("CREATE TABLE IF NOT EXISTS applications (
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 )");
+
+/* ADMIN OPPORTUNITY LINKS */
+$conn->query("CREATE TABLE IF NOT EXISTS admin_opportunity_links (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(180) NOT NULL,
+    company_name VARCHAR(180) NOT NULL,
+    apply_url TEXT NOT NULL,
+    description TEXT NULL,
+    min_cgpa DECIMAL(4,2) NULL,
+    deadline_date DATE NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)");
+
+$adminOpportunityMinCgpaCol = $conn->query("SHOW COLUMNS FROM admin_opportunity_links LIKE 'min_cgpa'");
+if ($adminOpportunityMinCgpaCol && $adminOpportunityMinCgpaCol->num_rows === 0) {
+    $conn->query("ALTER TABLE admin_opportunity_links ADD COLUMN min_cgpa DECIMAL(4,2) NULL AFTER description");
+}
 
 /* STUDENT RESUMES TABLE */
 $conn->query("CREATE TABLE IF NOT EXISTS student_resumes (

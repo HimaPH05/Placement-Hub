@@ -17,6 +17,7 @@ $conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+include_once __DIR__ . "/../database_setup.php";
 
 $student_id = (int)$_SESSION["user_id"];
 
@@ -131,6 +132,19 @@ if ($hasResumeVerifyCol || $hasResumeRejectCol) {
 
 $adminProfile = get_admin_profile();
 $teamMembers = get_admin_team_members();
+
+$opportunityLinks = [];
+$linkResult = $conn->query("
+    SELECT title, company_name, apply_url, description, min_cgpa, deadline_date
+    FROM admin_opportunity_links
+    WHERE is_active = 1
+    ORDER BY deadline_date ASC, created_at DESC
+");
+if ($linkResult) {
+    while ($row = $linkResult->fetch_assoc()) {
+        $opportunityLinks[] = $row;
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -234,6 +248,42 @@ $teamMembers = get_admin_team_members();
       <h3>Feedback</h3>
       <p>Share your placement experience</p>
     </div>
+  </section>
+
+  <section class="opportunity-section">
+    <h2 class="section-title">Application Links</h2>
+    <?php if (count($opportunityLinks) > 0): ?>
+      <div class="opportunity-grid">
+        <?php foreach ($opportunityLinks as $link): ?>
+          <?php
+            $minCgpa = isset($link["min_cgpa"]) && $link["min_cgpa"] !== null ? (float)$link["min_cgpa"] : null;
+            $studentCgpa = isset($student["cgpa"]) ? (float)$student["cgpa"] : 0.0;
+            $isEligibleForLink = $minCgpa === null || $studentCgpa >= $minCgpa;
+          ?>
+          <div class="opportunity-card">
+            <h3><?php echo htmlspecialchars((string)$link["title"]); ?></h3>
+            <p class="opportunity-company"><?php echo htmlspecialchars((string)$link["company_name"]); ?></p>
+            <p><?php echo htmlspecialchars((string)($link["description"] ?? "Apply using the link below.")); ?></p>
+            <p class="opportunity-deadline">
+              Minimum CGPA:
+              <?php echo $minCgpa !== null ? htmlspecialchars(number_format($minCgpa, 2)) : "No minimum"; ?>
+            </p>
+            <p class="opportunity-deadline">
+              Deadline: <?php echo !empty($link["deadline_date"]) ? htmlspecialchars((string)$link["deadline_date"]) : "Not specified"; ?>
+            </p>
+            <?php if ($isEligibleForLink): ?>
+              <a href="<?php echo htmlspecialchars((string)$link["apply_url"]); ?>" target="_blank" class="btn">Apply Now</a>
+            <?php else: ?>
+              <button type="button" class="btn apply-btn-student" disabled>
+                Requires CGPA <?php echo htmlspecialchars(number_format($minCgpa, 2)); ?>
+              </button>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php else: ?>
+      <p class="empty-text">No application links posted by admin yet.</p>
+    <?php endif; ?>
   </section>
 
   <div class="officer-section">

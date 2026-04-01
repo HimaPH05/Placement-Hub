@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["confirm_logout"])) {
   <meta charset="UTF-8">
   <title>Logout - Placement Hub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="company_logout.css">
+  <link rel="stylesheet" href="company_logout.css?v=20260403">
 </head>
 <body>
 
@@ -23,10 +23,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["confirm_logout"])) {
 </header>
 
 <nav class="navbar">
-  <a href="home.php">Home</a>
-  <a href="company.php">Company</a>
-  <a href="applicants.php">Applicants</a>
-  <a href="resumes.php">Resumes</a>
+  <div class="nav-links">
+    <a href="home.php">Home</a>
+    <a href="company.php">Company</a>
+    <a href="applicants.php">Applicants</a>
+    <a href="resumes.php">Resumes</a>
+  </div>
 </nav>
 
 <div class="container">

@@ -38,7 +38,15 @@ $sql = "
         COALESCE(c.website, '') AS website,
         j.id AS latest_job_id,
         j.job_title AS latest_job_title,
-        j.min_cgpa AS latest_job_min_cgpa
+        j.min_cgpa AS latest_job_min_cgpa,
+        CASE
+            WHEN j.id IS NOT NULL AND EXISTS (
+                SELECT 1
+                FROM applications a
+                WHERE a.student_id = " . (int)($_SESSION["user_id"] ?? 0) . " AND a.job_id = j.id
+            ) THEN 1
+            ELSE 0
+        END AS latest_job_applied
     FROM companies c
     LEFT JOIN jobs j ON j.id = (
         SELECT j2.id
@@ -57,6 +65,7 @@ if ($result) {
     while ($row = $result->fetch_assoc()) {
         $row["id"] = (int)$row["id"];
         $row["latest_job_id"] = $row["latest_job_id"] !== null ? (int)$row["latest_job_id"] : null;
+        $row["latest_job_applied"] = ((int)($row["latest_job_applied"] ?? 0)) === 1;
         $companies[] = $row;
     }
 }

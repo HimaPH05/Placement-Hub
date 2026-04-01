@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Create Student Account</title>
-  <link rel="stylesheet" href="student-signup.css">
+  <link rel="stylesheet" href="student-signup.css?v=20260401">
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#0e4ccf">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -39,8 +39,25 @@
       <label>University Register Number</label>
       <input type="text" id="regno" placeholder="Enter register number" required>
 
-      <label>Date of Joining (College)</label>
-      <input type="date" id="admission_date" required>
+      <label>Department</label>
+      <select id="department" required>
+        <option value="">Select department</option>
+        <option value="CE">CE</option>
+        <option value="ME">ME</option>
+        <option value="CHE">CHE</option>
+        <option value="EC">EC</option>
+        <option value="AEI">AEI</option>
+        <option value="CSD">CSD</option>
+      </select>
+
+      <label>Year</label>
+      <select id="current_year" required>
+        <option value="">Select year</option>
+        <option value="1">First Year</option>
+        <option value="2">Second Year</option>
+        <option value="3">Third Year</option>
+        <option value="4">Fourth Year</option>
+      </select>
 
       <label>Date of Birth</label>
       <input type="date" id="dob" required>

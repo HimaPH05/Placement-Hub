@@ -44,7 +44,7 @@ $result = $stmt->get_result();
 <head>
   <meta charset="UTF-8">
   <title>Resumes - Placement Hub</title>
-  <link rel="stylesheet" href="company_resume.css?v=20260309">
+  <link rel="stylesheet" href="company_resume.css?v=20260403">
 </head>
 
 <body>
@@ -54,10 +54,19 @@ $result = $stmt->get_result();
 </header>
 
 <nav class="navbar">
-  <a href="home.php">Home</a>
-  <a href="company.php">Company</a>
-  <a href="applicants.php">Applicants</a>
-  <a href="resumes.php" class="active">Resumes</a>
+  <div class="nav-links">
+    <a href="home.php">Home</a>
+    <a href="company.php">Company</a>
+    <a href="applicants.php">Applicants</a>
+    <a href="resumes.php" class="active">Resumes</a>
+  </div>
+  <div class="company-profile-menu">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="company-profile-icon" onclick="toggleProfile()">
+    <div id="profileDropdown" class="company-profile-dropdown">
+      <a href="edit_company.php">Edit Profile</a><br><br>
+      <a href="logout.php">Logout</a>
+    </div>
+  </div>
 </nav>
 
 <div class="container">
@@ -109,5 +118,6 @@ $result = $stmt->get_result();
 
 </div>
 
+<script src="script.js?v=20260403"></script>
 </body>
 </html>

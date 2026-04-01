@@ -42,7 +42,13 @@ body{
   background:rgba(255,255,255,.84);
   backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(13,76,207,.12);
+  align-items:center;
+  gap:18px;
 }
+
+.nav-links{display:flex;gap:10px;flex-wrap:wrap}
+
+.company-profile-menu{margin-left:auto}
 
 .navbar a{
   text-decoration:none;
@@ -59,6 +65,35 @@ body{
   color:#fff;
   background:linear-gradient(120deg,var(--primary),var(--primary-2));
   box-shadow:0 8px 18px rgba(14,76,207,.26);
+}
+
+.company-profile-menu{position:relative;display:flex;align-items:center}
+.company-profile-icon{
+  width:36px;
+  height:36px;
+  object-fit:cover;
+  border-radius:50%;
+  cursor:pointer;
+  border:2px solid rgba(14,76,207,.2);
+  box-shadow:0 8px 18px rgba(14,76,207,.12);
+}
+.company-profile-dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:46px;
+  width:240px;
+  background:#fff;
+  border:1px solid #d4e3ff;
+  box-shadow:0 16px 30px rgba(11,44,87,.2);
+  border-radius:12px;
+  padding:14px;
+  z-index:60;
+}
+.company-profile-dropdown a{
+  color:#0f4fd0;
+  text-decoration:none;
+  font-weight:700;
 }
 
 .container{max-width:1120px;margin:0 auto;padding:34px 18px 46px}
@@ -247,4 +282,5 @@ body{
   .edit-company-modal .location-row{grid-template-columns:1fr}
   .edit-company-modal .location-item{grid-template-columns:30px 1fr}
   .edit-company-modal .remove-location-btn{grid-column:1 / -1}
+  .company-profile-menu{margin-left:0}
 }

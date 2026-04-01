@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/auth-check.php";
 require_once __DIR__ . "/../db.php";
+include_once __DIR__ . "/../database_setup.php";
 require_once __DIR__ . "/../admin-credentials.php";
 
 function fetch_total(mysqli $conn, string $sql): int
@@ -26,7 +27,7 @@ $adminProfile = get_admin_profile();
 <head>
   <meta charset="UTF-8">
   <title>Home - Placement Hub</title>
-  <link rel="stylesheet" href="astyle.css?v=20260309">
+  <link rel="stylesheet" href="astyle.css?v=20260401">
   <link rel="manifest" href="../manifest.webmanifest">
   <meta name="theme-color" content="#0e4ccf">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -35,7 +36,7 @@ $adminProfile = get_admin_profile();
   <link rel="icon" href="../icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
-  <script defer src="script.js?v=11"></script>
+  <script defer src="script.js?v=13"></script>
   <script defer src="../pwa-register.js"></script>
 </head>
 
@@ -91,8 +92,17 @@ $adminProfile = get_admin_profile();
 
   <div id="dashboardApplicationPanel" class="table-wrap admin-table-wrap" style="display:none;">
     <div class="table-head">
-      <h3 id="dashboardApplicationTitle">Applications</h3>
-      <p class="filter-note" id="dashboardApplicationNote"></p>
+      <div>
+        <h3 id="dashboardApplicationTitle">Applications</h3>
+        <p class="filter-note" id="dashboardApplicationNote"></p>
+      </div>
+      <div class="filter-row dashboard-filter-row">
+        <label for="dashboardCompanyFilter" class="filter-label">Company</label>
+        <select id="dashboardCompanyFilter" class="search compact-select">
+          <option value="all">All Companies</option>
+        </select>
+        <button type="button" id="dashboardExportBtn" class="primary" onclick="downloadDashboardApplicationPdf()" disabled>Download PDF</button>
+      </div>
     </div>
 
     <table class="app-table">
@@ -133,6 +143,27 @@ $adminProfile = get_admin_profile();
     <p><b>Office:</b> <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
   </div>
 </div>
+
+<section class="link-admin-section">
+  <div class="page-head">
+    <h2>Application Links</h2>
+  </div>
+
+  <div class="link-admin-card">
+    <div class="link-admin-form">
+      <input type="text" id="linkTitle" placeholder="Title (example: Off-campus Drive)">
+      <input type="text" id="linkCompany" placeholder="Company name">
+      <input type="url" id="linkUrl" placeholder="Application URL">
+      <input type="number" id="linkMinCgpa" placeholder="Minimum CGPA" min="0" max="10" step="0.01">
+      <input type="date" id="linkDeadline">
+      <textarea id="linkDescription" placeholder="Short description or instructions"></textarea>
+      <button type="button" class="primary" onclick="addAdminLink()">Post Link</button>
+    </div>
+    <p id="adminLinkMsg" class="profile-msg"></p>
+  </div>
+
+  <div id="adminLinkList" class="link-admin-grid"></div>
+</section>
 
 </div>
 </body>

@@ -17,23 +17,30 @@ $email    = trim($data->email ?? '');
 $password = trim($data->password ?? '');
 $fullname = trim($data->fullname ?? '');
 $regno    = trim($data->regno ?? '');
-$admissionDateRaw = trim((string)($data->admission_date ?? ''));
+$department = strtoupper(trim((string)($data->department ?? '')));
+$currentYear = trim((string)($data->current_year ?? ''));
 $dob      = trim($data->dob ?? '');
 $cgpa     = trim($data->cgpa ?? '');
 
-if ($username === "" || $email === "" || $password === "" || $fullname === "" || $regno === "" || $admissionDateRaw === "" || $dob === "" || $cgpa === "") {
+if ($username === "" || $email === "" || $password === "" || $fullname === "" || $regno === "" || $department === "" || $currentYear === "" || $dob === "" || $cgpa === "") {
     echo json_encode(["message" => "All fields are required"]);
     exit;
 }
 
-require_once __DIR__ . "/student-lifecycle.php";
-$admissionDate = DateTimeImmutable::createFromFormat("Y-m-d", $admissionDateRaw);
-if (!($admissionDate instanceof DateTimeImmutable)) {
-    echo json_encode(["message" => "Invalid date of joining"]);
+$allowedDepartments = ["CE", "ME", "CHE", "EC", "AEI", "CSD"];
+if (!in_array($department, $allowedDepartments, true)) {
+    echo json_encode(["message" => "Please select a valid department"]);
     exit;
 }
-$admissionDateStr = $admissionDate->format("Y-m-d");
-$accessExpiresAt = $admissionDate->modify("+4 years")->format("Y-m-d");
+
+if (!preg_match('/^[1-4]$/', $currentYear)) {
+    echo json_encode(["message" => "Please select a valid year"]);
+    exit;
+}
+
+require_once __DIR__ . "/student-lifecycle.php";
+$admissionYear = student_lifecycle_compute_admission_year_from_current_year((int)$currentYear);
+$accessExpiresAt = student_lifecycle_compute_access_expiry_from_current_year((int)$currentYear);
 
 require_once __DIR__ . "/access-policy.php";
 [$allowed, $policyMsg] = enforce_student_access_policy($conn, $regno, $email);
@@ -55,34 +62,99 @@ if ($result->num_rows > 0) {
 $hashed = password_hash($password, PASSWORD_DEFAULT);
 
 $hasLifecycleCols = false;
+$hasDepartmentCol = false;
+$hasCurrentYearCol = false;
+$hasAdmissionYearCol = false;
 $lifeColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'access_expires_at'");
 if ($lifeColCheck && $lifeColCheck->num_rows > 0) {
     $hasLifecycleCols = true;
 }
 
-if ($hasLifecycleCols) {
-    $hasAdmissionDateCol = false;
-    $adColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'admission_date'");
-    if ($adColCheck && $adColCheck->num_rows > 0) {
-        $hasAdmissionDateCol = true;
-    }
+$departmentColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'department'");
+if ($departmentColCheck && $departmentColCheck->num_rows > 0) {
+    $hasDepartmentCol = true;
+}
 
-    $stmt = $conn->prepare(
-      $hasAdmissionDateCol
-        ? "INSERT INTO students (username, email, password, fullname, regno, admission_date, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        : "INSERT INTO students (username, email, password, fullname, regno, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
-    );
-    if ($hasAdmissionDateCol) {
-        $stmt->bind_param("ssssssssd", $username, $email, $hashed, $fullname, $regno, $admissionDateStr, $accessExpiresAt, $dob, $cgpa);
+$currentYearColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'current_year'");
+if ($currentYearColCheck && $currentYearColCheck->num_rows > 0) {
+    $hasCurrentYearCol = true;
+}
+
+$admissionYearColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'admission_year'");
+if ($admissionYearColCheck && $admissionYearColCheck->num_rows > 0) {
+    $hasAdmissionYearCol = true;
+}
+
+if ($hasLifecycleCols) {
+    if ($hasDepartmentCol && $hasCurrentYearCol && $hasAdmissionYearCol) {
+        $stmt = $conn->prepare(
+            "INSERT INTO students (username, email, password, fullname, regno, department, current_year, admission_year, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssssssissd", $username, $email, $hashed, $fullname, $regno, $department, $currentYear, $admissionYear, $accessExpiresAt, $dob, $cgpa);
+    } elseif ($hasDepartmentCol && $hasAdmissionYearCol) {
+        $stmt = $conn->prepare(
+            "INSERT INTO students (username, email, password, fullname, regno, department, admission_year, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("ssssssissd", $username, $email, $hashed, $fullname, $regno, $department, $admissionYear, $accessExpiresAt, $dob, $cgpa);
+    } elseif ($hasCurrentYearCol && $hasAdmissionYearCol) {
+        $stmt = $conn->prepare(
+            "INSERT INTO students (username, email, password, fullname, regno, current_year, admission_year, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssssisssd", $username, $email, $hashed, $fullname, $regno, $currentYear, $admissionYear, $accessExpiresAt, $dob, $cgpa);
+    } elseif ($hasDepartmentCol) {
+        $stmt = $conn->prepare(
+            "INSERT INTO students (username, email, password, fullname, regno, department, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("ssssssssd", $username, $email, $hashed, $fullname, $regno, $department, $accessExpiresAt, $dob, $cgpa);
+    } elseif ($hasCurrentYearCol) {
+        $stmt = $conn->prepare(
+            "INSERT INTO students (username, email, password, fullname, regno, current_year, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("ssssssssd", $username, $email, $hashed, $fullname, $regno, $currentYear, $accessExpiresAt, $dob, $cgpa);
     } else {
+        $stmt = $conn->prepare(
+            "INSERT INTO students (username, email, password, fullname, regno, access_expires_at, dob, cgpa) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        );
         $stmt->bind_param("sssssssd", $username, $email, $hashed, $fullname, $regno, $accessExpiresAt, $dob, $cgpa);
     }
 } else {
-    $stmt = $conn->prepare(
-      "INSERT INTO students (username, email, password, fullname, regno, dob, cgpa)
-       VALUES (?, ?, ?, ?, ?, ?, ?)"
-    );
-    $stmt->bind_param("ssssssd", $username, $email, $hashed, $fullname, $regno, $dob, $cgpa);
+    if ($hasDepartmentCol && $hasCurrentYearCol && $hasAdmissionYearCol) {
+        $stmt = $conn->prepare(
+          "INSERT INTO students (username, email, password, fullname, regno, department, current_year, admission_year, dob, cgpa)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssssssisd", $username, $email, $hashed, $fullname, $regno, $department, $currentYear, $admissionYear, $dob, $cgpa);
+    } elseif ($hasDepartmentCol && $hasAdmissionYearCol) {
+        $stmt = $conn->prepare(
+          "INSERT INTO students (username, email, password, fullname, regno, department, admission_year, dob, cgpa)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("ssssssisd", $username, $email, $hashed, $fullname, $regno, $department, $admissionYear, $dob, $cgpa);
+    } elseif ($hasCurrentYearCol && $hasAdmissionYearCol) {
+        $stmt = $conn->prepare(
+          "INSERT INTO students (username, email, password, fullname, regno, current_year, admission_year, dob, cgpa)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssssissd", $username, $email, $hashed, $fullname, $regno, $currentYear, $admissionYear, $dob, $cgpa);
+    } elseif ($hasDepartmentCol) {
+        $stmt = $conn->prepare(
+          "INSERT INTO students (username, email, password, fullname, regno, department, dob, cgpa)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssssssd", $username, $email, $hashed, $fullname, $regno, $department, $dob, $cgpa);
+    } elseif ($hasCurrentYearCol) {
+        $stmt = $conn->prepare(
+          "INSERT INTO students (username, email, password, fullname, regno, current_year, dob, cgpa)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("sssssssd", $username, $email, $hashed, $fullname, $regno, $currentYear, $dob, $cgpa);
+    } else {
+        $stmt = $conn->prepare(
+          "INSERT INTO students (username, email, password, fullname, regno, dob, cgpa)
+           VALUES (?, ?, ?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("ssssssd", $username, $email, $hashed, $fullname, $regno, $dob, $cgpa);
+    }
 }
 
 if ($stmt->execute()) {

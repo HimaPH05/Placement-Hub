@@ -66,6 +66,8 @@ body{
 .page-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}
 .page-head h2,.page-title,.dashboard-head h1{color:#0a3f9f}
 .page-title{margin-bottom:16px}
+.student-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:flex-end;flex:1}
+.student-filter-select{min-width:160px}
 
 .company-cred-msg{background:#e9fff1;border:1px solid #bce9cd;color:#1d6a39;border-radius:12px;padding:12px 14px;margin-bottom:16px;line-height:1.5}
 
@@ -128,7 +130,19 @@ body{
 .filter-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
 .filter-label{font-size:14px;color:#35527e;font-weight:700}
 .compact-select{min-width:220px}
+.dashboard-filter-row{margin-bottom:0}
+.dashboard-filter-row .primary{white-space:nowrap}
 .application-stats{margin-bottom:20px}
+.link-admin-section{margin-top:26px}
+.link-admin-card{background:var(--card);border:1px solid rgba(23,84,194,.12);border-radius:20px;box-shadow:var(--shadow);padding:20px;margin-bottom:16px}
+.link-admin-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.link-admin-form input,.link-admin-form textarea{width:100%;border:1px solid #ccdaf4;background:#f8fbff;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit}
+.link-admin-form textarea{grid-column:1 / -1;min-height:100px;resize:vertical}
+.link-admin-form button{width:fit-content}
+.link-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.link-item-card{background:var(--card);border:1px solid rgba(23,84,194,.12);border-radius:20px;box-shadow:var(--shadow);padding:20px}
+.link-item-card h3{color:#0d47a1;margin-bottom:8px}
+.link-item-card p{font-size:14px;color:#3f5a84;margin-bottom:8px}
 .table-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
 .filter-note{color:#5b6e90;font-size:13px;font-weight:700;margin-top:6px}
 .admin-table-wrap{padding:14px;overflow-x:auto}
@@ -151,6 +165,7 @@ body{
 .profile-msg{margin-top:8px;font-size:13px}
 .profile-msg.success{color:#2e7d32}
 .profile-msg.error{color:#c62828}
+.muted-text{color:#7182a0;font-size:13px;font-weight:600}
 .team-member-group{border:1px solid #d7e3ff;border-radius:12px;padding:10px 12px;margin:4px 0;background:#f8fbff}
 .team-member-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
 .team-member-title{font-size:13px;font-weight:800;color:#35527e}
@@ -170,13 +185,30 @@ body{
 .logout-actions .primary,.logout-actions .cancel{width:100%;min-height:56px;display:inline-flex;align-items:center;justify-content:center;font-size:30px;text-decoration:none}
 .logout-actions .cancel{background:linear-gradient(130deg,#7a8ba7,#5f718f);color:#fff}
 
+.student-profile-modal{display:none}
+.student-profile-box{width:min(980px,100%);max-height:90vh;overflow:auto}
+.student-profile-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.student-profile-close{border:none;background:#eaf1ff;color:#23467d;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+.student-profile-content{margin-top:16px}
+.student-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.student-profile-card{background:#f8fbff;border:1px solid #d7e3ff;border-radius:16px;padding:18px}
+.student-profile-card h4{color:#0d47a1;margin-bottom:10px}
+.student-profile-card p{font-size:14px;color:#3f5a84;margin-bottom:8px}
+.student-profile-card-wide{grid-column:1 / -1}
+.student-profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 12px}
+.student-profile-table-wrap{overflow:auto}
+
 @media (max-width:700px){
   .topbar{text-align:center;padding:12px 14px}
   .navbar{padding:10px 12px}
   .container{padding:18px 12px 28px}
   .page-head{flex-direction:column;align-items:flex-start}
+  .student-toolbar{width:100%;justify-content:stretch}
+  .student-toolbar .search,.student-toolbar .primary{width:100%}
+  .link-admin-form{grid-template-columns:1fr}
   .table-head{flex-direction:column}
   .profile-card{flex-direction:column;text-align:center}
+  .student-profile-grid{grid-template-columns:1fr}
   .logout-card{padding:22px 16px}
   .logout-card h2{font-size:38px}
   .logout-card p{font-size:22px}

@@ -12,13 +12,19 @@ $conn->query("CREATE TABLE IF NOT EXISTS student_feedback (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     username VARCHAR(120) NOT NULL,
+    rating TINYINT NOT NULL DEFAULT 5,
     feedback TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_student_created (student_id, created_at)
 )");
 
+$ratingColumnCheck = $conn->query("SHOW COLUMNS FROM student_feedback LIKE 'rating'");
+if ($ratingColumnCheck && $ratingColumnCheck->num_rows === 0) {
+    $conn->query("ALTER TABLE student_feedback ADD COLUMN rating TINYINT NOT NULL DEFAULT 5 AFTER username");
+}
+
 $rows = [];
-$result = $conn->query("SELECT id, student_id, username, feedback, created_at FROM student_feedback ORDER BY created_at DESC");
+$result = $conn->query("SELECT id, student_id, username, rating, feedback, created_at FROM student_feedback ORDER BY created_at DESC");
 if ($result) {
     while ($row = $result->fetch_assoc()) {
         $rows[] = $row;
@@ -68,6 +74,7 @@ if ($result) {
             <span><?php echo htmlspecialchars($item["created_at"]); ?></span>
           </div>
           <p class="feedback-meta">Student ID: <?php echo (int)$item["student_id"]; ?></p>
+          <p class="feedback-meta">Rating: <?php echo str_repeat("&#9733;", (int)$item["rating"]) . str_repeat("&#9734;", max(0, 5 - (int)$item["rating"])); ?></p>
           <p class="feedback-text"><?php echo nl2br(htmlspecialchars($item["feedback"])); ?></p>
         </div>
       <?php endforeach; ?>

@@ -1,8 +1,13 @@
 let adminCompanies = [];
 let adminStudents = [];
+let filteredAdminStudents = [];
 let adminApplications = [];
 let adminApplicationStatusFilter = "all";
 let dashboardApplicationsLoaded = false;
+let adminOpportunityLinks = [];
+let dashboardCompanyFilterValue = "all";
+let dashboardStatusFilterValue = "";
+let activeStudentProfileId = 0;
 
 function escapeHtml(value) {
   if (value === null || value === undefined) return "";
@@ -89,6 +94,134 @@ function renderAdminCompanies(data = adminCompanies) {
     .join("");
 }
 
+function setAdminLinkMessage(message, isError = false) {
+  const box = document.getElementById("adminLinkMsg");
+  if (!box) return;
+  box.textContent = message;
+  box.className = `profile-msg ${isError ? "error" : "success"}`;
+}
+
+async function loadAdminLinks() {
+  const list = document.getElementById("adminLinkList");
+  if (!list) return;
+
+  list.innerHTML = "<p>Loading links...</p>";
+
+  try {
+    const res = await fetch("link-actions.php", { cache: "no-store" });
+    const data = await res.json();
+
+    if (!res.ok || !data.success || !Array.isArray(data.links)) {
+      list.innerHTML = "<p>Unable to load links.</p>";
+      return;
+    }
+
+    adminOpportunityLinks = data.links;
+    renderAdminLinks();
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = "<p>Server not reachable.</p>";
+  }
+}
+
+function renderAdminLinks(data = adminOpportunityLinks) {
+  const list = document.getElementById("adminLinkList");
+  if (!list) return;
+
+  if (!data.length) {
+    list.innerHTML = "<p>No application links posted yet.</p>";
+    return;
+  }
+
+  list.innerHTML = data
+    .map((item) => {
+      return `
+        <div class="link-item-card">
+          <h3>${escapeHtml(item.title)}</h3>
+          <p><b>Company:</b> ${escapeHtml(item.company_name)}</p>
+          <p><b>Minimum CGPA:</b> ${item.min_cgpa !== null ? escapeHtml(Number(item.min_cgpa).toFixed(2)) : "No minimum"}</p>
+          <p><b>Deadline:</b> ${escapeHtml(item.deadline_date || "No deadline")}</p>
+          <p>${escapeHtml(item.description || "No description added.")}</p>
+          <div class="actions">
+            <a href="${escapeHtml(item.apply_url)}" target="_blank" class="primary">Open Link</a>
+            <button type="button" class="delete" onclick="deleteAdminLink(${Number(item.id)})">Delete</button>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+async function addAdminLink() {
+  const titleEl = document.getElementById("linkTitle");
+  const companyEl = document.getElementById("linkCompany");
+  const urlEl = document.getElementById("linkUrl");
+  const minCgpaEl = document.getElementById("linkMinCgpa");
+  const deadlineEl = document.getElementById("linkDeadline");
+  const descriptionEl = document.getElementById("linkDescription");
+
+  if (!titleEl || !companyEl || !urlEl || !minCgpaEl || !deadlineEl || !descriptionEl) return;
+
+  const payload = {
+    title: titleEl.value.trim(),
+    company_name: companyEl.value.trim(),
+    apply_url: urlEl.value.trim(),
+    min_cgpa: minCgpaEl.value.trim(),
+    deadline_date: deadlineEl.value.trim(),
+    description: descriptionEl.value.trim()
+  };
+
+  try {
+    const res = await fetch("link-actions.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setAdminLinkMessage(data.message || "Unable to post link.", true);
+      return;
+    }
+
+    titleEl.value = "";
+    companyEl.value = "";
+    urlEl.value = "";
+    minCgpaEl.value = "";
+    deadlineEl.value = "";
+    descriptionEl.value = "";
+    setAdminLinkMessage("Application link posted.");
+    loadAdminLinks();
+  } catch (err) {
+    console.error(err);
+    setAdminLinkMessage("Server not reachable.", true);
+  }
+}
+
+async function deleteAdminLink(linkId) {
+  if (!Number.isInteger(linkId) || linkId <= 0) return;
+
+  try {
+    const res = await fetch("link-actions.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "delete", id: linkId })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setAdminLinkMessage(data.message || "Unable to delete link.", true);
+      return;
+    }
+
+    setAdminLinkMessage("Application link deleted.");
+    loadAdminLinks();
+  } catch (err) {
+    console.error(err);
+    setAdminLinkMessage("Server not reachable.", true);
+  }
+}
+
 async function loadAdminStudents() {
   const list = document.getElementById("studentList");
   if (!list) return;
@@ -105,10 +238,39 @@ async function loadAdminStudents() {
     }
 
     adminStudents = data.students;
-    renderAdminStudents();
+    setupStudentFilters();
+    applyAdminStudentFilters();
   } catch (err) {
     console.error(err);
     list.innerHTML = "<p>Server not reachable.</p>";
+  }
+}
+
+function setupStudentFilters() {
+  const yearFilter = document.getElementById("studentYearFilter");
+  const departmentFilter = document.getElementById("studentDepartmentFilter");
+
+  if (yearFilter) {
+    yearFilter.innerHTML =
+      '<option value="">All Years</option>' +
+      [
+        { value: "1", label: "First Year" },
+        { value: "2", label: "Second Year" },
+        { value: "3", label: "Third Year" },
+        { value: "4", label: "Fourth Year" }
+      ].map((year) => `<option value="${escapeHtml(year.value)}">${escapeHtml(year.label)}</option>`).join("");
+  }
+
+  if (departmentFilter) {
+    const departments = [...new Set(
+      adminStudents
+        .map((student) => String(student.branch || "").trim())
+        .filter((branch) => branch !== "" && branch.toLowerCase() !== "n/a")
+    )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+    departmentFilter.innerHTML =
+      '<option value="">All Departments</option>' +
+      departments.map((department) => `<option value="${escapeHtml(department)}">${escapeHtml(department)}</option>`).join("");
   }
 }
 
@@ -132,18 +294,185 @@ function renderAdminStudents(data = adminStudents) {
           <p><b>Department:</b> ${escapeHtml(item.branch || "N/A")}</p>
           <p><b>Year:</b> ${escapeHtml(item.year_label || "N/A")}</p>
           <p><b>CGPA:</b> ${escapeHtml(item.cgpa || "N/A")}</p>
+          <div class="actions">
+            <button type="button" class="primary" onclick="openStudentProfile(${Number(item.id)})">View Profile</button>
+          </div>
         </div>
       `;
     })
     .join("");
 }
 
+function getStudentStatusBadge(statusValue) {
+  const rawStatus = String(statusValue || "Pending").trim();
+  const statusClass = rawStatus.toLowerCase().replace(/\s+/g, "");
+  return `<span class="status ${escapeHtml(statusClass)}">${escapeHtml(rawStatus)}</span>`;
+}
+
+function renderStudentProfile(data) {
+  const content = document.getElementById("studentProfileContent");
+  const title = document.getElementById("studentProfileTitle");
+  if (!content || !title) return;
+
+  title.textContent = `${data.fullname || "Student"} Profile`;
+
+  const latestResume = data.latest_resume || null;
+  const applicationSummary = data.application_summary || {};
+  const latestResumeStatus = latestResume
+    ? (latestResume.is_rejected ? "Rejected" : latestResume.is_verified ? "Verified" : "Pending Verification")
+    : "Not Submitted";
+
+  const scorecardHtml = data.scorecard_url
+    ? `<a href="${escapeHtml(data.scorecard_url)}" target="_blank" class="primary">View Scorecard</a>`
+    : `<span class="muted-text">Not uploaded</span>`;
+
+  const resumeHtml = latestResume
+    ? `
+      <div class="student-profile-actions">
+        <a href="${escapeHtml(latestResume.view_url)}" target="_blank" class="primary">View Resume</a>
+        <a href="${escapeHtml(latestResume.download_url)}" class="cancel">Download Resume</a>
+      </div>
+      <p><b>Resume File:</b> ${escapeHtml(latestResume.file_name || "Resume")}</p>
+      <p><b>Visibility:</b> ${escapeHtml(latestResume.visibility || "N/A")}</p>
+      <p><b>Status:</b> ${escapeHtml(latestResumeStatus)}</p>
+      <p><b>Uploaded On:</b> ${escapeHtml(latestResume.created_at || "N/A")}</p>
+      <p><b>Skills:</b> ${escapeHtml(latestResume.skills || "Not added")}</p>
+      <p><b>About:</b> ${escapeHtml(latestResume.about || "Not added")}</p>
+    `
+    : `<p class="muted-text">No resume uploaded yet.</p>`;
+
+  const applicationsHtml = Array.isArray(data.applications) && data.applications.length
+    ? `
+      <div class="student-profile-table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>Job Role</th>
+              <th>Status</th>
+              <th>Applied On</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.applications.map((application) => `
+              <tr>
+                <td>${escapeHtml(application.company_name || "N/A")}</td>
+                <td>${escapeHtml(application.job_title || "N/A")}</td>
+                <td>${getStudentStatusBadge(application.status || "Pending")}</td>
+                <td>${escapeHtml(application.applied_at || "N/A")}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+    : `<p class="muted-text">No applications yet.</p>`;
+
+  content.innerHTML = `
+    <div class="student-profile-grid">
+      <section class="student-profile-card">
+        <h4>Basic Details</h4>
+        <p><b>Full Name:</b> ${escapeHtml(data.fullname || "N/A")}</p>
+        <p><b>Username:</b> ${escapeHtml(data.username || "N/A")}</p>
+        <p><b>Email:</b> ${escapeHtml(data.email || "N/A")}</p>
+        <p><b>Email Verified:</b> ${data.is_email_verified ? "Yes" : "No"}</p>
+        <p><b>Register Number:</b> ${escapeHtml(data.regno || "N/A")}</p>
+        <p><b>Date of Birth:</b> ${escapeHtml(data.dob || "N/A")}</p>
+        <p><b>Joined:</b> ${escapeHtml(data.created_at || "N/A")}</p>
+      </section>
+
+      <section class="student-profile-card">
+        <h4>Academic Details</h4>
+        <p><b>Department:</b> ${escapeHtml(data.branch || "N/A")}</p>
+        <p><b>Current Year:</b> ${escapeHtml(data.year_label || "N/A")}</p>
+        <p><b>Admission Year:</b> ${escapeHtml(data.admission_year || "N/A")}</p>
+        <p><b>CGPA:</b> ${escapeHtml(data.cgpa || "N/A")}</p>
+        <p><b>Access Expires:</b> ${escapeHtml(data.access_expires_at || "N/A")}</p>
+        <p><b>Placed:</b> ${data.is_placed ? "Yes" : "No"}</p>
+        <p><b>Latest Application Status:</b> ${escapeHtml(data.latest_status || "No Applications")}</p>
+      </section>
+
+      <section class="student-profile-card">
+        <h4>Scorecard</h4>
+        <div class="student-profile-actions">
+          ${scorecardHtml}
+        </div>
+      </section>
+
+      <section class="student-profile-card">
+        <h4>Application Summary</h4>
+        <p><b>Total Applications:</b> ${escapeHtml(applicationSummary.total ?? 0)}</p>
+        <p><b>Pending:</b> ${escapeHtml(applicationSummary.pending ?? 0)}</p>
+        <p><b>Shortlisted:</b> ${escapeHtml(applicationSummary.shortlisted ?? 0)}</p>
+        <p><b>Placed:</b> ${escapeHtml(applicationSummary.placed ?? 0)}</p>
+        <p><b>Rejected:</b> ${escapeHtml(applicationSummary.rejected ?? 0)}</p>
+        <p><b>Cancelled:</b> ${escapeHtml(applicationSummary.cancelled ?? 0)}</p>
+      </section>
+
+      <section class="student-profile-card student-profile-card-wide">
+        <h4>Latest Resume</h4>
+        ${resumeHtml}
+      </section>
+
+      <section class="student-profile-card student-profile-card-wide">
+        <h4>Application History</h4>
+        ${applicationsHtml}
+      </section>
+    </div>
+  `;
+}
+
+async function openStudentProfile(studentId) {
+  const modal = document.getElementById("studentProfileModal");
+  const content = document.getElementById("studentProfileContent");
+  if (!modal || !content || !Number.isInteger(studentId) || studentId <= 0) return;
+
+  activeStudentProfileId = studentId;
+  content.innerHTML = "<p>Loading student details...</p>";
+  modal.style.display = "flex";
+
+  try {
+    const res = await fetch(`students-actions.php?action=detail&id=${studentId}`, { cache: "no-store" });
+    const data = await res.json();
+
+    if (!res.ok || !data.success || !data.student) {
+      content.innerHTML = `<p>${escapeHtml(data.message || "Unable to load student profile.")}</p>`;
+      return;
+    }
+
+    if (activeStudentProfileId !== studentId) {
+      return;
+    }
+
+    renderStudentProfile(data.student);
+  } catch (err) {
+    console.error(err);
+    content.innerHTML = "<p>Server not reachable.</p>";
+  }
+}
+
+function closeStudentProfileModal() {
+  const modal = document.getElementById("studentProfileModal");
+  if (!modal) return;
+  activeStudentProfileId = 0;
+  modal.style.display = "none";
+}
+
 function searchAdminStudents() {
+  applyAdminStudentFilters();
+}
+
+function applyAdminStudentFilters() {
   const input = document.getElementById("searchStudents");
+  const yearFilter = document.getElementById("studentYearFilter");
+  const departmentFilter = document.getElementById("studentDepartmentFilter");
   const list = document.getElementById("studentList");
   if (!input || !list) return;
 
   const term = input.value.toLowerCase().trim();
+  const selectedYear = yearFilter ? yearFilter.value.trim() : "";
+  const selectedDepartment = departmentFilter ? departmentFilter.value.toLowerCase().trim() : "";
+
   const filtered = adminStudents.filter((s) => {
     const fullname = (s.fullname || "").toLowerCase();
     const username = (s.username || "").toLowerCase();
@@ -161,7 +490,36 @@ function searchAdminStudents() {
     );
   });
 
-  renderAdminStudents(filtered);
+  filteredAdminStudents = filtered.filter((student) => {
+    const matchesYear = selectedYear === "" || String(student.year_number || "") === selectedYear;
+    const matchesDepartment =
+      selectedDepartment === "" || String(student.branch || "").toLowerCase().trim() === selectedDepartment;
+    return matchesYear && matchesDepartment;
+  });
+
+  renderAdminStudents(filteredAdminStudents);
+}
+
+function downloadStudentPdf() {
+  const params = new URLSearchParams();
+  const input = document.getElementById("searchStudents");
+  const yearFilter = document.getElementById("studentYearFilter");
+  const departmentFilter = document.getElementById("studentDepartmentFilter");
+
+  if (input && input.value.trim() !== "") {
+    params.set("search", input.value.trim());
+  }
+
+  if (yearFilter && yearFilter.value.trim() !== "") {
+    params.set("year", yearFilter.value.trim());
+  }
+
+  if (departmentFilter && departmentFilter.value.trim() !== "") {
+    params.set("department", departmentFilter.value.trim());
+  }
+
+  const url = "students-export.php" + (params.toString() ? `?${params.toString()}` : "");
+  window.location.href = url;
 }
 
 async function addCompany() {
@@ -439,23 +797,64 @@ function renderDashboardApplications(filter) {
   const list = document.getElementById("dashboardApplicationList");
   const title = document.getElementById("dashboardApplicationTitle");
   const note = document.getElementById("dashboardApplicationNote");
-  if (!panel || !list || !title || !note) return;
+  const companyFilter = document.getElementById("dashboardCompanyFilter");
+  const exportBtn = document.getElementById("dashboardExportBtn");
+  if (!panel || !list || !title || !note || !companyFilter || !exportBtn) return;
 
   const labelMap = {
     shortlisted: "Shortlisted",
     placed: "Placed"
   };
 
-  const filtered = adminApplications.filter((item) => {
+  dashboardStatusFilterValue = filter;
+
+  const statusMatched = adminApplications.filter((item) => {
     return String(item.status || "").toLowerCase() === filter;
+  });
+  const companyNames = [...new Set(
+    statusMatched
+      .map((item) => String(item.company_name || "").trim())
+      .filter((name) => name !== "")
+  )].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+
+  companyFilter.innerHTML = '<option value="all">All Companies</option>' +
+    companyNames.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+
+  if (dashboardCompanyFilterValue !== "all" && companyNames.includes(dashboardCompanyFilterValue)) {
+    companyFilter.value = dashboardCompanyFilterValue;
+  } else {
+    dashboardCompanyFilterValue = "all";
+    companyFilter.value = "all";
+  }
+
+  const filtered = statusMatched.filter((item) => {
+    return dashboardCompanyFilterValue === "all" || String(item.company_name || "") === dashboardCompanyFilterValue;
+  });
+
+  filtered.sort((a, b) => {
+    const companyCompare = String(a.company_name || "").localeCompare(String(b.company_name || ""), undefined, {
+      sensitivity: "base"
+    });
+    if (companyCompare !== 0) {
+      return companyCompare;
+    }
+    return String(a.student_name || "").localeCompare(String(b.student_name || ""), undefined, {
+      sensitivity: "base"
+    });
   });
 
   panel.style.display = "block";
   title.textContent = `${labelMap[filter]} Students`;
-  note.textContent = `Showing students marked as ${labelMap[filter].toLowerCase()} from company applicants page.`;
+  note.textContent = dashboardCompanyFilterValue === "all"
+    ? `Showing students marked as ${labelMap[filter].toLowerCase()} from company applicants page.`
+    : `Showing ${labelMap[filter].toLowerCase()} students for ${dashboardCompanyFilterValue}.`;
+  exportBtn.disabled = false;
+  exportBtn.textContent = `Download ${labelMap[filter]} PDF`;
 
   if (!filtered.length) {
-    list.innerHTML = `<tr><td colspan="6">No ${labelMap[filter].toLowerCase()} students found.</td></tr>`;
+    list.innerHTML = dashboardCompanyFilterValue === "all"
+      ? `<tr><td colspan="6">No ${labelMap[filter].toLowerCase()} students found.</td></tr>`
+      : `<tr><td colspan="6">No ${labelMap[filter].toLowerCase()} students found for ${escapeHtml(dashboardCompanyFilterValue)}.</td></tr>`;
     return;
   }
 
@@ -474,6 +873,21 @@ function renderDashboardApplications(filter) {
       `;
     })
     .join("");
+}
+
+function downloadDashboardApplicationPdf() {
+  if (dashboardStatusFilterValue !== "shortlisted" && dashboardStatusFilterValue !== "placed") {
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.set("status", dashboardStatusFilterValue);
+
+  if (dashboardCompanyFilterValue && dashboardCompanyFilterValue !== "all") {
+    params.set("company", dashboardCompanyFilterValue);
+  }
+
+  window.location.href = "applications-export.php?" + params.toString();
 }
 
 function updateAdminApplicationCounts() {
@@ -677,6 +1091,7 @@ function setupTeamMemberEditor() {
 document.addEventListener("DOMContentLoaded", () => {
   loadDashboardStats();
   loadAdminCompanies();
+  loadAdminLinks();
   loadAdminStudents();
   loadAdminApplications();
   loadAdminResumes();
@@ -717,8 +1132,21 @@ document.addEventListener("DOMContentLoaded", () => {
         innerBtn.classList.toggle("active", innerBtn === btn);
       });
 
+      dashboardCompanyFilterValue = "all";
       await loadDashboardApplications();
       renderDashboardApplications(filter);
     });
   });
+
+  const dashboardCompanyFilter = document.getElementById("dashboardCompanyFilter");
+  if (dashboardCompanyFilter) {
+    dashboardCompanyFilter.addEventListener("change", () => {
+      dashboardCompanyFilterValue = dashboardCompanyFilter.value || "all";
+      const activeFilterButton = document.querySelector(".stat-filter-dashboard.active");
+      const activeFilter = activeFilterButton ? activeFilterButton.getAttribute("data-filter") : "";
+      if (activeFilter) {
+        renderDashboardApplications(activeFilter);
+      }
+    });
+  }
 });

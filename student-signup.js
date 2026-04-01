@@ -16,7 +16,8 @@ form.addEventListener("submit", async (e) => {
     password: document.getElementById("password").value,
     fullname: document.getElementById("fullname").value,
     regno: document.getElementById("regno").value,
-    admission_date: document.getElementById("admission_date").value,
+    department: document.getElementById("department").value,
+    current_year: document.getElementById("current_year").value,
     dob: document.getElementById("dob").value,
     cgpa: document.getElementById("cgpa").value
   };

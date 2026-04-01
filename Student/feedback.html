@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Feedback | Placement Hub</title>
-  <link rel="stylesheet" href="style.css?v=20260309">
-  <script defer src="app.js"></script>
+  <link rel="stylesheet" href="style.css?v=20260403">
+  <script defer src="app.js?v=20260403"></script>
 </head>
 
 <body>
@@ -23,6 +23,14 @@
     <a href="feedback.html" class="active">Feedback</a>
     <a href="resumes.html">Resumes</a>
   </div>
+
+  <div class="profile-container">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-icon" onclick="toggleProfile()">
+    <div id="profileDropdown" class="profile-dropdown">
+      <a href="edit_profile.php">Edit Profile</a><br><br>
+      <a href="logout.php">Logout</a>
+    </div>
+  </div>
 </nav>
 
 
@@ -37,6 +45,19 @@
     <p class="sub-text">
       Share your placement experience or suggestions to help us improve.
     </p>
+
+    <div class="rating-wrap">
+      <label>Rating</label>
+      <div class="star-rating" id="feedbackStars" role="radiogroup" aria-label="Feedback rating">
+        <button type="button" class="star-btn" data-rating="1" aria-label="1 star">&#9733;</button>
+        <button type="button" class="star-btn" data-rating="2" aria-label="2 stars">&#9733;</button>
+        <button type="button" class="star-btn" data-rating="3" aria-label="3 stars">&#9733;</button>
+        <button type="button" class="star-btn" data-rating="4" aria-label="4 stars">&#9733;</button>
+        <button type="button" class="star-btn" data-rating="5" aria-label="5 stars">&#9733;</button>
+      </div>
+      <input type="hidden" id="feedbackRating" value="">
+      <p id="feedbackRatingLabel" class="rating-text">Choose a rating</p>
+    </div>
 
     <textarea
       id="fb"

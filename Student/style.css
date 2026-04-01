@@ -26,9 +26,9 @@ body{
 }
 
 .topbar{background:linear-gradient(90deg,#092d87 0%,#0b4fb8 60%,#0f70ce 100%);color:#f4f8ff;text-align:right;padding:14px 30px;font-size:14px;font-weight:600;letter-spacing:.3px}
-.navbar{display:flex;gap:14px;padding:14px 28px;background:rgba(255,255,255,.84);backdrop-filter:blur(8px);border-bottom:1px solid rgba(13,76,207,.12);align-items:center}
+.navbar{display:flex;gap:14px;padding:14px 28px;background:rgba(255,255,255,.84);backdrop-filter:blur(8px);border-bottom:1px solid rgba(13,76,207,.12);align-items:center;justify-content:space-between;flex-wrap:wrap}
 .logo{font-weight:800;color:#10305f}
-.links{display:flex;gap:10px;flex-wrap:wrap}
+.links{display:flex;gap:10px;flex-wrap:wrap;flex:1}
 .links a{text-decoration:none;color:#1a3357;font-weight:700;padding:8px 14px;border-radius:999px;transition:.25s ease}
 .links a:hover{color:var(--primary);background:#edf3ff}
 .links .active{color:#fff;background:linear-gradient(120deg,var(--primary),var(--primary-2));box-shadow:0 8px 18px rgba(14,76,207,.26)}
@@ -44,6 +44,8 @@ body{
 .btn,.view-btn{color:#fff;background:linear-gradient(130deg,var(--primary),var(--primary-2));box-shadow:0 10px 20px rgba(14,76,207,.24)}
 .btn:hover,.view-btn:hover{transform:translateY(-1px);filter:brightness(1.06)}
 .secondary{background:linear-gradient(130deg,#6f7f98,#566781)}
+.btn.is-saved{background:linear-gradient(130deg,#1f8f63,#35b27b)}
+.btn.is-applied{background:linear-gradient(130deg,#5f728f,#7a8ba5)}
 
 .features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
 .feature-card{padding:25px;text-align:center}
@@ -56,8 +58,14 @@ body{
 .search:focus{outline:none;border-color:#7ea7ff;box-shadow:0 0 0 3px rgba(43,123,255,.15);background:#fff}
 
 .company-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.opportunity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .company-card{padding:22px}
+.opportunity-card{background:var(--card);border:1px solid rgba(23,84,194,.12);border-radius:20px;box-shadow:var(--shadow);padding:22px}
 .company-card h2{color:#0d47a1;font-size:24px;margin-bottom:8px}
+.opportunity-card h3{color:#0d47a1;font-size:22px;margin-bottom:8px}
+.opportunity-card p{font-size:14px;color:#3f5a84;margin-bottom:10px}
+.opportunity-company{font-weight:800;color:#0a3f9f}
+.opportunity-deadline{font-weight:700;color:#35527e}
 .desc{font-size:14px;color:var(--muted);margin-bottom:10px}
 .meta{font-size:13px;display:grid;gap:4px;color:#35527e;margin-bottom:12px}
 .action-row{display:flex;gap:10px;flex-wrap:wrap}
@@ -71,6 +79,7 @@ body{
 .opening-meta{display:grid;gap:4px;font-size:12px;color:#35527e;margin-bottom:10px}
 
 .officer-section{margin-top:26px;display:flex;flex-direction:column;align-items:center}
+.opportunity-section{margin-top:30px}
 .section-title{color:#0a3f9f;margin-bottom:16px;text-align:center;font-size:34px}
 .officer-card{
   width:100%;
@@ -119,12 +128,31 @@ body{
 
 .feedback-wrapper textarea,.form-card input,.form-card select,.form-card textarea{width:100%;border:1px solid #ccdaf4;background:#f8fbff;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit}
 .feedback-wrapper textarea{resize:none;margin-bottom:15px}
+.rating-wrap{text-align:left;margin-bottom:12px}
+.rating-wrap label{display:block;font-size:14px;color:#35527e;margin-bottom:6px;font-weight:700}
+.star-rating{display:flex;gap:8px;align-items:center}
+.star-btn{
+  border:none;
+  background:transparent;
+  padding:0;
+  font-size:34px;
+  line-height:1;
+  color:#c7d4ea;
+  cursor:pointer;
+  transition:transform .18s ease,color .18s ease;
+  box-shadow:none;
+  width:auto;
+  margin-top:0;
+}
+.star-btn:hover{transform:scale(1.08)}
+.star-btn.active{color:#f5b301}
+.rating-text{margin-top:8px;color:#5d6f8f;font-size:13px;font-weight:700}
 .form-card{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .form-group{display:flex;flex-direction:column;gap:6px;text-align:left}
 .form-group label{font-size:14px;color:#35527e;font-weight:700}
 .form-card textarea{resize:none;min-height:90px}
 .form-card .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
-.feedback-wrapper textarea:focus,.form-card input:focus,.form-card select:focus,.form-card textarea:focus{outline:none;border-color:#7ea7ff;box-shadow:0 0 0 3px rgba(43,123,255,.15);background:#fff}
+.feedback-wrapper textarea:focus,.rating-wrap select:focus,.form-card input:focus,.form-card select:focus,.form-card textarea:focus{outline:none;border-color:#7ea7ff;box-shadow:0 0 0 3px rgba(43,123,255,.15);background:#fff}
 .success-msg{margin-top:12px;color:#2e7d32;font-size:14px}
 .error{margin:0 0 10px;background:#ffebee;color:#b71c1c;border:1px solid #ffcdd2;border-radius:10px;padding:10px;font-size:14px}
 
@@ -214,6 +242,8 @@ body{
 @media (max-width:700px){
   .topbar{text-align:center;padding:12px 14px}
   .navbar{padding:10px 12px}
+  .links{width:100%}
+  .profile-container{margin-left:0}
   .container{padding:18px 12px 28px}
   .page-head{flex-direction:column;align-items:flex-start}
   .page-head h1{font-size:32px}

@@ -123,6 +123,7 @@ while ($row = $result->fetch_assoc()) {
   <meta charset="UTF-8">
   <title>My Applications | Placement Hub</title>
   <link rel="stylesheet" href="style.css?v=20260309">
+  <script defer src="app.js?v=20260401"></script>
 </head>
 <body>
 
@@ -136,6 +137,14 @@ while ($row = $result->fetch_assoc()) {
     <a href="wishlist.html">Wishlist</a>
     <a href="feedback.html">Feedback</a>
     <a href="resumes.html">Resumes</a>
+  </div>
+
+  <div class="profile-container">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-icon" onclick="toggleProfile()">
+    <div id="profileDropdown" class="profile-dropdown">
+      <a href="edit_profile.php">Edit Profile</a><br><br>
+      <a href="logout.php">Logout</a>
+    </div>
   </div>
 </nav>
 

@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.addEventListener("click", function (e) {
     const dropdown = document.getElementById("profileDropdown");
-    const icon = document.querySelector(".top-profile-icon");
+    const icon = document.querySelector(".top-profile-icon, .company-profile-icon");
 
     if (!dropdown || !icon) return;
 

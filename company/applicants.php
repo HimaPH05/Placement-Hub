@@ -218,7 +218,7 @@ asort($jobOptions, SORT_NATURAL | SORT_FLAG_CASE);
 <head>
   <meta charset="UTF-8">
   <title>Applicants - Placement Hub</title>
-  <link rel="stylesheet" href="company_appli.css">
+  <link rel="stylesheet" href="company_appli.css?v=20260403">
 </head>
 <body>
 
@@ -227,10 +227,19 @@ asort($jobOptions, SORT_NATURAL | SORT_FLAG_CASE);
 </header>
 
 <nav class="navbar">
-  <a href="home.php">Home</a>
-  <a href="company.php">Company</a>
-  <a href="applicants.php" class="active">Applicants</a>
-  <a href="resumes.php">Resumes</a>
+  <div class="nav-links">
+    <a href="home.php">Home</a>
+    <a href="company.php">Company</a>
+    <a href="applicants.php" class="active">Applicants</a>
+    <a href="resumes.php">Resumes</a>
+  </div>
+  <div class="company-profile-menu">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="company-profile-icon" onclick="toggleProfile()">
+    <div id="profileDropdown" class="company-profile-dropdown">
+      <a href="edit_company.php">Edit Profile</a><br><br>
+      <a href="logout.php">Logout</a>
+    </div>
+  </div>
 </nav>
 
 <div class="container">
@@ -620,5 +629,6 @@ if (jobFilter) {
   });
 }
 </script>
+<script src="script.js?v=20260403"></script>
 </body>
 </html>

@@ -6,6 +6,14 @@ let companies = [];
 const openingsByCompany = {};
 const expandedCompanies = new Set();
 
+function getWishlistItems() {
+  return JSON.parse(localStorage.getItem("wish")) || [];
+}
+
+function isCompanySaved(companyId) {
+  return getWishlistItems().some((item) => Number(item.id) === Number(companyId));
+}
+
 /* =================================================
    COMPANIES DATA FROM DB
 ================================================= */
@@ -52,10 +60,13 @@ function renderCompanies(data = companies) {
     const companyId = Number(c.id);
     const website = c.website ? `<span><b>Website:</b> ${c.website}</span>` : "";
     const hasJob = Number.isInteger(c.latest_job_id) && c.latest_job_id > 0;
+    const inWishlist = isCompanySaved(companyId);
+    const latestJobApplied = c.latest_job_applied === true;
     const minCgpaText = c.latest_job_min_cgpa !== null && c.latest_job_min_cgpa !== undefined
       ? String(c.latest_job_min_cgpa)
       : "No minimum";
-    const applyLabel = hasJob ? "Apply" : "No Open Role";
+    const applyLabel = hasJob ? (latestJobApplied ? "Applied" : "Apply") : "No Open Role";
+    const wishlistLabel = inWishlist ? "In Wishlist" : "Add to Wishlist";
     const isExpanded = expandedCompanies.has(companyId);
     const openingItems = Array.isArray(openingsByCompany[companyId]) ? openingsByCompany[companyId] : null;
     const openingContent = renderCompanyOpenings(companyId, openingItems);
@@ -74,9 +85,9 @@ function renderCompanies(data = companies) {
           </div>
 
           <div class="action-row">
-            <button class="btn" onclick="addWishById(${companyId})">Add to Wishlist</button>
+            <button class="btn ${inWishlist ? "is-saved" : ""}" onclick="toggleWishById(${companyId})">${escapeHtml(wishlistLabel)}</button>
             <button
-              class="btn secondary apply-btn-student"
+              class="btn secondary apply-btn-student ${latestJobApplied ? "is-applied" : ""}"
               onclick="toggleCompanyOpenings(${companyId})"
               ${hasJob ? "" : "disabled"}
             >${escapeHtml(applyLabel)}</button>
@@ -103,6 +114,8 @@ function renderCompanyOpenings(companyId, openings) {
     const minCgpaText = job.min_cgpa !== null && job.min_cgpa !== undefined
       ? escapeHtml(String(job.min_cgpa))
       : "No minimum";
+    const applyLabel = job.is_applied === true ? "Applied" : "Apply";
+    const applyDisabled = job.is_applied === true ? "disabled" : "";
 
     return `
       <div class="opening-item">
@@ -113,7 +126,7 @@ function renderCompanyOpenings(companyId, openings) {
           <span><b>Openings:</b> ${escapeHtml(String(job.openings ?? 0))}</span>
           <span><b>Min CGPA:</b> ${minCgpaText}</span>
         </div>
-        <button class="btn" onclick="applyToCompany(${companyId}, ${Number(job.id) || 0})">Apply</button>
+        <button class="btn ${job.is_applied === true ? "is-applied" : ""}" onclick="applyToCompany(${companyId}, ${Number(job.id) || 0})" ${applyDisabled}>${escapeHtml(applyLabel)}</button>
       </div>
     `;
   }).join("");
@@ -159,6 +172,24 @@ function addWishById(companyId) {
 
   localStorage.setItem("wish", JSON.stringify(wish));
   alert("Added to Wishlist");
+  renderCompanies(getVisibleCompanies());
+}
+
+function toggleWishById(companyId) {
+  const selected = companies.find((c) => Number(c.id) === Number(companyId));
+  if (!selected) return;
+
+  const wish = getWishlistItems();
+  const existingIndex = wish.findIndex((item) => Number(item.id) === Number(companyId));
+
+  if (existingIndex >= 0) {
+    wish.splice(existingIndex, 1);
+    localStorage.setItem("wish", JSON.stringify(wish));
+    renderCompanies(getVisibleCompanies());
+    return;
+  }
+
+  addWishById(companyId);
 }
 
 function renderWishlist() {
@@ -242,10 +273,12 @@ async function applyToCompany(companyId, jobId) {
     }
 
     if (result && result.message) {
+      markCompanyJobAsApplied(companyId, jobId);
       alert(result.message);
       return;
     }
 
+    markCompanyJobAsApplied(companyId, jobId);
     const successFallback = raw && raw.trim() ? raw.trim().slice(0, 220) : "Application submitted.";
     alert(successFallback);
   } catch (err) {
@@ -504,11 +537,17 @@ function loadResumeForEdit() {
 function submitFeedback() {
   const input = document.getElementById("fb");
   const msg = document.getElementById("msg");
+  const ratingEl = document.getElementById("feedbackRating");
   if (!input || !msg) return;
 
   const feedback = input.value.trim();
+  const rating = ratingEl ? ratingEl.value.trim() : "";
   if (!feedback) {
     msg.innerText = "Please enter feedback before submitting.";
+    return;
+  }
+  if (!rating) {
+    msg.innerText = "Please select a rating before submitting.";
     return;
   }
 
@@ -517,13 +556,16 @@ function submitFeedback() {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ feedback })
+    body: JSON.stringify({ feedback, rating })
   })
     .then((res) => res.json())
     .then((result) => {
       msg.innerText = result.message || "Unable to submit feedback.";
       if (result.success) {
         input.value = "";
+        if (ratingEl) {
+          ratingEl.value = "";
+        }
       }
     })
     .catch((err) => {
@@ -547,13 +589,101 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+function setupFeedbackStars() {
+  const ratingEl = document.getElementById("feedbackRating");
+  const labelEl = document.getElementById("feedbackRatingLabel");
+  const starButtons = document.querySelectorAll(".star-btn");
+  if (!ratingEl || !labelEl || !starButtons.length) return;
+
+  const ratingLabels = {
+    "1": "Very Poor",
+    "2": "Poor",
+    "3": "Average",
+    "4": "Good",
+    "5": "Excellent"
+  };
+
+  function renderStars(value) {
+    starButtons.forEach((button) => {
+      const buttonRating = Number(button.getAttribute("data-rating") || "0");
+      button.classList.toggle("active", buttonRating <= value);
+    });
+
+    if (value > 0) {
+      labelEl.textContent = `${value}/5 - ${ratingLabels[String(value)] || ""}`;
+    } else {
+      labelEl.textContent = "Choose a rating";
+    }
+  }
+
+  starButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const value = Number(button.getAttribute("data-rating") || "0");
+      ratingEl.value = String(value);
+      renderStars(value);
+    });
+  });
+
+  renderStars(Number(ratingEl.value || "0"));
+}
+
+function markCompanyJobAsApplied(companyId, jobId) {
+  companies = companies.map((company) => {
+    if (Number(company.id) !== Number(companyId)) {
+      return company;
+    }
+
+    if (Number(company.latest_job_id) === Number(jobId)) {
+      return {
+        ...company,
+        latest_job_applied: true
+      };
+    }
+
+    return company;
+  });
+
+  if (Array.isArray(openingsByCompany[companyId])) {
+    openingsByCompany[companyId] = openingsByCompany[companyId].map((job) => {
+      if (Number(job.id) !== Number(jobId)) {
+        return job;
+      }
+      return {
+        ...job,
+        is_applied: true
+      };
+    });
+  }
+
+  renderCompanies(getVisibleCompanies());
+}
+
+function toggleProfile() {
+  const dropdown = document.getElementById("profileDropdown");
+  if (!dropdown) return;
+  dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+}
+
 /* =================================================
    LOAD EVERYTHING (ONLY ONCE)
 ================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
+  window.toggleProfile = toggleProfile;
+
+  document.addEventListener("click", (event) => {
+    const dropdown = document.getElementById("profileDropdown");
+    const icon = document.querySelector(".profile-icon");
+    if (!dropdown || !icon) return;
+
+    if (!dropdown.contains(event.target) && !icon.contains(event.target)) {
+      dropdown.style.display = "none";
+    }
+  });
+
   loadCompanies();
   renderWishlist();
   renderResumes();
   loadResumeForEdit();
+  setupFeedbackStars();
 });

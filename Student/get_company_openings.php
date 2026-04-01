@@ -36,12 +36,32 @@ if (!$active) {
 }
 
 $stmt = $conn->prepare("
-    SELECT id, job_title, job_description, openings, min_cgpa, location
-    FROM jobs
-    WHERE company_id = ? AND COALESCE(openings, 0) > 0
-    ORDER BY created_at DESC, id DESC
+    SELECT
+        j.id,
+        j.job_title,
+        j.job_description,
+        j.openings,
+        j.min_cgpa,
+        j.location,
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM applications a
+                WHERE a.student_id = ? AND a.job_id = j.id
+            ) THEN 1
+            ELSE 0
+        END AS is_applied
+    FROM jobs j
+    WHERE j.company_id = ? AND COALESCE(j.openings, 0) > 0
+    ORDER BY j.created_at DESC, j.id DESC
 ");
-$stmt->bind_param("i", $companyId);
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(["message" => "Unable to load company openings"]);
+    exit;
+}
+$studentId = (int)($_SESSION["user_id"] ?? 0);
+$stmt->bind_param("ii", $studentId, $companyId);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -50,6 +70,7 @@ while ($row = $result->fetch_assoc()) {
     $row["id"] = (int)$row["id"];
     $row["openings"] = $row["openings"] !== null ? (int)$row["openings"] : 0;
     $row["min_cgpa"] = $row["min_cgpa"] !== null ? (float)$row["min_cgpa"] : null;
+    $row["is_applied"] = ((int)($row["is_applied"] ?? 0)) === 1;
     $openings[] = $row;
 }
 
