@@ -2,6 +2,7 @@
 session_start();
 include("../db.php");   // Required for database connection
 include_once("../database_setup.php"); // Ensure required tables exist
+require_once __DIR__ . "/../profile-helpers.php";
 
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
@@ -33,6 +34,7 @@ $flashType = "success";
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
 $hasApplicationResumeIdColumn = false;
+$hasProfilePhotoColumn = false;
 $scorecardCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($scorecardCheck && $scorecardCheck->num_rows > 0) {
     $hasScorecardColumn = true;
@@ -44,6 +46,19 @@ if ($emailCheck && $emailCheck->num_rows > 0) {
 $applicationResumeIdCheck = $conn->query("SHOW COLUMNS FROM applications LIKE 'resume_id'");
 if ($applicationResumeIdCheck && $applicationResumeIdCheck->num_rows > 0) {
     $hasApplicationResumeIdColumn = true;
+}
+$profilePhotoCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
+if ($profilePhotoCheck && $profilePhotoCheck->num_rows > 0) {
+    $hasProfilePhotoColumn = true;
+}
+
+$companyProfileStmt = $conn->prepare("SELECT companyName, COALESCE(profile_photo_path, '') AS profile_photo_path FROM companies WHERE id = ? LIMIT 1");
+$companyPhotoUrl = placementhub_default_profile_photo();
+if ($companyProfileStmt) {
+    $companyProfileStmt->bind_param("i", $company_id);
+    $companyProfileStmt->execute();
+    $companyProfile = $companyProfileStmt->get_result()->fetch_assoc() ?: [];
+    $companyPhotoUrl = placementhub_company_photo_url($companyProfile, "../");
 }
 
 /* =========================
@@ -135,6 +150,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["action_status"], $_PO
 ========================= */
 $scorecardSelect = $hasScorecardColumn ? "students.ktu_scorecard_path," : "'' AS ktu_scorecard_path,";
 $emailSelect = $hasEmailColumn ? "students.email," : "'' AS email,";
+$photoSelect = $hasProfilePhotoColumn ? "COALESCE(students.profile_photo_path, '') AS profile_photo_path," : "'' AS profile_photo_path,";
 
 $resumeJoinExpr = $hasApplicationResumeIdColumn
     ? "COALESCE(
@@ -163,6 +179,7 @@ SELECT
     students.fullname,
     students.username,
     {$emailSelect}
+    {$photoSelect}
     students.regno,
     students.dob,
     students.cgpa,
@@ -218,7 +235,7 @@ asort($jobOptions, SORT_NATURAL | SORT_FLAG_CASE);
 <head>
   <meta charset="UTF-8">
   <title>Applicants - Placement Hub</title>
-  <link rel="stylesheet" href="company_appli.css?v=20260403">
+  <link rel="stylesheet" href="company_appli.css?v=20260402-photo">
 </head>
 <body>
 
@@ -234,7 +251,7 @@ asort($jobOptions, SORT_NATURAL | SORT_FLAG_CASE);
     <a href="resumes.php">Resumes</a>
   </div>
   <div class="company-profile-menu">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="company-profile-icon" onclick="toggleProfile()">
+    <img src="<?php echo htmlspecialchars($companyPhotoUrl); ?>" class="company-profile-icon" onclick="toggleProfile()" alt="Company profile photo">
     <div id="profileDropdown" class="company-profile-dropdown">
       <a href="edit_company.php">Edit Profile</a><br><br>
       <a href="logout.php">Logout</a>
@@ -321,6 +338,7 @@ asort($jobOptions, SORT_NATURAL | SORT_FLAG_CASE);
           <td><?php echo htmlspecialchars($app['job_title']); ?></td>
           <td>
             <div class="applicant-details">
+            <img src="<?php echo htmlspecialchars(placementhub_media_url((string)($app['profile_photo_path'] ?? ''), '../')); ?>" alt="Student photo" class="applicant-avatar">
             <div><strong>CGPA:</strong> <?php echo htmlspecialchars((string)$app['cgpa']); ?></div>
               <div><strong>Username:</strong> <?php echo htmlspecialchars((string)$app['username']); ?></div>
               <div><strong>Email:</strong> <?php echo htmlspecialchars((string)$app['email']); ?></div>
@@ -629,6 +647,6 @@ if (jobFilter) {
   });
 }
 </script>
-<script src="script.js?v=20260403"></script>
+<script src="script.js?v=20260402-photo"></script>
 </body>
 </html>

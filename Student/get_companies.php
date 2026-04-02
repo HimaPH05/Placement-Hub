@@ -12,6 +12,7 @@ if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "student") {
 }
 
 require_once __DIR__ . "/../db-config.php";
+require_once __DIR__ . "/../profile-helpers.php";
 $cfg = placementhub_db_config();
 $conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
 if ($conn->connect_error) {
@@ -19,6 +20,7 @@ if ($conn->connect_error) {
     echo json_encode(["message" => "Database connection failed"]);
     exit;
 }
+include_once __DIR__ . "/../database_setup.php";
 
 require_once __DIR__ . "/../student-lifecycle.php";
 [$active, $expiryMsg] = enforce_student_not_expired($conn, (int)($_SESSION["user_id"] ?? 0));
@@ -36,6 +38,7 @@ $sql = "
         COALESCE(c.industry, 'N/A') AS industry,
         COALESCE(c.location, 'N/A') AS location,
         COALESCE(c.website, '') AS website,
+        COALESCE(c.profile_photo_path, '') AS profile_photo_path,
         j.id AS latest_job_id,
         j.job_title AS latest_job_title,
         j.min_cgpa AS latest_job_min_cgpa,
@@ -66,6 +69,7 @@ if ($result) {
         $row["id"] = (int)$row["id"];
         $row["latest_job_id"] = $row["latest_job_id"] !== null ? (int)$row["latest_job_id"] : null;
         $row["latest_job_applied"] = ((int)($row["latest_job_applied"] ?? 0)) === 1;
+        $row["photo_url"] = placementhub_company_photo_url($row, "../");
         $companies[] = $row;
     }
 }

@@ -81,6 +81,7 @@ function renderAdminCompanies(data = adminCompanies) {
     .map((item) => {
       return `
         <div class="company-card">
+          <img src="${escapeHtml(item.photo_url || "")}" class="admin-entity-avatar" alt="${escapeHtml(item.name || "Company")} logo">
           <h3>${escapeHtml(item.name)}</h3>
           <p><b>Email:</b> ${escapeHtml(item.email || "N/A")}</p>
           <p><b>Location:</b> ${escapeHtml(item.location || "N/A")}</p>
@@ -287,6 +288,7 @@ function renderAdminStudents(data = adminStudents) {
     .map((item) => {
       return `
         <div class="student-card">
+          <img src="${escapeHtml(item.photo_url || "")}" class="admin-entity-avatar admin-student-avatar" alt="${escapeHtml(item.fullname || "Student")} photo">
           <h3>${escapeHtml(item.fullname)}</h3>
           <p><b>Username:</b> ${escapeHtml(item.username || "N/A")}</p>
           <p><b>Email:</b> ${escapeHtml(item.email || "N/A")}</p>
@@ -371,6 +373,7 @@ function renderStudentProfile(data) {
   content.innerHTML = `
     <div class="student-profile-grid">
       <section class="student-profile-card">
+        <img src="${escapeHtml(data.photo_url || "")}" class="student-profile-avatar" alt="${escapeHtml(data.fullname || "Student")} photo">
         <h4>Basic Details</h4>
         <p><b>Full Name:</b> ${escapeHtml(data.fullname || "N/A")}</p>
         <p><b>Username:</b> ${escapeHtml(data.username || "N/A")}</p>
@@ -1056,6 +1059,10 @@ function setupTeamMemberEditor() {
 
       <label>Member Name</label>
       <input name="team_name[]" placeholder="Team member name">
+
+      <label>Member Photo</label>
+      <input type="hidden" name="team_existing_photo[]" value="">
+      <input name="team_photo[]" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
 
       <label>Member Role</label>
       <input name="team_role[]" placeholder="Team member role">

@@ -14,13 +14,14 @@ function get_default_admin_credentials(): array {
             "email" => "admin@geck.com",
             "role_title" => "Placement Coordinator",
             "department" => "Placement Cell",
-            "phone" => "+91 9876543210"
+            "phone" => "+91 9876543210",
+            "profile_photo_path" => ""
         ],
         "team_members" => [
-            ["name" => "Dr. John Smith", "role" => "Head Coordinator", "mobile" => "+91 9876543211"],
-            ["name" => "Sarah Johnson", "role" => "Assistant Coordinator", "mobile" => "+91 9876543212"],
-            ["name" => "Emily Davis", "role" => "Industry Liaison", "mobile" => "+91 9876543213"],
-            ["name" => "David Wilson", "role" => "Student Relations", "mobile" => "+91 9876543214"]
+            ["name" => "Dr. John Smith", "role" => "Head Coordinator", "mobile" => "+91 9876543211", "profile_photo_path" => ""],
+            ["name" => "Sarah Johnson", "role" => "Assistant Coordinator", "mobile" => "+91 9876543212", "profile_photo_path" => ""],
+            ["name" => "Emily Davis", "role" => "Industry Liaison", "mobile" => "+91 9876543213", "profile_photo_path" => ""],
+            ["name" => "David Wilson", "role" => "Student Relations", "mobile" => "+91 9876543214", "profile_photo_path" => ""]
         ]
     ];
 }
@@ -69,13 +70,15 @@ function get_admin_credentials(): array {
             $memberName = trim((string)($member["name"] ?? ""));
             $memberRole = trim((string)($member["role"] ?? ""));
             $memberMobile = trim((string)($member["mobile"] ?? ""));
+            $memberPhoto = trim((string)($member["profile_photo_path"] ?? ""));
             if ($memberName === "" && $memberRole === "" && $memberMobile === "") {
                 continue;
             }
             $normalizedTeam[] = [
                 "name" => $memberName,
                 "role" => $memberRole,
-                "mobile" => $memberMobile
+                "mobile" => $memberMobile,
+                "profile_photo_path" => $memberPhoto
             ];
         }
         $decoded["team_members"] = count($normalizedTeam) > 0 ? $normalizedTeam : $defaultTeam;
@@ -118,10 +121,11 @@ function get_admin_team_members(): array {
         $name = trim((string)($member["name"] ?? ""));
         $role = trim((string)($member["role"] ?? ""));
         $mobile = trim((string)($member["mobile"] ?? ""));
+        $photoPath = trim((string)($member["profile_photo_path"] ?? ""));
         if ($name === "" && $role === "" && $mobile === "") {
             continue;
         }
-        $normalized[] = ["name" => $name, "role" => $role, "mobile" => $mobile];
+        $normalized[] = ["name" => $name, "role" => $role, "mobile" => $mobile, "profile_photo_path" => $photoPath];
     }
 
     return count($normalized) > 0 ? $normalized : $defaultTeam;
@@ -137,10 +141,11 @@ function save_admin_team_members(array $members): bool {
         $name = trim((string)($member["name"] ?? ""));
         $role = trim((string)($member["role"] ?? ""));
         $mobile = trim((string)($member["mobile"] ?? ""));
+        $photoPath = trim((string)($member["profile_photo_path"] ?? ""));
         if ($name === "" && $role === "" && $mobile === "") {
             continue;
         }
-        $normalized[] = ["name" => $name, "role" => $role, "mobile" => $mobile];
+        $normalized[] = ["name" => $name, "role" => $role, "mobile" => $mobile, "profile_photo_path" => $photoPath];
     }
 
     if (count($normalized) === 0) {

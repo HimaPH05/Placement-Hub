@@ -12,6 +12,8 @@ if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
 }
 
 require_once __DIR__ . "/../db.php";
+require_once __DIR__ . "/../profile-helpers.php";
+include_once __DIR__ . "/../database_setup.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
     $sql = "
@@ -20,7 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             companyName AS name,
             email,
             COALESCE(location, 'N/A') AS location,
-            COALESCE(industry, 'N/A') AS industry
+            COALESCE(industry, 'N/A') AS industry,
+            COALESCE(profile_photo_path, '') AS profile_photo_path
         FROM companies
         ORDER BY companyName ASC
     ";
@@ -35,6 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     $companies = [];
     while ($row = $result->fetch_assoc()) {
         $row["id"] = (int)$row["id"];
+        $row["photo_url"] = placementhub_company_photo_url($row, "../");
         $companies[] = $row;
     }
 

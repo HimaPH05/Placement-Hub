@@ -3,6 +3,7 @@ require_once __DIR__ . "/auth-check.php";
 require_once __DIR__ . "/../db.php";
 include_once __DIR__ . "/../database_setup.php";
 require_once __DIR__ . "/../admin-credentials.php";
+require_once __DIR__ . "/../profile-helpers.php";
 
 function fetch_total(mysqli $conn, string $sql): int
 {
@@ -21,13 +22,14 @@ $publicResumeCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM student_r
 $shortlistedCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM applications WHERE status = 'Shortlisted'");
 $placementCount = fetch_total($conn, "SELECT COUNT(*) AS total FROM applications WHERE status = 'Placed'");
 $adminProfile = get_admin_profile();
+$adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
 ?>
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Home - Placement Hub</title>
-  <link rel="stylesheet" href="astyle.css?v=20260401">
+  <link rel="stylesheet" href="astyle.css?v=20260402-photo">
   <link rel="manifest" href="../manifest.webmanifest">
   <meta name="theme-color" content="#0e4ccf">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,7 +38,7 @@ $adminProfile = get_admin_profile();
   <link rel="icon" href="../icons/favicon.ico">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
-  <script defer src="script.js?v=13"></script>
+  <script defer src="script.js?v=20260402-photo"></script>
   <script defer src="../pwa-register.js"></script>
 </head>
 
@@ -137,6 +139,7 @@ $adminProfile = get_admin_profile();
   <div class="info-card">
    
     <h3>Contact Details</h3>
+    <img src="<?php echo htmlspecialchars($adminPhotoUrl); ?>" class="profile-avatar" alt="Admin profile photo">
     <p><b>Name:</b> <?php echo htmlspecialchars($adminProfile["name"]); ?></p>
     <p><b>Email:</b> <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
     <p><b>Phone:</b> <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>

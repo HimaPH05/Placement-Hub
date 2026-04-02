@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . "/../admin-credentials.php";
+require_once __DIR__ . "/../profile-helpers.php";
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "student") {
     header("Location: ../login.php");
@@ -31,6 +32,7 @@ if (!$active) {
 
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
+$hasProfilePhotoColumn = false;
 
 $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($colCheck && $colCheck->num_rows > 0) {
@@ -41,12 +43,28 @@ $emailColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
 if ($emailColCheck && $emailColCheck->num_rows > 0) {
     $hasEmailColumn = true;
 }
+$profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
+if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows > 0) {
+    $hasProfilePhotoColumn = true;
+}
 
-if ($hasScorecardColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    }
+} elseif ($hasScorecardColumn) {
     if ($hasEmailColumn) {
         $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
     } else {
         $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path FROM students WHERE id = ?");
+    }
+} elseif ($hasProfilePhotoColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
     }
 } else {
     if ($hasEmailColumn) {
@@ -64,11 +82,17 @@ if ($stmt->num_rows == 0) {
     die("Student not found");
 }
 
-if ($hasScorecardColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasScorecardColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
+    $profile_photo_path = "";
+} elseif ($hasProfilePhotoColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
 } else {
     $stmt->bind_result($fullname, $email, $regno, $cgpa);
     $ktu_scorecard_path = "";
+    $profile_photo_path = "";
 }
 $stmt->fetch();
 
@@ -77,8 +101,13 @@ $student = [
     "email" => $email,
     "regno" => $regno,
     "cgpa" => $cgpa,
-    "ktu_scorecard_path" => $ktu_scorecard_path
+    "ktu_scorecard_path" => $ktu_scorecard_path,
+    "profile_photo_path" => $profile_photo_path
 ];
+
+$studentProfileIcon = !empty($student["profile_photo_path"])
+    ? "../" . ltrim((string)$student["profile_photo_path"], "/")
+    : "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 $hasResumeVerifyCol = false;
 $resumeVerifyColCheck = $conn->query("SHOW COLUMNS FROM student_resumes LIKE 'is_verified'");
@@ -132,6 +161,7 @@ if ($hasResumeVerifyCol || $hasResumeRejectCol) {
 
 $adminProfile = get_admin_profile();
 $teamMembers = get_admin_team_members();
+$adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
 
 $opportunityLinks = [];
 $linkResult = $conn->query("
@@ -150,7 +180,7 @@ if ($linkResult) {
 <html>
 <head>
   <title>Student Home - Placement Hub</title>
-  <link rel="stylesheet" href="style.css?v=20260309">
+  <link rel="stylesheet" href="style.css?v=20260402-profile">
   <link rel="manifest" href="../manifest.webmanifest">
   <meta name="theme-color" content="#0e4ccf">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -178,7 +208,7 @@ if ($linkResult) {
   </div>
 
   <div class="profile-container">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-icon" onclick="toggleProfile()">
+    <img src="<?php echo htmlspecialchars($studentProfileIcon); ?>" class="profile-icon" onclick="toggleProfile()" alt="Profile icon">
 
     <div id="profileDropdown" class="profile-dropdown">
       <p><strong><?php echo htmlspecialchars($student["fullname"]); ?></strong></p>
@@ -290,7 +320,7 @@ if ($linkResult) {
     <h2 class="section-title">Placement Officer</h2>
 
     <div class="officer-card">
-      <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="officer-avatar">
+      <img src="<?php echo htmlspecialchars($adminPhotoUrl); ?>" class="officer-avatar" alt="Placement officer">
 
       <div class="officer-info">
         <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
@@ -307,7 +337,7 @@ if ($linkResult) {
     <div class="student-team-grid">
       <?php foreach ($teamMembers as $member): ?>
         <div class="student-team-card">
-          <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="student-team-avatar" alt="Team member">
+          <img src="<?php echo htmlspecialchars(placementhub_media_url((string)($member["profile_photo_path"] ?? ""), "../")); ?>" class="student-team-avatar" alt="Team member">
           <div class="student-team-info">
             <h3><?php echo htmlspecialchars($member["name"] ?? ""); ?></h3>
             <p class="student-team-role"><?php echo htmlspecialchars($member["role"] ?? ""); ?></p>

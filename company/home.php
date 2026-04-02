@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . "/../admin-credentials.php";
+require_once __DIR__ . "/../profile-helpers.php";
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
     header("Location: ../login.php");
@@ -16,12 +17,13 @@ $companyUsername = $_SESSION["username"];
 require_once __DIR__ . "/../db-config.php";
 $cfg = placementhub_db_config();
 $conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
+include_once __DIR__ . "/../database_setup.php";
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-$stmt = $conn->prepare("SELECT companyName, email, phone, location, industry FROM companies WHERE username = ?");
+$stmt = $conn->prepare("SELECT companyName, email, phone, location, industry, COALESCE(profile_photo_path, '') AS profile_photo_path FROM companies WHERE username = ?");
 $stmt->bind_param("s", $companyUsername);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -33,15 +35,19 @@ if ($company) {
     $phone = $company["phone"];
     $location = $company["location"];
     $industry = $company["industry"];
+    $companyPhotoPath = $company["profile_photo_path"] ?? "";
 } else {
     $companyName = "Company";
     $email = $phone = $location = $industry = "N/A";
+    $companyPhotoPath = "";
 }
 
 $stmt->close();
 $conn->close();
 
 $adminProfile = get_admin_profile();
+$companyPhotoUrl = placementhub_media_url($companyPhotoPath, "../");
+$adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
 ?>
 
 <!DOCTYPE html>
@@ -49,7 +55,7 @@ $adminProfile = get_admin_profile();
 <head>
     <meta charset="UTF-8">
     <title>Company Dashboard</title>
-    <link rel="stylesheet" href="company_home.css?v=20260309">
+    <link rel="stylesheet" href="company_home.css?v=20260402-photo">
     <link rel="manifest" href="../manifest.webmanifest">
     <meta name="theme-color" content="#0e4ccf">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -67,9 +73,10 @@ $adminProfile = get_admin_profile();
     <div>Company Dashboard</div>
 
     <div class="topbar-right">
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+        <img src="<?php echo htmlspecialchars($companyPhotoUrl); ?>"
              class="top-profile-icon"
-             onclick="toggleProfile()">
+             onclick="toggleProfile()"
+             alt="Company profile photo">
 
         <div id="profileDropdown" class="top-profile-dropdown">
             <p><strong><?php echo htmlspecialchars($companyName); ?></strong></p>
@@ -110,7 +117,7 @@ $adminProfile = get_admin_profile();
 
       <div class="officer-card">
         <div class="officer-avatar-wrap">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="officer-avatar">
+            <img src="<?php echo htmlspecialchars($adminPhotoUrl); ?>" class="officer-avatar" alt="Placement officer">
         </div>
 
         <div class="officer-info">

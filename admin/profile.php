@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . "/auth-check.php";
 require_once __DIR__ . "/../admin-credentials.php";
+require_once __DIR__ . "/../profile-helpers.php";
 
 $profileMessage = "";
 $profileMessageClass = "";
@@ -13,6 +14,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
   $roleTitle = trim($_POST["role_title"] ?? "");
   $department = trim($_POST["department"] ?? "");
   $phone = trim($_POST["phone"] ?? "");
+  $removeProfilePhoto = isset($_POST["remove_profile_photo"]);
+  $currentProfile = get_admin_profile();
+  $profilePhotoPath = trim((string)($currentProfile["profile_photo_path"] ?? ""));
 
   if ($name === "" || $email === "") {
     $profileMessage = "Name and email are required.";
@@ -21,12 +25,63 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
     $profileMessage = "Enter a valid email address.";
     $profileMessageClass = "error";
   } else {
+    if ($removeProfilePhoto) {
+      $profilePhotoPath = "";
+    }
+
+    if (isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] !== UPLOAD_ERR_NO_FILE) {
+      if ($_FILES["profile_photo"]["error"] !== UPLOAD_ERR_OK) {
+        $profileMessage = "Failed to upload profile photo.";
+        $profileMessageClass = "error";
+      } else {
+        $allowedImageExt = ["jpg", "jpeg", "png", "webp"];
+        $photoExt = strtolower(pathinfo((string)$_FILES["profile_photo"]["name"], PATHINFO_EXTENSION));
+        $photoSize = (int)($_FILES["profile_photo"]["size"] ?? 0);
+        $photoInfo = @getimagesize($_FILES["profile_photo"]["tmp_name"]);
+
+        if (!in_array($photoExt, $allowedImageExt, true) || $photoInfo === false) {
+          $profileMessage = "Only JPG, PNG, or WEBP profile photos are allowed.";
+          $profileMessageClass = "error";
+        } elseif ($photoSize > 2 * 1024 * 1024) {
+          $profileMessage = "Profile photo must be 2 MB or smaller.";
+          $profileMessageClass = "error";
+        } else {
+          $uploadDir = __DIR__ . "/../uploads/admin_photos";
+          if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+          }
+
+          $safeName = "admin_profile_" . time() . "." . $photoExt;
+          $targetPath = $uploadDir . "/" . $safeName;
+          $relativePath = "uploads/admin_photos/" . $safeName;
+
+          if (move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $targetPath)) {
+            $profilePhotoPath = $relativePath;
+          } else {
+            $profileMessage = "Unable to save profile photo.";
+            $profileMessageClass = "error";
+          }
+        }
+      }
+    }
+
+    if ($profileMessageClass === "error") {
+      $profile = array_merge($currentProfile, [
+        "name" => $name,
+        "email" => $email,
+        "role_title" => $roleTitle,
+        "department" => $department,
+        "phone" => $phone,
+        "profile_photo_path" => $profilePhotoPath
+      ]);
+    } else {
     $saved = save_admin_profile([
       "name" => $name,
       "email" => $email,
       "role_title" => $roleTitle,
       "department" => $department,
-      "phone" => $phone
+      "phone" => $phone,
+      "profile_photo_path" => $profilePhotoPath
     ]);
 
     if ($saved) {
@@ -36,6 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_profile"])) {
       $profileMessage = "Unable to update profile.";
       $profileMessageClass = "error";
     }
+    }
   }
 }
 
@@ -43,6 +99,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_team"])) {
   $names = $_POST["team_name"] ?? [];
   $roles = $_POST["team_role"] ?? [];
   $mobiles = $_POST["team_mobile"] ?? [];
+  $existingPhotos = $_POST["team_existing_photo"] ?? [];
   $members = [];
 
   if (is_array($names) && is_array($roles) && is_array($mobiles)) {
@@ -51,18 +108,71 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_team"])) {
       $memberName = trim((string)($names[$i] ?? ""));
       $memberRole = trim((string)($roles[$i] ?? ""));
       $memberMobile = trim((string)($mobiles[$i] ?? ""));
+      $memberPhoto = trim((string)($existingPhotos[$i] ?? ""));
       if ($memberName === "" && $memberRole === "" && $memberMobile === "") {
         continue;
       }
+
+      if (isset($_FILES["team_photo"]["name"][$i]) && (string)$_FILES["team_photo"]["name"][$i] !== "") {
+        $uploadError = (int)($_FILES["team_photo"]["error"][$i] ?? UPLOAD_ERR_NO_FILE);
+        if ($uploadError !== UPLOAD_ERR_OK) {
+          $teamMessage = "Failed to upload one of the team member photos.";
+          $teamMessageClass = "error";
+          $members = [];
+          break;
+        }
+
+        $tmpName = (string)($_FILES["team_photo"]["tmp_name"][$i] ?? "");
+        $photoExt = strtolower(pathinfo((string)($_FILES["team_photo"]["name"][$i] ?? ""), PATHINFO_EXTENSION));
+        $photoSize = (int)($_FILES["team_photo"]["size"][$i] ?? 0);
+        $photoInfo = $tmpName !== "" ? @getimagesize($tmpName) : false;
+        $allowedImageExt = ["jpg", "jpeg", "png", "webp"];
+
+        if (!in_array($photoExt, $allowedImageExt, true) || $photoInfo === false) {
+          $teamMessage = "Only JPG, PNG, or WEBP team member photos are allowed.";
+          $teamMessageClass = "error";
+          $members = [];
+          break;
+        }
+
+        if ($photoSize > 2 * 1024 * 1024) {
+          $teamMessage = "Each team member photo must be 2 MB or smaller.";
+          $teamMessageClass = "error";
+          $members = [];
+          break;
+        }
+
+        $uploadDir = __DIR__ . "/../uploads/admin_team_photos";
+        if (!is_dir($uploadDir)) {
+          mkdir($uploadDir, 0777, true);
+        }
+
+        $safeName = "team_member_" . $i . "_" . time() . "." . $photoExt;
+        $targetPath = $uploadDir . "/" . $safeName;
+        $relativePath = "uploads/admin_team_photos/" . $safeName;
+
+        if (!move_uploaded_file($tmpName, $targetPath)) {
+          $teamMessage = "Unable to save one of the team member photos.";
+          $teamMessageClass = "error";
+          $members = [];
+          break;
+        }
+
+        $memberPhoto = $relativePath;
+      }
+
       $members[] = [
         "name" => $memberName,
         "role" => $memberRole,
-        "mobile" => $memberMobile
+        "mobile" => $memberMobile,
+        "profile_photo_path" => $memberPhoto
       ];
     }
   }
 
-  if (count($members) === 0) {
+  if ($teamMessageClass === "error") {
+    $teamMembers = $members;
+  } elseif (count($members) === 0) {
     $teamMessage = "Add at least one team member.";
     $teamMessageClass = "error";
   } else {
@@ -78,14 +188,15 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["update_team"])) {
 
 $profile = get_admin_profile();
 $teamMembers = get_admin_team_members();
+$adminPhotoUrl = placementhub_admin_photo_url($profile, "../");
 ?>
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Admin Profile</title>
-  <link rel="stylesheet" href="astyle.css?v=20260309">
-  <script defer src="script.js?v=10"></script>
+  <link rel="stylesheet" href="astyle.css?v=20260402-photo">
+  <script defer src="script.js?v=20260402-photo"></script>
 </head>
 
 <body>
@@ -107,7 +218,7 @@ $teamMembers = get_admin_team_members();
   <h2 class="page-title">Admin Profile</h2>
 
   <div class="profile-card">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-avatar">
+    <img src="<?php echo htmlspecialchars($adminPhotoUrl); ?>" class="profile-avatar" alt="Admin profile photo">
 
     <div class="profile-info">
       <h3><?php echo htmlspecialchars($profile["name"]); ?></h3>
@@ -120,7 +231,7 @@ $teamMembers = get_admin_team_members();
 
   <div class="info-card profile-edit-card">
     <h3>Edit Profile</h3>
-    <form method="POST" class="profile-form">
+    <form method="POST" enctype="multipart/form-data" class="profile-form">
       <input type="hidden" name="update_profile" value="1">
 
       <label for="name">Name</label>
@@ -138,6 +249,17 @@ $teamMembers = get_admin_team_members();
       <label for="phone">Phone</label>
       <input id="phone" name="phone" value="<?php echo htmlspecialchars($profile["phone"]); ?>">
 
+      <label for="profile_photo">Profile Photo</label>
+      <input id="profile_photo" type="file" name="profile_photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+      <div class="profile-photo-row">
+        <img src="<?php echo htmlspecialchars($adminPhotoUrl); ?>" alt="Admin profile preview" class="profile-avatar" id="adminProfilePreviewImage">
+        <?php if (!empty($profile["profile_photo_path"])): ?>
+          <input type="hidden" name="remove_profile_photo" id="adminRemoveProfilePhotoInput" value="0">
+          <button type="button" class="mini-remove-btn" onclick="markProfilePhotoForRemoval('adminRemoveProfilePhotoInput', 'adminProfilePreviewImage', this)">Remove Profile Pic</button>
+        <?php endif; ?>
+      </div>
+      <div class="hint">This photo will be shown anywhere the admin profile is displayed.</div>
+
       <div class="actions">
         <button type="submit" class="primary">Save Profile</button>
         <a href="../admin-password.php?mode=change" class="cancel">Change Password</a>
@@ -153,6 +275,7 @@ $teamMembers = get_admin_team_members();
   <div class="team-grid">
     <?php foreach ($teamMembers as $member): ?>
       <div class="team-card">
+        <img src="<?php echo htmlspecialchars(placementhub_media_url((string)($member["profile_photo_path"] ?? ""), "../")); ?>" class="profile-avatar" alt="Team member photo">
         <h4><?php echo htmlspecialchars($member["name"] ?? ""); ?></h4>
         <p><?php echo htmlspecialchars($member["role"] ?? ""); ?></p>
         <p><?php echo htmlspecialchars($member["mobile"] ?? ""); ?></p>
@@ -162,7 +285,7 @@ $teamMembers = get_admin_team_members();
 
   <div class="info-card profile-edit-card">
     <h3>Edit Placement Team Members</h3>
-    <form method="POST" class="profile-form" id="teamForm">
+    <form method="POST" enctype="multipart/form-data" class="profile-form" id="teamForm">
       <input type="hidden" name="update_team" value="1">
 
       <div id="teamMembersContainer">
@@ -178,6 +301,11 @@ $teamMembers = get_admin_team_members();
               name="team_name[]"
               value="<?php echo htmlspecialchars($member["name"] ?? ""); ?>"
               placeholder="Team member name">
+
+            <label>Member Photo</label>
+            <input type="hidden" name="team_existing_photo[]" value="<?php echo htmlspecialchars((string)($member["profile_photo_path"] ?? "")); ?>">
+            <input name="team_photo[]" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+            <img src="<?php echo htmlspecialchars(placementhub_media_url((string)($member["profile_photo_path"] ?? ""), "../")); ?>" class="profile-avatar" alt="Team member preview">
 
             <label>Member Role</label>
             <input
@@ -206,4 +334,20 @@ $teamMembers = get_admin_team_members();
 </div>
 
 </body>
+<script>
+function markProfilePhotoForRemoval(inputId, imageId, button) {
+  var hiddenInput = document.getElementById(inputId);
+  var previewImage = document.getElementById(imageId);
+  if (hiddenInput) {
+    hiddenInput.value = "1";
+  }
+  if (previewImage) {
+    previewImage.style.opacity = "0.35";
+  }
+  if (button) {
+    button.textContent = "Will Remove";
+    button.disabled = true;
+  }
+}
+</script>
 </html>

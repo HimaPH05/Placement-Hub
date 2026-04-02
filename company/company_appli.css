@@ -154,6 +154,15 @@ tbody tr:hover{
   line-height:1.35;
 }
 
+.applicant-avatar{
+  width:56px;
+  height:56px;
+  object-fit:cover;
+  border-radius:50%;
+  box-shadow:0 8px 16px rgba(19,52,119,.18);
+  margin-bottom:6px;
+}
+
 .muted{
   color:#6178a0;
   font-size:13px;

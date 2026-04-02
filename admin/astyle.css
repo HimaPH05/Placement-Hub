@@ -82,6 +82,8 @@ body{
 .student-card,.application-admin-card,.company-card,.resume-card,.info-card,.feedback-card,.team-card{padding:20px}
 .student-card h3,.application-admin-card h3,.company-card h3,.resume-card h3,.info-card h3,.team-card h4,.feedback-head h3{color:#0d47a1}
 .student-card p,.application-admin-card p,.company-card p,.resume-card p,.info-card p,.team-card p,.feedback-meta,.feedback-text{font-size:14px;color:#3f5a84}
+.admin-entity-avatar{width:72px;height:72px;object-fit:cover;border-radius:20px;border:3px solid #ebf2ff;box-shadow:0 8px 18px rgba(19,52,119,.14);margin-bottom:12px}
+.admin-student-avatar{border-radius:50%}
 .status{display:inline-block;padding:6px 12px;border-radius:999px;color:#fff;font-size:12px;font-weight:700;margin-top:8px}
 .status.pending{background:#f2b631}
 .status.shortlisted{background:#31a465}
@@ -161,6 +163,10 @@ body{
 .profile-edit-card{margin-bottom:24px}
 .profile-form{display:flex;flex-direction:column;gap:8px;margin-top:8px}
 .profile-form label{font-size:13px;color:#35527e;font-weight:700}
+.hint{font-size:13px;color:#5d6f8f}
+.profile-photo-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.mini-remove-btn{border:none;border-radius:10px;background:#eef3fb;color:#35527e;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.mini-remove-btn:disabled{opacity:.7;cursor:default}
 .profile-form .primary{width:fit-content;margin-top:8px}
 .profile-msg{margin-top:8px;font-size:13px}
 .profile-msg.success{color:#2e7d32}
@@ -192,6 +198,7 @@ body{
 .student-profile-content{margin-top:16px}
 .student-profile-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .student-profile-card{background:#f8fbff;border:1px solid #d7e3ff;border-radius:16px;padding:18px}
+.student-profile-avatar{width:88px;height:88px;object-fit:cover;border-radius:50%;box-shadow:0 8px 16px rgba(19,52,119,.18);margin-bottom:12px}
 .student-profile-card h4{color:#0d47a1;margin-bottom:10px}
 .student-profile-card p{font-size:14px;color:#3f5a84;margin-bottom:8px}
 .student-profile-card-wide{grid-column:1 / -1}

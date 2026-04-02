@@ -16,6 +16,7 @@ $conn = new mysqli($cfg["host"], $cfg["user"], $cfg["pass"], $cfg["name"]);
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
+include_once __DIR__ . "/../database_setup.php";
 
 $student_id = (int)$_SESSION["user_id"];
 $lifeId = $student_id;
@@ -29,6 +30,7 @@ if (!$active) {
 $error = "";
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
+$hasProfilePhotoColumn = false;
 
 $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($colCheck && $colCheck->num_rows > 0) {
@@ -38,13 +40,29 @@ $emailColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
 if ($emailColCheck && $emailColCheck->num_rows > 0) {
     $hasEmailColumn = true;
 }
+$profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
+if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows > 0) {
+    $hasProfilePhotoColumn = true;
+}
 
 /* FETCH CURRENT DATA */
-if ($hasScorecardColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    }
+} elseif ($hasScorecardColumn) {
     if ($hasEmailColumn) {
         $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
     } else {
         $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path FROM students WHERE id=?");
+    }
+} elseif ($hasProfilePhotoColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
     }
 } else {
     if ($hasEmailColumn) {
@@ -55,11 +73,17 @@ if ($hasScorecardColumn) {
 }
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
-if ($hasScorecardColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasScorecardColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
+    $profile_photo_path = "";
+} elseif ($hasProfilePhotoColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
 } else {
     $stmt->bind_result($fullname, $email, $regno, $cgpa);
     $ktu_scorecard_path = "";
+    $profile_photo_path = "";
 }
 $stmt->fetch();
 $stmt->close();
@@ -70,8 +94,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = trim($_POST["email"] ?? "");
     $regno = trim($_POST["regno"] ?? "");
     $cgpa = (float)($_POST["cgpa"] ?? 0);
+    $removeProfilePhoto = isset($_POST["remove_profile_photo"]);
 
     $newScorecardPath = $ktu_scorecard_path;
+    $newProfilePhotoPath = $profile_photo_path;
+
+    if ($hasProfilePhotoColumn && $removeProfilePhoto) {
+        $newProfilePhotoPath = "";
+    }
 
     if ($hasScorecardColumn && isset($_FILES["ktu_scorecard"]) && $_FILES["ktu_scorecard"]["error"] !== UPLOAD_ERR_NO_FILE) {
         if ($_FILES["ktu_scorecard"]["error"] !== UPLOAD_ERR_OK) {
@@ -102,14 +132,63 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         }
     }
 
+    if ($error === "" && $hasProfilePhotoColumn && isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] !== UPLOAD_ERR_NO_FILE) {
+        if ($_FILES["profile_photo"]["error"] !== UPLOAD_ERR_OK) {
+            $error = "Failed to upload profile photo.";
+        } else {
+            $allowedImageExt = ["jpg", "jpeg", "png", "webp"];
+            $originalPhoto = $_FILES["profile_photo"]["name"];
+            $photoExt = strtolower(pathinfo($originalPhoto, PATHINFO_EXTENSION));
+            $photoSize = (int)($_FILES["profile_photo"]["size"] ?? 0);
+            $photoInfo = @getimagesize($_FILES["profile_photo"]["tmp_name"]);
+
+            if (!in_array($photoExt, $allowedImageExt, true) || $photoInfo === false) {
+                $error = "Only JPG, PNG, or WEBP profile photos are allowed.";
+            } elseif ($photoSize > 2 * 1024 * 1024) {
+                $error = "Profile photo must be 2 MB or smaller.";
+            } else {
+                $photoUploadDir = __DIR__ . "/../uploads/profile_photos";
+                if (!is_dir($photoUploadDir)) {
+                    mkdir($photoUploadDir, 0777, true);
+                }
+
+                $safePhotoName = "profile_" . $student_id . "_" . time() . "." . $photoExt;
+                $photoTargetPath = $photoUploadDir . "/" . $safePhotoName;
+                $photoRelativePath = "uploads/profile_photos/" . $safePhotoName;
+
+                if (move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $photoTargetPath)) {
+                    $newProfilePhotoPath = $photoRelativePath;
+                } else {
+                    $error = "Unable to save profile photo.";
+                }
+            }
+        }
+    }
+
     if ($error === "") {
-        if ($hasScorecardColumn) {
+        if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("sssdssi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $newProfilePhotoPath, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, ktu_scorecard_path=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("ssdssi", $fullname, $regno, $cgpa, $newScorecardPath, $newProfilePhotoPath, $student_id);
+            }
+        } elseif ($hasScorecardColumn) {
             if ($hasEmailColumn) {
                 $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
                 $stmt->bind_param("sssdsi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $student_id);
             } else {
                 $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, ktu_scorecard_path=? WHERE id=?");
                 $stmt->bind_param("ssdsi", $fullname, $regno, $cgpa, $newScorecardPath, $student_id);
+            }
+        } elseif ($hasProfilePhotoColumn) {
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("sssdsi", $fullname, $email, $regno, $cgpa, $newProfilePhotoPath, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("ssdsi", $fullname, $regno, $cgpa, $newProfilePhotoPath, $student_id);
             }
         } else {
             if ($hasEmailColumn) {
@@ -134,7 +213,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
   <meta charset="UTF-8">
   <title>Edit Profile</title>
-  <link rel="stylesheet" href="style.css?v=20260309">
+  <link rel="stylesheet" href="style.css?v=20260402-profile">
 </head>
 <body>
 
@@ -181,6 +260,23 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <input type="number" step="0.01" min="0" max="10" name="cgpa" value="<?php echo htmlspecialchars($cgpa); ?>" required>
     </div>
 
+    <?php if ($hasProfilePhotoColumn): ?>
+      <div class="form-group">
+        <label>Profile Photo (JPG/PNG/WEBP)</label>
+        <input type="file" name="profile_photo" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+        <div class="hint">This image will appear as your profile icon across the student pages.</div>
+        <?php if (!empty($profile_photo_path)): ?>
+          <input type="hidden" name="remove_profile_photo" id="removeProfilePhotoInput" value="0">
+          <div class="profile-photo-row">
+            <div class="profile-photo-preview">
+              <img src="../<?php echo htmlspecialchars($profile_photo_path); ?>" alt="Profile photo preview" class="profile-preview-image" id="profilePreviewImage">
+            </div>
+            <button type="button" class="mini-remove-btn" onclick="markProfilePhotoForRemoval('removeProfilePhotoInput', 'profilePreviewImage', this)">Remove Profile Pic</button>
+          </div>
+        <?php endif; ?>
+      </div>
+    <?php endif; ?>
+
     <?php if ($hasScorecardColumn): ?>
       <div class="form-group">
         <label>KTU Scorecard (PDF/JPG/PNG)</label>
@@ -203,4 +299,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </div>
 
 </body>
+<script>
+function markProfilePhotoForRemoval(inputId, imageId, button) {
+  var hiddenInput = document.getElementById(inputId);
+  var previewImage = document.getElementById(imageId);
+  if (hiddenInput) {
+    hiddenInput.value = "1";
+  }
+  if (previewImage) {
+    previewImage.style.opacity = "0.35";
+  }
+  if (button) {
+    button.textContent = "Will Remove";
+    button.disabled = true;
+  }
+}
+</script>
 </html>

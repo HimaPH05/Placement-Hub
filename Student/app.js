@@ -5,6 +5,7 @@
 let companies = [];
 const openingsByCompany = {};
 const expandedCompanies = new Set();
+const DEFAULT_PROFILE_ICON = "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
 
 function getWishlistItems() {
   return JSON.parse(localStorage.getItem("wish")) || [];
@@ -58,6 +59,7 @@ function renderCompanies(data = companies) {
 
   data.forEach((c) => {
     const companyId = Number(c.id);
+    const companyPhoto = c.photo_url ? escapeHtml(c.photo_url) : DEFAULT_PROFILE_ICON;
     const website = c.website ? `<span><b>Website:</b> ${c.website}</span>` : "";
     const hasJob = Number.isInteger(c.latest_job_id) && c.latest_job_id > 0;
     const inWishlist = isCompanySaved(companyId);
@@ -74,6 +76,7 @@ function renderCompanies(data = companies) {
     companyBox.innerHTML += `
       <div class="company-card">
         <div class="company-info">
+          <img src="${companyPhoto}" class="company-avatar" alt="${escapeHtml(c.name || "Company")} logo">
           <h2><strong>${escapeHtml(c.name)}</strong></h2>
           <p class="desc">${escapeHtml(c.desc)}</p>
 
@@ -664,6 +667,53 @@ function toggleProfile() {
   dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
 }
 
+async function loadProfileSummary() {
+  const icon = document.querySelector(".profile-icon");
+  const dropdown = document.getElementById("profileDropdown");
+  if (!icon || !dropdown) return;
+
+  try {
+    const res = await fetch("profile-data.php", {
+      headers: {
+        "Accept": "application/json"
+      }
+    });
+
+    if (!res.ok) {
+      return;
+    }
+
+    const profile = await res.json();
+    const photoUrl = profile.profile_photo_url || DEFAULT_PROFILE_ICON;
+    icon.src = photoUrl;
+    icon.alt = profile.fullname ? `${profile.fullname} profile icon` : "Profile icon";
+
+    const details = [];
+    if (profile.fullname) {
+      details.push(`<p><strong>${escapeHtml(profile.fullname)}</strong></p>`);
+    }
+    if (profile.email) {
+      details.push(`<p>Email: ${escapeHtml(profile.email)}</p>`);
+    }
+    if (profile.regno) {
+      details.push(`<p>Reg No: ${escapeHtml(profile.regno)}</p>`);
+    }
+    if (profile.cgpa) {
+      details.push(`<p>CGPA: ${escapeHtml(profile.cgpa)}</p>`);
+    }
+    if (profile.ktu_scorecard_path) {
+      details.push(`<p>KTU Scorecard: <a href="../${escapeHtml(profile.ktu_scorecard_path)}" target="_blank">View</a></p>`);
+    }
+
+    details.push("<hr>");
+    details.push('<a href="edit_profile.php">Edit Profile</a><br><br>');
+    details.push('<a href="logout.php">Logout</a>');
+    dropdown.innerHTML = details.join("");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 /* =================================================
    LOAD EVERYTHING (ONLY ONCE)
 ================================================= */
@@ -686,4 +736,5 @@ document.addEventListener("DOMContentLoaded", () => {
   renderResumes();
   loadResumeForEdit();
   setupFeedbackStars();
+  loadProfileSummary();
 });

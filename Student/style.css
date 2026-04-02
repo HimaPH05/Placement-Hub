@@ -61,6 +61,15 @@ body{
 .opportunity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
 .company-card{padding:22px}
 .opportunity-card{background:var(--card);border:1px solid rgba(23,84,194,.12);border-radius:20px;box-shadow:var(--shadow);padding:22px}
+.company-avatar{
+  width:72px;
+  height:72px;
+  object-fit:cover;
+  border-radius:22px;
+  border:3px solid #ebf2ff;
+  box-shadow:0 8px 18px rgba(19,52,119,.14);
+  margin-bottom:12px;
+}
 .company-card h2{color:#0d47a1;font-size:24px;margin-bottom:8px}
 .opportunity-card h3{color:#0d47a1;font-size:22px;margin-bottom:8px}
 .opportunity-card p{font-size:14px;color:#3f5a84;margin-bottom:10px}
@@ -128,6 +137,28 @@ body{
 
 .feedback-wrapper textarea,.form-card input,.form-card select,.form-card textarea{width:100%;border:1px solid #ccdaf4;background:#f8fbff;border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit}
 .feedback-wrapper textarea{resize:none;margin-bottom:15px}
+.hint{font-size:13px;color:#5d6f8f}
+.profile-photo-preview{margin-top:8px}
+.profile-preview-image{
+  width:88px;
+  height:88px;
+  object-fit:cover;
+  border-radius:50%;
+  border:3px solid #e3eeff;
+  box-shadow:0 8px 16px rgba(19,52,119,.12);
+}
+.profile-photo-row{display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
+.mini-remove-btn{
+  border:none;
+  border-radius:10px;
+  background:#eef3fb;
+  color:#35527e;
+  padding:8px 12px;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+}
+.mini-remove-btn:disabled{opacity:.7;cursor:default}
 .rating-wrap{text-align:left;margin-bottom:12px}
 .rating-wrap label{display:block;font-size:14px;color:#35527e;margin-bottom:6px;font-weight:700}
 .star-rating{display:flex;gap:8px;align-items:center}

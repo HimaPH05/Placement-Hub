@@ -35,6 +35,16 @@ if ($studentsTable && $studentsTable->num_rows > 0) {
             $conn->query($sql);
         }
     }
+
+    $scorecardColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
+    if ($scorecardColCheck && $scorecardColCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE students ADD COLUMN ktu_scorecard_path VARCHAR(255) NULL AFTER cgpa");
+    }
+
+    $profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
+    if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE students ADD COLUMN profile_photo_path VARCHAR(255) NULL AFTER cgpa");
+    }
 }
 
 /* COMPANIES TABLE MIGRATIONS (for dashboard fields) */
@@ -43,7 +53,8 @@ $companyCols = [
     "employees"   => "ALTER TABLE companies ADD COLUMN employees INT NOT NULL DEFAULT 0",
     "locations"   => "ALTER TABLE companies ADD COLUMN locations INT NOT NULL DEFAULT 0",
     "location"    => "ALTER TABLE companies ADD COLUMN location VARCHAR(120) NULL",
-    "industry"    => "ALTER TABLE companies ADD COLUMN industry VARCHAR(120) NULL"
+    "industry"    => "ALTER TABLE companies ADD COLUMN industry VARCHAR(120) NULL",
+    "profile_photo_path" => "ALTER TABLE companies ADD COLUMN profile_photo_path VARCHAR(255) NULL"
 ];
 foreach ($companyCols as $col => $sql) {
     $check = $conn->query("SHOW COLUMNS FROM companies LIKE '{$col}'");

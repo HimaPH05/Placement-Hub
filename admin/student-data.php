@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../profile-helpers.php";
 
 function admin_normalize_student_filters(array $input): array
 {
@@ -30,6 +31,7 @@ function admin_fetch_students(mysqli $conn, array $filters = []): array
     $hasCurrentYearColumn = false;
     $hasAdmissionYearColumn = false;
     $hasAccessExpiryColumn = false;
+    $hasProfilePhotoColumn = false;
 
     $emailCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
     if ($emailCheck && $emailCheck->num_rows > 0) {
@@ -55,6 +57,10 @@ function admin_fetch_students(mysqli $conn, array $filters = []): array
     if ($accessExpiryCheck && $accessExpiryCheck->num_rows > 0) {
         $hasAccessExpiryColumn = true;
     }
+    $profilePhotoCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
+    if ($profilePhotoCheck && $profilePhotoCheck->num_rows > 0) {
+        $hasProfilePhotoColumn = true;
+    }
 
     $sql = "
         SELECT
@@ -68,6 +74,7 @@ function admin_fetch_students(mysqli $conn, array $filters = []): array
             " . ($hasCurrentYearColumn ? "s.current_year," : "NULL AS current_year,") . "
             " . ($hasAdmissionYearColumn ? "s.admission_year," : "NULL AS admission_year,") . "
             " . ($hasAccessExpiryColumn ? "s.access_expires_at," : "NULL AS access_expires_at,") . "
+            " . ($hasProfilePhotoColumn ? "COALESCE(s.profile_photo_path, '') AS profile_photo_path," : "'' AS profile_photo_path,") . "
             COALESCE((
                 SELECT sr.branch
                 FROM student_resumes sr
@@ -121,6 +128,9 @@ function admin_fetch_students(mysqli $conn, array $filters = []): array
             "year_label" => $yearLabel,
             "access_expires_at" => $row["access_expires_at"] ?? null
         ];
+
+        $student["profile_photo_path"] = $row["profile_photo_path"] ?? "";
+        $student["photo_url"] = placementhub_student_photo_url($student, "../");
 
         $student = admin_student_sync_lifecycle($conn, $student);
 
@@ -240,6 +250,7 @@ function admin_fetch_student_detail(mysqli $conn, int $studentId): ?array
     $hasDobColumn = false;
     $hasCreatedAtColumn = false;
     $hasEmailVerifiedColumn = false;
+    $hasProfilePhotoColumn = false;
 
     $scorecardCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
     if ($scorecardCheck && $scorecardCheck->num_rows > 0) {
@@ -260,6 +271,10 @@ function admin_fetch_student_detail(mysqli $conn, int $studentId): ?array
     if ($emailVerifiedCheck && $emailVerifiedCheck->num_rows > 0) {
         $hasEmailVerifiedColumn = true;
     }
+    $profilePhotoCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
+    if ($profilePhotoCheck && $profilePhotoCheck->num_rows > 0) {
+        $hasProfilePhotoColumn = true;
+    }
 
     $detailSql = "
         SELECT
@@ -270,6 +285,7 @@ function admin_fetch_student_detail(mysqli $conn, int $studentId): ?array
             COALESCE(s.cgpa, '') AS cgpa,
             " . ($hasDobColumn ? "s.dob," : "NULL AS dob,") . "
             " . ($hasScorecardColumn ? "COALESCE(s.ktu_scorecard_path, '') AS ktu_scorecard_path," : "'' AS ktu_scorecard_path,") . "
+            " . ($hasProfilePhotoColumn ? "COALESCE(s.profile_photo_path, '') AS profile_photo_path," : "'' AS profile_photo_path,") . "
             " . ($hasCreatedAtColumn ? "s.created_at," : "NULL AS created_at,") . "
             " . ($hasEmailVerifiedColumn ? "COALESCE(s.is_email_verified, 0) AS is_email_verified" : "0 AS is_email_verified") . "
         FROM students s
@@ -287,6 +303,8 @@ function admin_fetch_student_detail(mysqli $conn, int $studentId): ?array
             $student["created_at"] = $detailRow["created_at"] ?? null;
             $student["is_email_verified"] = ((int)($detailRow["is_email_verified"] ?? 0)) === 1;
             $student["ktu_scorecard_path"] = $detailRow["ktu_scorecard_path"] ?? "";
+            $student["profile_photo_path"] = $detailRow["profile_photo_path"] ?? "";
+            $student["photo_url"] = placementhub_student_photo_url($student, "../");
             $student["scorecard_url"] = !empty($detailRow["ktu_scorecard_path"])
                 ? "../" . ltrim((string)$detailRow["ktu_scorecard_path"], "/")
                 : "";

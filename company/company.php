@@ -2,6 +2,7 @@
 session_start();
 include("../db.php"); // correct path
 include_once("../database_setup.php"); // ensure required tables (including jobs) exist
+require_once __DIR__ . "/../profile-helpers.php";
 
 if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "company") {
     header("Location: ../login.php");
@@ -32,6 +33,8 @@ if(isset($_POST['update_company'])){
     $industryValue = trim($_POST['industry'] ?? '');
     $desc = trim($_POST['description'] ?? '');
     $emp  = isset($_POST['employees']) ? (int)$_POST['employees'] : 0;
+    $removeProfilePhoto = isset($_POST['remove_profile_photo']);
+    $profilePhotoPath = trim((string)($_POST['existing_profile_photo_path'] ?? ''));
     $locationItemsRaw = $_POST['location_items'] ?? [];
     if(!is_array($locationItemsRaw)){
       $locationItemsRaw = [];
@@ -49,6 +52,43 @@ if(isset($_POST['update_company'])){
       $loc = count($locationItems);
     }
 
+    if ($removeProfilePhoto) {
+      $profilePhotoPath = "";
+    }
+
+    if (isset($_FILES["profile_photo"]) && $_FILES["profile_photo"]["error"] !== UPLOAD_ERR_NO_FILE) {
+      if ($_FILES["profile_photo"]["error"] !== UPLOAD_ERR_OK) {
+        die("Failed to upload company profile photo.");
+      }
+
+      $allowedImageExt = ["jpg", "jpeg", "png", "webp"];
+      $photoExt = strtolower(pathinfo((string)$_FILES["profile_photo"]["name"], PATHINFO_EXTENSION));
+      $photoSize = (int)($_FILES["profile_photo"]["size"] ?? 0);
+      $photoInfo = @getimagesize($_FILES["profile_photo"]["tmp_name"]);
+
+      if (!in_array($photoExt, $allowedImageExt, true) || $photoInfo === false) {
+        die("Only JPG, PNG, or WEBP company profile photos are allowed.");
+      }
+      if ($photoSize > 2 * 1024 * 1024) {
+        die("Company profile photo must be 2 MB or smaller.");
+      }
+
+      $uploadDir = __DIR__ . "/../uploads/company_photos";
+      if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+      }
+
+      $safeName = "company_" . $company_id . "_" . time() . "." . $photoExt;
+      $targetPath = $uploadDir . "/" . $safeName;
+      $relativePath = "uploads/company_photos/" . $safeName;
+
+      if (!move_uploaded_file($_FILES["profile_photo"]["tmp_name"], $targetPath)) {
+        die("Unable to save company profile photo.");
+      }
+
+      $profilePhotoPath = $relativePath;
+    }
+
     // Keep update compatible with different companies-table schemas.
     $setParts = ["companyName=?"];
     $types = "s";
@@ -58,7 +98,8 @@ if(isset($_POST['update_company'])){
       "description" => ["s", $desc],
       "industry"    => ["s", $industryValue],
       "employees"   => ["i", $emp],
-      "location"    => ["s", $locationText]
+      "location"    => ["s", $locationText],
+      "profile_photo_path" => ["s", $profilePhotoPath]
     ];
     if($loc !== null){
       $optionalColumns["locations"] = ["i", $loc];
@@ -137,6 +178,7 @@ $stmt->bind_param("i", $company_id);
 $stmt->execute();
 $company = $stmt->get_result()->fetch_assoc() ?: [];
 $companyName = $company['companyName'] ?? 'Company';
+$companyPhotoUrl = placementhub_company_photo_url($company, "../");
 $companyDescription = $company['description'] ?? ($company['industry'] ?? '');
 $companyEmployees = isset($company['employees']) ? (int)$company['employees'] : 0;
 $companyLocationText = $company['location'] ?? '';
@@ -184,7 +226,7 @@ $jobs = $stmt->get_result();
 <head>
   <meta charset="UTF-8">
   <title>Company - Placement Hub</title>
-  <link rel="stylesheet" href="company_com.css?v=20260403">
+  <link rel="stylesheet" href="company_com.css?v=20260402-photo">
 </head>
 
 <body>
@@ -201,7 +243,7 @@ $jobs = $stmt->get_result();
     <a href="resumes.php">Resumes</a>
   </div>
   <div class="company-profile-menu">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="company-profile-icon" onclick="toggleProfile()">
+    <img src="<?php echo htmlspecialchars($companyPhotoUrl); ?>" class="company-profile-icon" onclick="toggleProfile()" alt="Company profile photo">
     <div id="profileDropdown" class="company-profile-dropdown">
       <a href="edit_company.php">Edit Profile</a><br><br>
       <a href="logout.php">Logout</a>
@@ -214,7 +256,7 @@ $jobs = $stmt->get_result();
 <!-- ================= COMPANY PROFILE ================= -->
 <section class="card company-profile">
 
-  <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="company-logo">
+  <img src="<?php echo htmlspecialchars($companyPhotoUrl); ?>" class="company-logo" alt="Company profile photo">
 
   <div class="company-info">
     <h2><?php echo htmlspecialchars($companyName); ?></h2>
@@ -291,7 +333,8 @@ $jobs = $stmt->get_result();
   <div class="modal-content edit-company-modal">
     <h3>Edit Company Profile</h3>
     <p class="modal-subtitle">Update your organization details to keep your company page professional.</p>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="existing_profile_photo_path" value="<?php echo htmlspecialchars((string)($company['profile_photo_path'] ?? '')); ?>">
       <div class="field">
         <label for="company_name">Company Name</label>
         <input id="company_name" name="companyName" value="<?php echo htmlspecialchars($companyName); ?>" required>
@@ -334,6 +377,15 @@ $jobs = $stmt->get_result();
       <div class="field">
         <label for="company_employees">Number of Employees</label>
         <input id="company_employees" name="employees" type="number" min="0" value="<?php echo $companyEmployees; ?>">
+      </div>
+
+      <div class="field">
+        <label for="company_profile_photo">Profile Photo</label>
+        <input id="company_profile_photo" name="profile_photo" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+        <?php if (!empty($company['profile_photo_path'])): ?>
+          <input type="hidden" name="remove_profile_photo" id="companyModalRemoveProfilePhotoInput" value="0">
+          <button type="button" class="mini-remove-btn" onclick="markProfilePhotoForRemoval('companyModalRemoveProfilePhotoInput', null, this)">Remove Profile Pic</button>
+        <?php endif; ?>
       </div>
 
       <div class="modal-actions">
@@ -401,7 +453,7 @@ $jobs = $stmt->get_result();
 </div>
 
 
-<script src="script.js?v=20260403"></script>
+<script src="script.js?v=20260402-photo"></script>
 <script>
 function openModal(){
   document.getElementById("addModal").style.display="flex";
@@ -489,6 +541,23 @@ document.addEventListener("DOMContentLoaded", function(){
   });
   updateLocationIndices();
 });
+
+function markProfilePhotoForRemoval(inputId, imageId, button){
+  var hiddenInput = document.getElementById(inputId);
+  if(hiddenInput){
+    hiddenInput.value = "1";
+  }
+  if(imageId){
+    var previewImage = document.getElementById(imageId);
+    if(previewImage){
+      previewImage.style.opacity = "0.35";
+    }
+  }
+  if(button){
+    button.textContent = "Will Remove";
+    button.disabled = true;
+  }
+}
 </script>
 
 </body>
