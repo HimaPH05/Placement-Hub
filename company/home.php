@@ -108,7 +108,7 @@ $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
             <a class="btn" href="company.php">Explore Company</a>
         </div>
 
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135755.png" class="hero-img">
+        <img src="<?php echo htmlspecialchars($companyPhotoUrl); ?>" class="hero-img company-hero-img" alt="Company profile photo">
     </section>
 
 

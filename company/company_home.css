@@ -70,6 +70,15 @@
   max-width:100%;
 }
 
+.company-hero-img{
+  width:220px;
+  height:220px;
+  object-fit:cover;
+  border-radius:32px;
+  border:6px solid #f0f5ff;
+  box-shadow:0 16px 28px rgba(19,52,119,.18);
+}
+
 .officer-section h2{
   color:#0a3f9f;
   font-size:34px;
