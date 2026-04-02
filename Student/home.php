@@ -325,7 +325,7 @@ if ($linkResult) {
       <div class="officer-info">
         <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
         <p class="role"><?php echo htmlspecialchars($adminProfile["role_title"]); ?></p>
-        <p>📧 <?php echo htmlspecialchars($adminProfile["email"]); ?></p>
+        <p>📧 <a href="mailto:<?php echo htmlspecialchars($adminProfile["email"]); ?>" class="contact-link"><?php echo htmlspecialchars($adminProfile["email"]); ?></a></p>
         <p>📞 <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
         <p>🏢 <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
       </div>

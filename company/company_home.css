@@ -123,6 +123,15 @@
   color:#2e466f;
   margin-bottom:4px;
 }
+.contact-link{
+  color:#2e466f;
+  text-decoration:none;
+  font-weight:600;
+}
+.contact-link:hover{
+  color:#0f4fd0;
+  text-decoration:underline;
+}
 
 @media (max-width:760px){
   .hero{
