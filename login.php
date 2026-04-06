@@ -40,7 +40,7 @@ if (isset($_SESSION["role"])) {
 
 <header class="college-header">
 
-<img src="logo.jpg" class="college-logo">
+<img src="logo.jpg" class="college-logo" alt="Government Engineering College Kozhikode logo">
 
 <h1 class="college-name">
 Government Engineering College Kozhikode

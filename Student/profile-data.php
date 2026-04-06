@@ -25,6 +25,7 @@ $studentId = (int)$_SESSION["user_id"];
 $hasEmailColumn = false;
 $hasScorecardColumn = false;
 $hasProfilePhotoColumn = false;
+$hasSupplyCountColumn = false;
 
 $emailColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'email'");
 if ($emailColCheck && $emailColCheck->num_rows > 0) {
@@ -40,23 +41,41 @@ $profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_p
 if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows > 0) {
     $hasProfilePhotoColumn = true;
 }
+$supplyCountColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'supply_count'");
+if ($supplyCountColCheck && $supplyCountColCheck->num_rows > 0) {
+    $hasSupplyCountColumn = true;
+}
 
-if ($hasEmailColumn && $hasScorecardColumn && $hasProfilePhotoColumn) {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+if ($hasEmailColumn && $hasScorecardColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasEmailColumn && $hasScorecardColumn && $hasProfilePhotoColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, 0 AS supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasEmailColumn && $hasScorecardColumn && $hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasEmailColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasScorecardColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } elseif ($hasEmailColumn && $hasProfilePhotoColumn) {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, 0 AS supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } elseif ($hasScorecardColumn && $hasProfilePhotoColumn) {
-    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, 0 AS supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } elseif ($hasProfilePhotoColumn) {
-    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, 0 AS supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } elseif ($hasEmailColumn && $hasScorecardColumn) {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, 0 AS supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasEmailColumn && $hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } elseif ($hasEmailColumn) {
-    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, 0 AS supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasScorecardColumn && $hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } elseif ($hasScorecardColumn) {
-    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, 0 AS supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+} elseif ($hasSupplyCountColumn) {
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
 } else {
-    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
+    $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, 0 AS supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ? LIMIT 1");
 }
 
 $stmt->bind_param("i", $studentId);
@@ -79,6 +98,7 @@ echo json_encode([
     "email" => (string)($result["email"] ?? ""),
     "regno" => (string)($result["regno"] ?? ""),
     "cgpa" => (string)($result["cgpa"] ?? ""),
+    "supply_count" => (int)($result["supply_count"] ?? 0),
     "ktu_scorecard_path" => (string)($result["ktu_scorecard_path"] ?? ""),
     "profile_photo_path" => $profilePhotoPath,
     "profile_photo_url" => $profilePhotoUrl

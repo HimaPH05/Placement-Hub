@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Placement Hub">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <link rel="icon" href="icons/favicon.ico">
+  <link rel="icon" type="image/png" href="icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
   <script defer src="pwa-register.js"></script>
@@ -48,31 +48,30 @@
       <input type="text" id="location" placeholder="Enter company location" required>
 
       <label for="industry">Industry Type</label>
-      <select id="industry" required>
-        <option value="" disabled selected>Select Industry</option>
-        <option>Information Technology</option>
-        <option>Software Development</option>
-        <option>Artificial Intelligence</option>
-        <option>Data Science & Analytics</option>
-        <option>Finance & Banking</option>
-        <option>FinTech</option>
-        <option>Healthcare</option>
-        <option>Pharmaceutical</option>
-        <option>Manufacturing</option>
-        <option>Automobile</option>
-        <option>Electronics</option>
-        <option>Telecommunications</option>
-        <option>Education</option>
-        <option>E-Commerce</option>
-        <option>Retail</option>
-        <option>Logistics & Supply Chain</option>
-        <option>Media & Entertainment</option>
-        <option>Marketing & Advertising</option>
-        <option>Consulting</option>
-        <option>Energy & Utilities</option>
-        <option>Government / Public Sector</option>
-        <option>Other</option>
-      </select>
+      <input type="text" id="industry" list="industryOptions" placeholder="Select or type industry" required>
+      <datalist id="industryOptions">
+        <option value="Information Technology"></option>
+        <option value="Software Development"></option>
+        <option value="Artificial Intelligence"></option>
+        <option value="Data Science & Analytics"></option>
+        <option value="Finance & Banking"></option>
+        <option value="FinTech"></option>
+        <option value="Healthcare"></option>
+        <option value="Pharmaceutical"></option>
+        <option value="Manufacturing"></option>
+        <option value="Automobile"></option>
+        <option value="Electronics"></option>
+        <option value="Telecommunications"></option>
+        <option value="Education"></option>
+        <option value="E-Commerce"></option>
+        <option value="Retail"></option>
+        <option value="Logistics & Supply Chain"></option>
+        <option value="Media & Entertainment"></option>
+        <option value="Marketing & Advertising"></option>
+        <option value="Consulting"></option>
+        <option value="Energy & Utilities"></option>
+        <option value="Government / Public Sector"></option>
+      </datalist>
 
       <label for="website">Company Website</label>
       <input type="url" id="website" placeholder="https://example.com">

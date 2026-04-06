@@ -31,6 +31,7 @@ $error = "";
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
 $hasProfilePhotoColumn = false;
+$hasSupplyCountColumn = false;
 
 $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($colCheck && $colCheck->num_rows > 0) {
@@ -44,13 +45,41 @@ $profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_p
 if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows > 0) {
     $hasProfilePhotoColumn = true;
 }
+$supplyCountColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'supply_count'");
+if ($supplyCountColCheck && $supplyCountColCheck->num_rows > 0) {
+    $hasSupplyCountColumn = true;
+}
 
 /* FETCH CURRENT DATA */
-if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    }
+} elseif ($hasScorecardColumn && $hasProfilePhotoColumn) {
     if ($hasEmailColumn) {
         $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
     } else {
         $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    }
+} elseif ($hasScorecardColumn && $hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id=?");
+    }
+} elseif ($hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id=?");
+    }
+} elseif ($hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id=?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id=?");
     }
 } elseif ($hasScorecardColumn) {
     if ($hasEmailColumn) {
@@ -74,16 +103,33 @@ if ($hasScorecardColumn && $hasProfilePhotoColumn) {
 $stmt->bind_param("i", $student_id);
 $stmt->execute();
 if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+    if ($hasSupplyCountColumn) {
+        $stmt->bind_result($fullname, $email, $regno, $cgpa, $supply_count, $ktu_scorecard_path, $profile_photo_path);
+    } else {
+        $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+        $supply_count = 0;
+    }
+} elseif ($hasScorecardColumn && $hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supply_count, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supply_count, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supply_count, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasScorecardColumn && $hasProfilePhotoColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+    $supply_count = 0;
 } elseif ($hasScorecardColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
     $profile_photo_path = "";
+    $supply_count = 0;
 } elseif ($hasProfilePhotoColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+    $supply_count = 0;
 } else {
     $stmt->bind_result($fullname, $email, $regno, $cgpa);
     $ktu_scorecard_path = "";
     $profile_photo_path = "";
+    $supply_count = 0;
 }
 $stmt->fetch();
 $stmt->close();
@@ -94,6 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = trim($_POST["email"] ?? "");
     $regno = trim($_POST["regno"] ?? "");
     $cgpa = (float)($_POST["cgpa"] ?? 0);
+    $supply_count = max(0, (int)($_POST["supply_count"] ?? 0));
     $removeProfilePhoto = isset($_POST["remove_profile_photo"]);
 
     $newScorecardPath = $ktu_scorecard_path;
@@ -166,7 +213,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     if ($error === "") {
-        if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+        if ($hasScorecardColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, supply_count=?, ktu_scorecard_path=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("sssdissi", $fullname, $email, $regno, $cgpa, $supply_count, $newScorecardPath, $newProfilePhotoPath, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, supply_count=?, ktu_scorecard_path=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("ssdissi", $fullname, $regno, $cgpa, $supply_count, $newScorecardPath, $newProfilePhotoPath, $student_id);
+            }
+        } elseif ($hasScorecardColumn && $hasSupplyCountColumn) {
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, supply_count=?, ktu_scorecard_path=? WHERE id=?");
+                $stmt->bind_param("sssdisi", $fullname, $email, $regno, $cgpa, $supply_count, $newScorecardPath, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, supply_count=?, ktu_scorecard_path=? WHERE id=?");
+                $stmt->bind_param("ssdisi", $fullname, $regno, $cgpa, $supply_count, $newScorecardPath, $student_id);
+            }
+        } elseif ($hasProfilePhotoColumn && $hasSupplyCountColumn) {
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, supply_count=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("sssdisi", $fullname, $email, $regno, $cgpa, $supply_count, $newProfilePhotoPath, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, supply_count=?, profile_photo_path=? WHERE id=?");
+                $stmt->bind_param("ssdisi", $fullname, $regno, $cgpa, $supply_count, $newProfilePhotoPath, $student_id);
+            }
+        } elseif ($hasSupplyCountColumn) {
+            if ($hasEmailColumn) {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, supply_count=? WHERE id=?");
+                $stmt->bind_param("sssdii", $fullname, $email, $regno, $cgpa, $supply_count, $student_id);
+            } else {
+                $stmt = $conn->prepare("UPDATE students SET fullname=?, regno=?, cgpa=?, supply_count=? WHERE id=?");
+                $stmt->bind_param("ssdii", $fullname, $regno, $cgpa, $supply_count, $student_id);
+            }
+        } elseif ($hasScorecardColumn && $hasProfilePhotoColumn) {
             if ($hasEmailColumn) {
                 $stmt = $conn->prepare("UPDATE students SET fullname=?, email=?, regno=?, cgpa=?, ktu_scorecard_path=?, profile_photo_path=? WHERE id=?");
                 $stmt->bind_param("sssdssi", $fullname, $email, $regno, $cgpa, $newScorecardPath, $newProfilePhotoPath, $student_id);
@@ -259,6 +338,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       <label>CGPA</label>
       <input type="number" step="0.01" min="0" max="10" name="cgpa" value="<?php echo htmlspecialchars($cgpa); ?>" required>
     </div>
+
+    <?php if ($hasSupplyCountColumn): ?>
+      <div class="form-group">
+        <label>Number of Supplies</label>
+        <input type="number" min="0" name="supply_count" value="<?php echo htmlspecialchars((string)$supply_count); ?>" required>
+        <div class="hint">Enter your current number of supplies/backlogs.</div>
+      </div>
+    <?php endif; ?>
 
     <?php if ($hasProfilePhotoColumn): ?>
       <div class="form-group">

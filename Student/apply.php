@@ -42,7 +42,17 @@ if ($company_id <= 0 || $job_id <= 0) {
     fail_json(400, "Invalid company or job selected");
 }
 
-$jobStmt = $conn->prepare("SELECT id, min_cgpa FROM jobs WHERE id = ? AND company_id = ?");
+$jobHasMaxSuppliesColumn = false;
+$jobMaxSuppliesCheck = $conn->query("SHOW COLUMNS FROM jobs LIKE 'max_supplies'");
+if ($jobMaxSuppliesCheck && $jobMaxSuppliesCheck->num_rows > 0) {
+    $jobHasMaxSuppliesColumn = true;
+}
+
+$jobStmt = $conn->prepare(
+    $jobHasMaxSuppliesColumn
+        ? "SELECT id, min_cgpa, max_supplies FROM jobs WHERE id = ? AND company_id = ?"
+        : "SELECT id, min_cgpa, NULL AS max_supplies FROM jobs WHERE id = ? AND company_id = ?"
+);
 $jobQueryError = $conn->error;
 if (!$jobStmt) {
     fail_json(500, "Unable to validate selected job. " . $jobQueryError);
@@ -56,16 +66,26 @@ if ($jobResult->num_rows === 0) {
 }
 $job = $jobResult->fetch_assoc();
 $min_cgpa = $job["min_cgpa"] !== null ? (float)$job["min_cgpa"] : null;
+$max_supplies = $job["max_supplies"] !== null ? (int)$job["max_supplies"] : null;
 
 $hasScorecardColumn = false;
+$hasSupplyCountColumn = false;
 $scorecardColumnCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($scorecardColumnCheck && $scorecardColumnCheck->num_rows > 0) {
     $hasScorecardColumn = true;
 }
+$supplyCountColumnCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'supply_count'");
+if ($supplyCountColumnCheck && $supplyCountColumnCheck->num_rows > 0) {
+    $hasSupplyCountColumn = true;
+}
 
-$studentQuery = $hasScorecardColumn
-    ? "SELECT cgpa, ktu_scorecard_path FROM students WHERE id = ?"
-    : "SELECT cgpa, '' AS ktu_scorecard_path FROM students WHERE id = ?";
+$studentQuery = ($hasScorecardColumn && $hasSupplyCountColumn)
+    ? "SELECT cgpa, ktu_scorecard_path, supply_count FROM students WHERE id = ?"
+    : (($hasScorecardColumn)
+        ? "SELECT cgpa, ktu_scorecard_path, 0 AS supply_count FROM students WHERE id = ?"
+        : (($hasSupplyCountColumn)
+            ? "SELECT cgpa, '' AS ktu_scorecard_path, supply_count FROM students WHERE id = ?"
+            : "SELECT cgpa, '' AS ktu_scorecard_path, 0 AS supply_count FROM students WHERE id = ?"));
 
 $studentStmt = $conn->prepare($studentQuery);
 if (!$studentStmt) {
@@ -82,6 +102,7 @@ if ($studentResult->num_rows === 0) {
 $student = $studentResult->fetch_assoc();
 $student_cgpa = (float)$student["cgpa"];
 $scorecard_path = trim((string)($student["ktu_scorecard_path"] ?? ""));
+$student_supply_count = max(0, (int)($student["supply_count"] ?? 0));
 
 if ($hasScorecardColumn && $scorecard_path === "") {
     fail_json(400, "Upload your KTU scorecard in Edit Profile before applying");
@@ -115,6 +136,9 @@ $resume_id = (int)$resume["id"];
 
 if ($min_cgpa !== null && $student_cgpa < $min_cgpa) {
     fail_json(400, "Not eligible: minimum CGPA required is " . $min_cgpa);
+}
+if ($max_supplies !== null && $student_supply_count > $max_supplies) {
+    fail_json(400, "Not eligible: maximum allowed supplies is " . $max_supplies);
 }
 
 $checkStmt = $conn->prepare("SELECT id FROM applications WHERE student_id = ? AND job_id = ?");

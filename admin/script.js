@@ -141,6 +141,7 @@ function renderAdminLinks(data = adminOpportunityLinks) {
           <h3>${escapeHtml(item.title)}</h3>
           <p><b>Company:</b> ${escapeHtml(item.company_name)}</p>
           <p><b>Minimum CGPA:</b> ${item.min_cgpa !== null ? escapeHtml(Number(item.min_cgpa).toFixed(2)) : "No minimum"}</p>
+          <p><b>Maximum Supplies:</b> ${item.max_supplies !== null ? escapeHtml(String(item.max_supplies)) : "No limit"}</p>
           <p><b>Deadline:</b> ${escapeHtml(item.deadline_date || "No deadline")}</p>
           <p>${escapeHtml(item.description || "No description added.")}</p>
           <div class="actions">
@@ -158,16 +159,18 @@ async function addAdminLink() {
   const companyEl = document.getElementById("linkCompany");
   const urlEl = document.getElementById("linkUrl");
   const minCgpaEl = document.getElementById("linkMinCgpa");
+  const maxSuppliesEl = document.getElementById("linkMaxSupplies");
   const deadlineEl = document.getElementById("linkDeadline");
   const descriptionEl = document.getElementById("linkDescription");
 
-  if (!titleEl || !companyEl || !urlEl || !minCgpaEl || !deadlineEl || !descriptionEl) return;
+  if (!titleEl || !companyEl || !urlEl || !minCgpaEl || !maxSuppliesEl || !deadlineEl || !descriptionEl) return;
 
   const payload = {
     title: titleEl.value.trim(),
     company_name: companyEl.value.trim(),
     apply_url: urlEl.value.trim(),
     min_cgpa: minCgpaEl.value.trim(),
+    max_supplies: maxSuppliesEl.value.trim(),
     deadline_date: deadlineEl.value.trim(),
     description: descriptionEl.value.trim()
   };
@@ -189,6 +192,7 @@ async function addAdminLink() {
     companyEl.value = "";
     urlEl.value = "";
     minCgpaEl.value = "";
+    maxSuppliesEl.value = "";
     deadlineEl.value = "";
     descriptionEl.value = "";
     setAdminLinkMessage("Application link posted.");

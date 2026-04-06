@@ -42,6 +42,7 @@ $sql = "
         j.id AS latest_job_id,
         j.job_title AS latest_job_title,
         j.min_cgpa AS latest_job_min_cgpa,
+        j.max_supplies AS latest_job_max_supplies,
         CASE
             WHEN j.id IS NOT NULL AND EXISTS (
                 SELECT 1

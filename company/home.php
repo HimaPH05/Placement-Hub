@@ -48,6 +48,7 @@ $conn->close();
 $adminProfile = get_admin_profile();
 $companyPhotoUrl = placementhub_media_url($companyPhotoPath, "../");
 $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
+$adminComposeUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" . rawurlencode((string)($adminProfile["email"] ?? ""));
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +62,7 @@ $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Placement Hub">
     <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-    <link rel="icon" href="../icons/favicon.ico">
+    <link rel="icon" type="image/png" href="../icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
     <script defer src="../pwa-register.js"></script>
@@ -123,7 +124,7 @@ $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
         <div class="officer-info">
             <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
             <p class="designation"><?php echo htmlspecialchars($adminProfile["role_title"]); ?></p>
-            <p>📧 <a href="mailto:<?php echo htmlspecialchars($adminProfile["email"]); ?>" class="contact-link"><?php echo htmlspecialchars($adminProfile["email"]); ?></a></p>
+            <p>📧 <a href="<?php echo htmlspecialchars($adminComposeUrl); ?>" class="contact-link" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars($adminProfile["email"]); ?></a></p>
             <p>📞 <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
             <p>🏢 <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
         </div>

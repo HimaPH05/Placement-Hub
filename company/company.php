@@ -135,12 +135,13 @@ if(isset($_POST['add_job'])){
     $desc = $_POST['desc'] ?? '';
     $openings = isset($_POST['openings']) ? (int)$_POST['openings'] : 0;
     $min_cgpa = isset($_POST['min_cgpa']) ? (float)$_POST['min_cgpa'] : 0;
+    $max_supplies = isset($_POST['max_supplies']) && $_POST['max_supplies'] !== '' ? (int)$_POST['max_supplies'] : null;
     $location = $_POST['location'] ?? '';
 
     $stmt = $conn->prepare("INSERT INTO jobs 
-        (company_id, job_title, job_description, openings, min_cgpa, location)
-        VALUES (?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param("issids", $company_id, $title, $desc, $openings, $min_cgpa, $location);
+        (company_id, job_title, job_description, openings, min_cgpa, max_supplies, location)
+        VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("issidis", $company_id, $title, $desc, $openings, $min_cgpa, $max_supplies, $location);
     $stmt->execute();
 }
 
@@ -153,12 +154,13 @@ if(isset($_POST['edit_job'])){
     $desc = $_POST['desc'] ?? '';
     $openings = isset($_POST['openings']) ? (int)$_POST['openings'] : 0;
     $min_cgpa = isset($_POST['min_cgpa']) ? (float)$_POST['min_cgpa'] : 0;
+    $max_supplies = isset($_POST['max_supplies']) && $_POST['max_supplies'] !== '' ? (int)$_POST['max_supplies'] : null;
     $location = $_POST['location'] ?? '';
 
     $stmt = $conn->prepare("UPDATE jobs 
-        SET job_title=?, job_description=?, openings=?, min_cgpa=?, location=? 
+        SET job_title=?, job_description=?, openings=?, min_cgpa=?, max_supplies=?, location=? 
         WHERE id=? AND company_id=?");
-    $stmt->bind_param("ssidsii", $title, $desc, $openings, $min_cgpa, $location, $job_id, $company_id);
+    $stmt->bind_param("ssidisii", $title, $desc, $openings, $min_cgpa, $max_supplies, $location, $job_id, $company_id);
     $stmt->execute();
 }
 
@@ -293,12 +295,14 @@ $jobs = $stmt->get_result();
       <?php
         $jobLocation = $job['location'] ?? '';
         $jobMinCgpa = array_key_exists('min_cgpa', $job) && $job['min_cgpa'] !== null ? (float)$job['min_cgpa'] : null;
+        $jobMaxSupplies = array_key_exists('max_supplies', $job) && $job['max_supplies'] !== null ? (int)$job['max_supplies'] : null;
       ?>
       <div class="job">
         <div class="job-main">
           <h4><?php echo htmlspecialchars($job['job_title']); ?></h4>
           <p class="job-line"><?php echo $job['openings']; ?> openings | <?php echo htmlspecialchars($jobLocation); ?></p>
           <p class="job-requirement">Min CGPA Requirement: <?php echo htmlspecialchars($jobMinCgpa !== null ? (string)$jobMinCgpa : 'No minimum'); ?></p>
+          <p class="job-requirement">Max Supplies Allowed: <?php echo htmlspecialchars($jobMaxSupplies !== null ? (string)$jobMaxSupplies : 'No limit'); ?></p>
         </div>
 
         <div class="job-actions">
@@ -309,6 +313,7 @@ $jobs = $stmt->get_result();
               '<?php echo addslashes($job['job_description']); ?>',
               <?php echo $job['openings']; ?>,
               <?php echo $jobMinCgpa !== null ? $jobMinCgpa : 0; ?>,
+              <?php echo $jobMaxSupplies !== null ? $jobMaxSupplies : 'null'; ?>,
               '<?php echo addslashes($jobLocation); ?>'
             )">Edit</button>
 
@@ -415,6 +420,10 @@ $jobs = $stmt->get_result();
           <label for="job_min_cgpa">Minimum CGPA</label>
           <input id="job_min_cgpa" name="min_cgpa" type="number" step="0.01" min="0" max="10" required>
         </div>
+        <div>
+          <label for="job_max_supplies">Maximum Supplies</label>
+          <input id="job_max_supplies" name="max_supplies" type="number" min="0" placeholder="Leave blank for no limit">
+        </div>
       </div>
 
       <label for="job_location">Location</label>
@@ -441,6 +450,7 @@ $jobs = $stmt->get_result();
       <input name="title" id="edit_title" required>
       <input name="openings" id="edit_openings" type="number" required>
       <input name="min_cgpa" id="edit_min_cgpa" type="number" step="0.01" min="0" max="10" required>
+      <input name="max_supplies" id="edit_max_supplies" type="number" min="0" placeholder="Leave blank for no limit">
       <input name="location" id="edit_location">
       <textarea name="desc" id="edit_desc"></textarea>
 
@@ -462,13 +472,14 @@ function closeModal(){
   document.getElementById("addModal").style.display="none";
 }
 
-function openEditModal(id,title,desc,openings,minCgpa,location){
+function openEditModal(id,title,desc,openings,minCgpa,maxSupplies,location){
   document.getElementById("editModal").style.display="flex";
   document.getElementById("edit_id").value=id;
   document.getElementById("edit_title").value=title;
   document.getElementById("edit_desc").value=desc;
   document.getElementById("edit_openings").value=openings;
   document.getElementById("edit_min_cgpa").value=minCgpa;
+  document.getElementById("edit_max_supplies").value=maxSupplies === null ? "" : maxSupplies;
   document.getElementById("edit_location").value=location;
 }
 function closeEditModal(){

@@ -16,7 +16,7 @@ include_once __DIR__ . "/../database_setup.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "GET") {
     $result = $conn->query("
-        SELECT id, title, company_name, apply_url, description, min_cgpa, deadline_date, is_active, created_at
+        SELECT id, title, company_name, apply_url, description, min_cgpa, max_supplies, deadline_date, is_active, created_at
         FROM admin_opportunity_links
         ORDER BY is_active DESC, deadline_date ASC, created_at DESC
     ");
@@ -36,6 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             "apply_url" => $row["apply_url"],
             "description" => $row["description"],
             "min_cgpa" => $row["min_cgpa"] !== null ? (float)$row["min_cgpa"] : null,
+            "max_supplies" => $row["max_supplies"] !== null ? (int)$row["max_supplies"] : null,
             "deadline_date" => $row["deadline_date"],
             "is_active" => ((int)$row["is_active"]) === 1,
             "created_at" => $row["created_at"]
@@ -86,6 +87,7 @@ $companyName = trim((string)($payload["company_name"] ?? ""));
 $applyUrl = trim((string)($payload["apply_url"] ?? ""));
 $description = trim((string)($payload["description"] ?? ""));
 $minCgpaInput = trim((string)($payload["min_cgpa"] ?? ""));
+$maxSuppliesInput = trim((string)($payload["max_supplies"] ?? ""));
 $deadlineDate = trim((string)($payload["deadline_date"] ?? ""));
 
 if ($title === "" || $companyName === "" || $applyUrl === "") {
@@ -120,9 +122,25 @@ if ($deadlineDate === "") {
     $deadlineDate = null;
 }
 
+$maxSupplies = null;
+if ($maxSuppliesInput !== "") {
+    if (!ctype_digit($maxSuppliesInput)) {
+        http_response_code(400);
+        echo json_encode(["success" => false, "message" => "Maximum supplies must be a whole number"]);
+        exit();
+    }
+
+    $maxSupplies = (int)$maxSuppliesInput;
+    if ($maxSupplies < 0) {
+        http_response_code(400);
+        echo json_encode(["success" => false, "message" => "Maximum supplies cannot be negative"]);
+        exit();
+    }
+}
+
 $stmt = $conn->prepare("
-    INSERT INTO admin_opportunity_links (title, company_name, apply_url, description, min_cgpa, deadline_date)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO admin_opportunity_links (title, company_name, apply_url, description, min_cgpa, max_supplies, deadline_date)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
 ");
 
 if (!$stmt) {
@@ -131,7 +149,7 @@ if (!$stmt) {
     exit();
 }
 
-$stmt->bind_param("ssssds", $title, $companyName, $applyUrl, $description, $minCgpa, $deadlineDate);
+$stmt->bind_param("ssssdis", $title, $companyName, $applyUrl, $description, $minCgpa, $maxSupplies, $deadlineDate);
 
 if (!$stmt->execute()) {
     http_response_code(500);

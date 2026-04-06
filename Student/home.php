@@ -33,6 +33,7 @@ if (!$active) {
 $hasScorecardColumn = false;
 $hasEmailColumn = false;
 $hasProfilePhotoColumn = false;
+$hasSupplyCountColumn = false;
 
 $colCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'ktu_scorecard_path'");
 if ($colCheck && $colCheck->num_rows > 0) {
@@ -47,12 +48,40 @@ $profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_p
 if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows > 0) {
     $hasProfilePhotoColumn = true;
 }
+$supplyCountColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'supply_count'");
+if ($supplyCountColCheck && $supplyCountColCheck->num_rows > 0) {
+    $hasSupplyCountColumn = true;
+}
 
-if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    }
+} elseif ($hasScorecardColumn && $hasProfilePhotoColumn) {
     if ($hasEmailColumn) {
         $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
     } else {
         $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    }
+} elseif ($hasScorecardColumn && $hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ?");
+    }
+} elseif ($hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, profile_photo_path FROM students WHERE id = ?");
+    }
+} elseif ($hasSupplyCountColumn) {
+    if ($hasEmailColumn) {
+        $stmt = $conn->prepare("SELECT fullname, email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ?");
+    } else {
+        $stmt = $conn->prepare("SELECT fullname, '' AS email, regno, cgpa, supply_count, '' AS ktu_scorecard_path, '' AS profile_photo_path FROM students WHERE id = ?");
     }
 } elseif ($hasScorecardColumn) {
     if ($hasEmailColumn) {
@@ -82,17 +111,29 @@ if ($stmt->num_rows == 0) {
     die("Student not found");
 }
 
-if ($hasScorecardColumn && $hasProfilePhotoColumn) {
+if ($hasScorecardColumn && $hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supplyCount, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasScorecardColumn && $hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supplyCount, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasProfilePhotoColumn && $hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supplyCount, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasSupplyCountColumn) {
+    $stmt->bind_result($fullname, $email, $regno, $cgpa, $supplyCount, $ktu_scorecard_path, $profile_photo_path);
+} elseif ($hasScorecardColumn && $hasProfilePhotoColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+    $supplyCount = 0;
 } elseif ($hasScorecardColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path);
     $profile_photo_path = "";
+    $supplyCount = 0;
 } elseif ($hasProfilePhotoColumn) {
     $stmt->bind_result($fullname, $email, $regno, $cgpa, $ktu_scorecard_path, $profile_photo_path);
+    $supplyCount = 0;
 } else {
     $stmt->bind_result($fullname, $email, $regno, $cgpa);
     $ktu_scorecard_path = "";
     $profile_photo_path = "";
+    $supplyCount = 0;
 }
 $stmt->fetch();
 
@@ -101,6 +142,7 @@ $student = [
     "email" => $email,
     "regno" => $regno,
     "cgpa" => $cgpa,
+    "supply_count" => $supplyCount,
     "ktu_scorecard_path" => $ktu_scorecard_path,
     "profile_photo_path" => $profile_photo_path
 ];
@@ -162,10 +204,11 @@ if ($hasResumeVerifyCol || $hasResumeRejectCol) {
 $adminProfile = get_admin_profile();
 $teamMembers = get_admin_team_members();
 $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
+$adminComposeUrl = "https://mail.google.com/mail/?view=cm&fs=1&to=" . rawurlencode((string)($adminProfile["email"] ?? ""));
 
 $opportunityLinks = [];
 $linkResult = $conn->query("
-    SELECT title, company_name, apply_url, description, min_cgpa, deadline_date
+    SELECT title, company_name, apply_url, description, min_cgpa, max_supplies, deadline_date
     FROM admin_opportunity_links
     WHERE is_active = 1
     ORDER BY deadline_date ASC, created_at DESC
@@ -186,7 +229,7 @@ if ($linkResult) {
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Placement Hub">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="icon" href="../icons/favicon.ico">
+  <link rel="icon" type="image/png" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
   <script defer src="../pwa-register.js"></script>
@@ -217,6 +260,9 @@ if ($linkResult) {
       <?php endif; ?>
       <p>Reg No: <?php echo htmlspecialchars($student["regno"]); ?></p>
       <p>CGPA: <?php echo htmlspecialchars($student["cgpa"]); ?></p>
+      <?php if ($hasSupplyCountColumn): ?>
+        <p>Supplies: <?php echo htmlspecialchars((string)$student["supply_count"]); ?></p>
+      <?php endif; ?>
       <?php if ($showResumeStatus): ?>
         <p>
           Resume Status: <?php echo htmlspecialchars($latestResumeStatus); ?>
@@ -287,8 +333,12 @@ if ($linkResult) {
         <?php foreach ($opportunityLinks as $link): ?>
           <?php
             $minCgpa = isset($link["min_cgpa"]) && $link["min_cgpa"] !== null ? (float)$link["min_cgpa"] : null;
+            $maxSupplies = isset($link["max_supplies"]) && $link["max_supplies"] !== null ? (int)$link["max_supplies"] : null;
             $studentCgpa = isset($student["cgpa"]) ? (float)$student["cgpa"] : 0.0;
-            $isEligibleForLink = $minCgpa === null || $studentCgpa >= $minCgpa;
+            $studentSupplies = isset($student["supply_count"]) ? (int)$student["supply_count"] : 0;
+            $meetsCgpa = $minCgpa === null || $studentCgpa >= $minCgpa;
+            $meetsSupplies = $maxSupplies === null || $studentSupplies <= $maxSupplies;
+            $isEligibleForLink = $meetsCgpa && $meetsSupplies;
           ?>
           <div class="opportunity-card">
             <h3><?php echo htmlspecialchars((string)$link["title"]); ?></h3>
@@ -299,13 +349,21 @@ if ($linkResult) {
               <?php echo $minCgpa !== null ? htmlspecialchars(number_format($minCgpa, 2)) : "No minimum"; ?>
             </p>
             <p class="opportunity-deadline">
+              Maximum Supplies:
+              <?php echo $maxSupplies !== null ? htmlspecialchars((string)$maxSupplies) : "No limit"; ?>
+            </p>
+            <p class="opportunity-deadline">
               Deadline: <?php echo !empty($link["deadline_date"]) ? htmlspecialchars((string)$link["deadline_date"]) : "Not specified"; ?>
             </p>
             <?php if ($isEligibleForLink): ?>
               <a href="<?php echo htmlspecialchars((string)$link["apply_url"]); ?>" target="_blank" class="btn">Apply Now</a>
-            <?php else: ?>
+            <?php elseif (!$meetsCgpa): ?>
               <button type="button" class="btn apply-btn-student" disabled>
                 Requires CGPA <?php echo htmlspecialchars(number_format($minCgpa, 2)); ?>
+              </button>
+            <?php else: ?>
+              <button type="button" class="btn apply-btn-student" disabled>
+                Allows max <?php echo htmlspecialchars((string)$maxSupplies); ?> supplies
               </button>
             <?php endif; ?>
           </div>
@@ -325,7 +383,7 @@ if ($linkResult) {
       <div class="officer-info">
         <h3><?php echo htmlspecialchars($adminProfile["name"]); ?></h3>
         <p class="role"><?php echo htmlspecialchars($adminProfile["role_title"]); ?></p>
-        <p>📧 <a href="mailto:<?php echo htmlspecialchars($adminProfile["email"]); ?>" class="contact-link"><?php echo htmlspecialchars($adminProfile["email"]); ?></a></p>
+        <p>📧 <a href="<?php echo htmlspecialchars($adminComposeUrl); ?>" class="contact-link" target="_blank" rel="noopener noreferrer"><?php echo htmlspecialchars($adminProfile["email"]); ?></a></p>
         <p>📞 <?php echo htmlspecialchars($adminProfile["phone"]); ?></p>
         <p>🏢 <?php echo htmlspecialchars($adminProfile["department"]); ?></p>
       </div>

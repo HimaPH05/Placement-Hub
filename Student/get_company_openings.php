@@ -42,6 +42,7 @@ $stmt = $conn->prepare("
         j.job_description,
         j.openings,
         j.min_cgpa,
+        j.max_supplies,
         j.location,
         CASE
             WHEN EXISTS (
@@ -70,6 +71,7 @@ while ($row = $result->fetch_assoc()) {
     $row["id"] = (int)$row["id"];
     $row["openings"] = $row["openings"] !== null ? (int)$row["openings"] : 0;
     $row["min_cgpa"] = $row["min_cgpa"] !== null ? (float)$row["min_cgpa"] : null;
+    $row["max_supplies"] = $row["max_supplies"] !== null ? (int)$row["max_supplies"] : null;
     $row["is_applied"] = ((int)($row["is_applied"] ?? 0)) === 1;
     $openings[] = $row;
 }

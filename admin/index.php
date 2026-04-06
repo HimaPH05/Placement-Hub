@@ -35,7 +35,7 @@ $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Placement Hub">
   <link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
-  <link rel="icon" href="../icons/favicon.ico">
+  <link rel="icon" type="image/png" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="32x32" href="../icons/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="../icons/favicon-16.png">
   <script defer src="script.js?v=20260402-photo"></script>
@@ -158,6 +158,7 @@ $adminPhotoUrl = placementhub_admin_photo_url($adminProfile, "../");
       <input type="text" id="linkCompany" placeholder="Company name">
       <input type="url" id="linkUrl" placeholder="Application URL">
       <input type="number" id="linkMinCgpa" placeholder="Minimum CGPA" min="0" max="10" step="0.01">
+      <input type="number" id="linkMaxSupplies" placeholder="Maximum Supplies" min="0">
       <input type="date" id="linkDeadline">
       <textarea id="linkDescription" placeholder="Short description or instructions"></textarea>
       <button type="button" class="primary" onclick="addAdminLink()">Post Link</button>

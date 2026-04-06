@@ -24,6 +24,15 @@ $location    = $data["location"] ?? "";
 $industry    = $data["industry"] ?? "";
 $website     = $data["website"] ?? "";
 
+$username = trim((string)$username);
+$password = (string)$password;
+$companyName = trim((string)$companyName);
+$email = trim((string)$email);
+$phone = trim((string)$phone);
+$location = trim((string)$location);
+$industry = trim((string)$industry);
+$website = trim((string)$website);
+
 if (!$username || !$password || !$companyName || !$email || !$phone || !$location || !$industry) {
     echo json_encode(["message" => "All required fields must be filled"]);
     exit;

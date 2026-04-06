@@ -41,6 +41,11 @@ if ($studentsTable && $studentsTable->num_rows > 0) {
         $conn->query("ALTER TABLE students ADD COLUMN ktu_scorecard_path VARCHAR(255) NULL AFTER cgpa");
     }
 
+    $supplyCountColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'supply_count'");
+    if ($supplyCountColCheck && $supplyCountColCheck->num_rows === 0) {
+        $conn->query("ALTER TABLE students ADD COLUMN supply_count INT NOT NULL DEFAULT 0 AFTER cgpa");
+    }
+
     $profilePhotoColCheck = $conn->query("SHOW COLUMNS FROM students LIKE 'profile_photo_path'");
     if ($profilePhotoColCheck && $profilePhotoColCheck->num_rows === 0) {
         $conn->query("ALTER TABLE students ADD COLUMN profile_photo_path VARCHAR(255) NULL AFTER cgpa");
@@ -103,6 +108,11 @@ if ($minCgpaCol && $minCgpaCol->num_rows === 0) {
     $conn->query("ALTER TABLE jobs ADD COLUMN min_cgpa DECIMAL(4,2) NULL AFTER openings");
 }
 
+$maxSuppliesCol = $conn->query("SHOW COLUMNS FROM jobs LIKE 'max_supplies'");
+if ($maxSuppliesCol && $maxSuppliesCol->num_rows === 0) {
+    $conn->query("ALTER TABLE jobs ADD COLUMN max_supplies INT NULL AFTER min_cgpa");
+}
+
 /* APPLICATIONS TABLE */
 $conn->query("CREATE TABLE IF NOT EXISTS applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -133,6 +143,11 @@ $conn->query("CREATE TABLE IF NOT EXISTS admin_opportunity_links (
 $adminOpportunityMinCgpaCol = $conn->query("SHOW COLUMNS FROM admin_opportunity_links LIKE 'min_cgpa'");
 if ($adminOpportunityMinCgpaCol && $adminOpportunityMinCgpaCol->num_rows === 0) {
     $conn->query("ALTER TABLE admin_opportunity_links ADD COLUMN min_cgpa DECIMAL(4,2) NULL AFTER description");
+}
+
+$adminOpportunityMaxSuppliesCol = $conn->query("SHOW COLUMNS FROM admin_opportunity_links LIKE 'max_supplies'");
+if ($adminOpportunityMaxSuppliesCol && $adminOpportunityMaxSuppliesCol->num_rows === 0) {
+    $conn->query("ALTER TABLE admin_opportunity_links ADD COLUMN max_supplies INT NULL AFTER min_cgpa");
 }
 
 /* STUDENT RESUMES TABLE */

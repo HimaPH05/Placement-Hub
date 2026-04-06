@@ -67,6 +67,9 @@ function renderCompanies(data = companies) {
     const minCgpaText = c.latest_job_min_cgpa !== null && c.latest_job_min_cgpa !== undefined
       ? String(c.latest_job_min_cgpa)
       : "No minimum";
+    const maxSuppliesText = c.latest_job_max_supplies !== null && c.latest_job_max_supplies !== undefined
+      ? String(c.latest_job_max_supplies)
+      : "No limit";
     const applyLabel = hasJob ? (latestJobApplied ? "Applied" : "Apply") : "No Open Role";
     const wishlistLabel = inWishlist ? "In Wishlist" : "Add to Wishlist";
     const isExpanded = expandedCompanies.has(companyId);
@@ -84,6 +87,7 @@ function renderCompanies(data = companies) {
             <span><b>Industry:</b> ${escapeHtml(c.industry || "N/A")}</span>
             <span><b>Location:</b> ${escapeHtml(c.location || "N/A")}</span>
             <span><b>Min CGPA:</b> ${escapeHtml(minCgpaText)}</span>
+            <span><b>Max Supplies:</b> ${escapeHtml(maxSuppliesText)}</span>
             ${website}
           </div>
 
@@ -117,6 +121,9 @@ function renderCompanyOpenings(companyId, openings) {
     const minCgpaText = job.min_cgpa !== null && job.min_cgpa !== undefined
       ? escapeHtml(String(job.min_cgpa))
       : "No minimum";
+    const maxSuppliesText = job.max_supplies !== null && job.max_supplies !== undefined
+      ? escapeHtml(String(job.max_supplies))
+      : "No limit";
     const applyLabel = job.is_applied === true ? "Applied" : "Apply";
     const applyDisabled = job.is_applied === true ? "disabled" : "";
 
@@ -128,6 +135,7 @@ function renderCompanyOpenings(companyId, openings) {
           <span><b>Location:</b> ${escapeHtml(job.location || "N/A")}</span>
           <span><b>Openings:</b> ${escapeHtml(String(job.openings ?? 0))}</span>
           <span><b>Min CGPA:</b> ${minCgpaText}</span>
+          <span><b>Max Supplies:</b> ${maxSuppliesText}</span>
         </div>
         <button class="btn ${job.is_applied === true ? "is-applied" : ""}" onclick="applyToCompany(${companyId}, ${Number(job.id) || 0})" ${applyDisabled}>${escapeHtml(applyLabel)}</button>
       </div>
@@ -700,6 +708,9 @@ async function loadProfileSummary() {
     }
     if (profile.cgpa) {
       details.push(`<p>CGPA: ${escapeHtml(profile.cgpa)}</p>`);
+    }
+    if (profile.supply_count !== undefined) {
+      details.push(`<p>Supplies: ${escapeHtml(String(profile.supply_count))}</p>`);
     }
     if (profile.ktu_scorecard_path) {
       details.push(`<p>KTU Scorecard: <a href="../${escapeHtml(profile.ktu_scorecard_path)}" target="_blank">View</a></p>`);

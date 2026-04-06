@@ -2,6 +2,7 @@ const form = document.getElementById("companySignupForm");
 const error = document.getElementById("error");
 const password = document.getElementById("password");
 const togglePassword = document.getElementById("togglePassword");
+const industryInput = document.getElementById("industry");
 
 if (togglePassword && password) {
   togglePassword.addEventListener("click", () => {
@@ -14,6 +15,13 @@ if (form) {
     e.preventDefault();
     if (error) error.textContent = "";
 
+    const finalIndustry = industryInput ? industryInput.value.trim() : "";
+
+    if (!finalIndustry) {
+      if (error) error.textContent = "Please select or enter an industry";
+      return;
+    }
+
     const data = {
       username: document.getElementById("username").value.trim(),
       password: password.value,
@@ -21,7 +29,7 @@ if (form) {
       email: document.getElementById("email").value.trim(),
       phone: document.getElementById("phone").value.trim(),
       location: document.getElementById("location").value.trim(),
-      industry: document.getElementById("industry").value,
+      industry: finalIndustry,
       website: document.getElementById("website").value.trim()
     };
 
